@@ -1194,6 +1194,9 @@ function CustomizeRoleModal({
   const [isClosing, setIsClosing] = useState(false);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
 
+  // Capture initial permission state for stable sort order (active items on top, frozen after load)
+  const initialAccessRef = useRef<Record<string, string>>({});
+
   // Handle close with fade-out animation
   const handleClose = () => {
     setIsClosing(true);
@@ -1221,6 +1224,7 @@ function CustomizeRoleModal({
         setCustomDescription(initialState.customDescription);
         setIsEditingDescription(!!initialState.customDescription);
         setPermissionAccess(initialState.permissionAccess);
+        initialAccessRef.current = { ...initialState.permissionAccess };
         setPendingAccess({});
         setSearchQuery("");
         setGroupBy("productCategory");
@@ -1260,6 +1264,7 @@ function CustomizeRoleModal({
       setCustomDescription(baseRole.customDescription || "");
       setIsEditingDescription(!!baseRole.customDescription);
       setPermissionAccess(accessMap);
+      initialAccessRef.current = { ...accessMap };
       setPendingAccess({});
       setSearchQuery("");
       setGroupBy("productCategory");
@@ -1389,6 +1394,28 @@ function CustomizeRoleModal({
   // Unified list: all permissions grouped together (for the new single-list layout)
   const filteredAll = filterBySearch(allPermissions);
   const groupedAll = groupPerms(filteredAll);
+
+  // Sort groups and permissions within groups: active items first (based on initial state, so order is stable)
+  const sortedGroupEntries = Object.entries(groupedAll).sort(([aGroup, aPerms], [bGroup, bPerms]) => {
+    const aActiveCount = aPerms.filter(p => p.apiName in initialAccessRef.current).length;
+    const bActiveCount = bPerms.filter(p => p.apiName in initialAccessRef.current).length;
+    // Groups with any active permissions sort first
+    const aHasActive = aActiveCount > 0 ? 0 : 1;
+    const bHasActive = bActiveCount > 0 ? 0 : 1;
+    if (aHasActive !== bHasActive) return aHasActive - bHasActive;
+    // Within same tier, sort alphabetically
+    return aGroup.localeCompare(bGroup);
+  });
+
+  // Sort permissions within each group: active first (based on initial state)
+  const sortPermsInGroup = (perms: Permission[]) => {
+    return [...perms].sort((a, b) => {
+      const aActive = a.apiName in initialAccessRef.current ? 0 : 1;
+      const bActive = b.apiName in initialAccessRef.current ? 0 : 1;
+      if (aActive !== bActive) return aActive - bActive;
+      return a.displayName.localeCompare(b.displayName);
+    });
+  };
 
   // Required permission that cannot be removed
   const REQUIRED_PERMISSION = "dashboard_baseline";
@@ -1773,12 +1800,12 @@ function CustomizeRoleModal({
                     <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2">
                       {isBundled ? (
                         /* Bundled view: CustomizeBundleCard for each group */
-                        Object.entries(groupedAll).sort(([a], [b]) => a.localeCompare(b)).map(([group, perms]) => (
+                        sortedGroupEntries.map(([group, perms]) => (
                           <CustomizeBundleCard
                             key={group}
                             groupName={group}
                             description={GROUP_DESCRIPTIONS[groupBy]?.[group]}
-                            permissions={perms}
+                            permissions={sortPermsInGroup(perms)}
                             checkState={getBundleCheckState(perms)}
                             onToggleBundle={() => toggleBundle(perms)}
                             permissionAccess={permissionAccess}
@@ -1788,14 +1815,14 @@ function CustomizeRoleModal({
                         ))
                       ) : (
                         /* Unbundled view: flat list with optional section headers */
-                        Object.entries(groupedAll).sort(([a], [b]) => a.localeCompare(b)).map(([group, perms]) => (
+                        sortedGroupEntries.map(([group, perms]) => (
                           <div key={group || "all"} className={isAlphabetical ? "" : "mb-3"}>
                             {!isAlphabetical && group && (
                               <div className="text-[12px] font-semibold text-[#353A44] leading-4 tracking-[-0.024px] mb-2">
                                 {group}
                               </div>
                             )}
-                            {perms.map(perm => {
+                            {sortPermsInGroup(perms).map(perm => {
                               const isChecked = perm.apiName in permissionAccess;
                               return (
                                 <div key={perm.apiName} className="mb-2">
