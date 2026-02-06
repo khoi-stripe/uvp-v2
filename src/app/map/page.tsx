@@ -170,7 +170,7 @@ export default function PermissionsMapPage() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch("/uvp-permissions-map.csv")
+    fetch(`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/uvp-permissions-map.csv`)
       .then((res) => {
         if (!res.ok) throw new Error(`Failed to load CSV: ${res.status}`);
         return res.text();
