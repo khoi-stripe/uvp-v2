@@ -170,13 +170,16 @@ function Checkbox({
   checked, 
   onChange,
   className = "",
-  disabled = false
+  disabled = false,
+  indeterminate = false,
 }: { 
   checked: boolean; 
   onChange: () => void;
   className?: string;
   disabled?: boolean;
+  indeterminate?: boolean;
 }) {
+  const isFilled = checked || indeterminate;
   return (
     <button
       type="button"
@@ -187,14 +190,29 @@ function Checkbox({
       disabled={disabled}
       className={`relative shrink-0 w-[14px] h-[14px] rounded-[4px] transition-all flex items-center justify-center ${className} ${disabled ? 'cursor-not-allowed' : ''}`}
       style={{
-        backgroundColor: disabled ? '#EBEEF1' : checked ? '#675DFF' : 'white',
-        border: disabled ? '1px solid #D8DEE4' : checked ? '1px solid #675DFF' : '1px solid #D8DEE4',
-        boxShadow: disabled ? 'none' : checked 
+        backgroundColor: disabled ? '#EBEEF1' : isFilled ? '#675DFF' : 'white',
+        border: disabled ? '1px solid #D8DEE4' : isFilled ? '1px solid #675DFF' : '1px solid #D8DEE4',
+        boxShadow: disabled ? 'none' : isFilled 
           ? '0px 1px 1px 0px rgba(10, 33, 86, 0.16)' 
           : '0px 1px 1px 0px rgba(33, 37, 44, 0.16)',
       }}
     >
-      {checked && (
+      {indeterminate ? (
+        <svg 
+          width="8" 
+          height="2" 
+          viewBox="0 0 8 2" 
+          fill="none" 
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path 
+            d="M1 1H7" 
+            stroke="white" 
+            strokeWidth="1.5" 
+            strokeLinecap="round"
+          />
+        </svg>
+      ) : checked ? (
         <svg 
           width="10" 
           height="8" 
@@ -210,7 +228,7 @@ function Checkbox({
             strokeLinejoin="round"
           />
         </svg>
-      )}
+      ) : null}
     </button>
   );
 }
@@ -1001,6 +1019,141 @@ function AIAssistantDrawer({
   );
 }
 
+// Bundle card for the customize modal - includes group-level checkbox
+function CustomizeBundleCard({
+  groupName,
+  description,
+  permissions: perms,
+  checkState,
+  onToggleBundle,
+  permissionAccess,
+  onTogglePermission,
+  onAccessChange,
+  defaultExpanded = false,
+}: {
+  groupName: string;
+  description?: string;
+  permissions: Permission[];
+  checkState: "all" | "none" | "some";
+  onToggleBundle: () => void;
+  permissionAccess: Record<string, string>;
+  onTogglePermission: (apiName: string) => void;
+  onAccessChange: (apiName: string, access: string) => void;
+  defaultExpanded?: boolean;
+}) {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const REQUIRED_PERMISSION = "dashboard_baseline";
+
+  return (
+    <div className="bg-[#F5F6F8] rounded-[4px] py-4 px-2 shrink-0 flex flex-col gap-2">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-2">
+        <Checkbox
+          checked={checkState === "all"}
+          indeterminate={checkState === "some"}
+          onChange={onToggleBundle}
+        />
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex-1 flex items-center gap-4 text-left group min-w-0"
+        >
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] truncate">
+                {groupName}
+              </span>
+              <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-white text-[12px] text-[#596171] leading-4 rounded-full text-center">
+                {perms.length}
+              </span>
+            </div>
+            {description && (
+              <p className="text-[14px] text-[#596171] leading-5 line-clamp-2 mt-0.5">
+                {description}
+              </p>
+            )}
+          </div>
+          <ChevronDown
+            size={12}
+            className={`text-[#474E5A] flex-shrink-0 transition-transform duration-200 ${
+              isExpanded ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+      </div>
+
+      {/* Expandable permission cards */}
+      <div
+        className="grid transition-[grid-template-rows] duration-200 ease-in-out"
+        style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
+      >
+        <div className="overflow-hidden">
+          <div className="border-t border-[#D8DEE4] mx-2" />
+          <div className="flex flex-col divide-y divide-[#D8DEE4] ml-2">
+            {perms.map((permission) => {
+              const isChecked = permission.apiName in permissionAccess;
+              const isRequired = permission.apiName === REQUIRED_PERMISSION;
+              const currentAccess = permissionAccess[permission.apiName];
+              const supportsMultipleAccess = permission.actions.toLowerCase().includes("read") && 
+                                              permission.actions.toLowerCase().includes("write");
+
+              return (
+                <div
+                  key={permission.apiName}
+                  onClick={() => !isRequired && onTogglePermission(permission.apiName)}
+                  className={`flex items-start gap-4 pr-2 py-3 transition-all duration-150 ${
+                    isRequired ? 'cursor-default' : 'hover:bg-[#EBEEF1]/50 cursor-pointer'
+                  }`}
+                >
+                  <div className="self-center">
+                    {isRequired ? (
+                      <Tooltip content="Required permission" position="above">
+                        <Checkbox
+                          checked={isChecked}
+                          onChange={() => {}}
+                          disabled={true}
+                        />
+                      </Tooltip>
+                    ) : (
+                      <Checkbox
+                        checked={isChecked}
+                        onChange={() => onTogglePermission(permission.apiName)}
+                      />
+                    )}
+                  </div>
+                  <PermissionCardContent
+                    permission={permission}
+                    showTaskCategories={false}
+                    currentGroup={groupName}
+                    groupBy="productCategory"
+                    insideBundle
+                  />
+                  {/* Access badge */}
+                  {isChecked && supportsMultipleAccess && currentAccess ? (
+                    <AccessSelector
+                      value={currentAccess}
+                      onChange={(access) => onAccessChange(permission.apiName, access)}
+                    />
+                  ) : (
+                    <span
+                      className={`text-[12px] font-medium px-2 py-0.5 rounded flex-shrink-0 ${
+                        permission.actions.includes("write")
+                          ? "bg-[#D3F8DF] text-[#1D7C4D]"
+                          : "bg-[#D4E5FF] text-[#0055BC]"
+                      }`}
+                    >
+                      {currentAccess ? getAccessLabel(currentAccess).label : getAccessLabel(permission.actions).label}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Customize Role Modal Component
 function CustomizeRoleModal({
   isOpen,
@@ -1035,8 +1188,8 @@ function CustomizeRoleModal({
   // Tracks pending access selections for available permissions (before adding)
   const [pendingAccess, setPendingAccess] = useState<Record<string, string>>({});
   const [searchQuery, setSearchQuery] = useState("");
-  const [groupBy, setGroupBy] = useState<GroupByOption>(initialGroupBy);
-  const [exitingApiName, setExitingApiName] = useState<string | null>(null);
+  const [groupBy, setGroupBy] = useState<GroupByOption>("productCategory");
+  const [isBundled, setIsBundled] = useState(true);
   const [isRiskExpandedModal, setIsRiskExpandedModal] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
@@ -1048,6 +1201,14 @@ function CustomizeRoleModal({
       setIsClosing(false);
       onClose();
     }, 150); // Match animation duration
+  };
+
+  // Handle bundle toggle with auto-switch logic
+  const handleBundleToggle = (on: boolean) => {
+    setIsBundled(on);
+    if (on && groupBy === "alphabetical") {
+      setGroupBy("productCategory");
+    }
   };
 
   // Reset state when modal opens with new role (or restore from initialState if returning from sandbox)
@@ -1062,7 +1223,8 @@ function CustomizeRoleModal({
         setPermissionAccess(initialState.permissionAccess);
         setPendingAccess({});
         setSearchQuery("");
-        setGroupBy(initialGroupBy);
+        setGroupBy("productCategory");
+        setIsBundled(true);
         return;
       }
 
@@ -1100,9 +1262,10 @@ function CustomizeRoleModal({
       setPermissionAccess(accessMap);
       setPendingAccess({});
       setSearchQuery("");
-      setGroupBy(initialGroupBy);
+      setGroupBy("productCategory");
+      setIsBundled(true);
     }
-  }, [isOpen, baseRole.id, baseRole.permissionApiNames, baseRole.permissionAccess, baseRole.customDescription, initialGroupBy, initialState]);
+  }, [isOpen, baseRole.id, baseRole.permissionApiNames, baseRole.permissionAccess, baseRole.customDescription, initialState]);
 
   // Keyboard shortcuts: ESC to close, CMD+Enter to save
   useEffect(() => {
@@ -1223,6 +1386,10 @@ function CustomizeRoleModal({
   const groupedAvailable = groupPerms(filteredAvailable);
   const isAlphabetical = groupBy === "alphabetical";
 
+  // Unified list: all permissions grouped together (for the new single-list layout)
+  const filteredAll = filterBySearch(allPermissions);
+  const groupedAll = groupPerms(filteredAll);
+
   // Required permission that cannot be removed
   const REQUIRED_PERMISSION = "dashboard_baseline";
 
@@ -1230,33 +1397,26 @@ function CustomizeRoleModal({
     // Don't allow toggling the required permission
     if (apiName === REQUIRED_PERMISSION) return;
     
-    // Start exit animation
-    setExitingApiName(apiName);
-    
-    // After animation completes, actually toggle
-    setTimeout(() => {
-      setPermissionAccess(prev => {
-        const next = { ...prev };
-        if (apiName in next) {
-          // Removing permission
-          delete next[apiName];
-        } else {
-          // Adding permission - use pending access if set, otherwise default to permission's actions
-          const pending = pendingAccess[apiName];
-          const perm = allPermissions.find(p => p.apiName === apiName);
-          next[apiName] = pending || perm?.actions || "read";
-          
-          // Clear pending access after adding
-          setPendingAccess(p => {
-            const newPending = { ...p };
-            delete newPending[apiName];
-            return newPending;
-          });
-        }
-        return next;
-      });
-      setExitingApiName(null);
-    }, 200); // Match animation duration
+    setPermissionAccess(prev => {
+      const next = { ...prev };
+      if (apiName in next) {
+        // Removing permission
+        delete next[apiName];
+      } else {
+        // Adding permission - use pending access if set, otherwise default to permission's actions
+        const pending = pendingAccess[apiName];
+        const perm = allPermissions.find(p => p.apiName === apiName);
+        next[apiName] = pending || perm?.actions || "read";
+        
+        // Clear pending access after adding
+        setPendingAccess(p => {
+          const newPending = { ...p };
+          delete newPending[apiName];
+          return newPending;
+        });
+      }
+      return next;
+    });
   };
 
   const updatePermissionAccess = (apiName: string, access: string) => {
@@ -1271,6 +1431,37 @@ function CustomizeRoleModal({
       ...prev,
       [apiName]: access
     }));
+  };
+
+  // Bundle checkbox helpers
+  const getBundleCheckState = (perms: Permission[]): "all" | "none" | "some" => {
+    const checkedCount = perms.filter(p => p.apiName in permissionAccess).length;
+    if (checkedCount === 0) return "none";
+    if (checkedCount === perms.length) return "all";
+    return "some";
+  };
+
+  const toggleBundle = (perms: Permission[]) => {
+    const state = getBundleCheckState(perms);
+    setPermissionAccess(prev => {
+      const next = { ...prev };
+      if (state === "all") {
+        // Uncheck all in this bundle (except required)
+        for (const p of perms) {
+          if (p.apiName !== REQUIRED_PERMISSION) {
+            delete next[p.apiName];
+          }
+        }
+      } else {
+        // Check all in this bundle
+        for (const p of perms) {
+          if (!(p.apiName in next)) {
+            next[p.apiName] = p.actions;
+          }
+        }
+      }
+      return next;
+    });
   };
 
   const handleRevert = () => {
@@ -1528,6 +1719,7 @@ function CustomizeRoleModal({
                     <span className="flex-1 text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
                       Permissions
                     </span>
+                    <ToggleSwitch checked={isBundled} onChange={handleBundleToggle} label="Bundle" />
                     {/* AI Assistant toggle button - invisible (not removed) when assistant is open to prevent layout shift */}
                     <button
                       onClick={() => setIsAssistantOpen(true)}
@@ -1546,7 +1738,7 @@ function CustomizeRoleModal({
                     <Dropdown
                       value={groupBy}
                       onChange={setGroupBy}
-                      options={groupByOptions}
+                      options={isBundled ? bundledGroupByOptions : unbundledGroupByOptions}
                     />
                     {/* Search field - spans full width */}
                     <div className="flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white focus-within:border-[#635BFF] transition-colors">
@@ -1569,94 +1761,66 @@ function CustomizeRoleModal({
                     </div>
                   </div>
 
-                  {/* Two-column permission lists */}
-                  <div className="flex-1 flex gap-4 min-h-0 overflow-hidden">
-                    {/* Current permissions */}
-                    <div className="flex-1 flex flex-col gap-2 overflow-hidden min-w-0">
-                      <div className="flex items-center gap-2.5">
-                        <span className="flex-1 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">Current</span>
-                        <span className="bg-[#F5F6F8] text-[12px] text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center">
-                          <AnimatedNumber value={selectedPermissions.length} />
-                        </span>
-                      </div>
-                      <div className="flex-1 overflow-y-auto">
-                        {Object.entries(groupedSelected).sort(([a], [b]) => a.localeCompare(b)).map(([group, perms]) => (
-                          <div key={group || "all"} className={isAlphabetical ? "" : "mb-3"}>
-                            {!isAlphabetical && group && (
-                              <div className="text-[12px] font-semibold text-[#353A44] leading-4 tracking-[-0.024px] mb-2">
-                                {group}
-                              </div>
-                            )}
-                            {perms.map(perm => (
-                              <div key={perm.apiName} className="mb-2">
-                                <PermissionCard
-                                  permission={perm}
-                                  showCheckbox
-                                  isChecked={true}
-                                  onToggle={() => !exitingApiName && togglePermission(perm.apiName)}
-                                  currentGroup={group}
-                                  groupBy={groupBy}
-                                  disabled={perm.apiName === REQUIRED_PERMISSION}
-                                  isExiting={exitingApiName === perm.apiName}
-                                  currentAccess={permissionAccess[perm.apiName]}
-                                  onAccessChange={(access) => updatePermissionAccess(perm.apiName, access)}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        ))}
-                        {filteredSelected.length === 0 && (
-                          <div className="text-center py-8 text-[#596171] text-[14px] leading-5 tracking-[-0.15px]">
-                            No permissions selected
-                          </div>
-                        )}
-                      </div>
+                  {/* Unified permission list */}
+                  <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                    <div className="flex items-center gap-2.5 mb-2">
+                      <span className="flex-1 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">
+                        {selectedPermissions.length} of {allPermissions.length} selected
+                      </span>
                     </div>
-
-                    {/* Available permissions - collapses when assistant is open */}
-                    <div 
-                      className={`flex flex-col gap-2 overflow-hidden ${
-                        isAssistantOpen ? 'w-0 opacity-0 min-w-0' : 'flex-1 opacity-100 min-w-0'
-                      }`}
-                      style={{ transition: 'width 400ms cubic-bezier(0.4, 0, 0.2, 1), opacity 300ms cubic-bezier(0.4, 0, 0.2, 1)' }}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className="flex-1 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">Available</span>
-                        <span className="bg-[#F5F6F8] text-[12px] text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center">
-                          <AnimatedNumber value={availablePermissions.length} />
-                        </span>
-                      </div>
-                      <div className="flex-1 overflow-y-auto">
-                        {Object.entries(groupedAvailable).sort(([a], [b]) => a.localeCompare(b)).map(([group, perms]) => (
+                    <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2">
+                      {isBundled ? (
+                        /* Bundled view: CustomizeBundleCard for each group */
+                        Object.entries(groupedAll).sort(([a], [b]) => a.localeCompare(b)).map(([group, perms]) => (
+                          <CustomizeBundleCard
+                            key={group}
+                            groupName={group}
+                            description={GROUP_DESCRIPTIONS[groupBy]?.[group]}
+                            permissions={perms}
+                            checkState={getBundleCheckState(perms)}
+                            onToggleBundle={() => toggleBundle(perms)}
+                            permissionAccess={permissionAccess}
+                            onTogglePermission={(apiName) => togglePermission(apiName)}
+                            onAccessChange={updatePermissionAccess}
+                          />
+                        ))
+                      ) : (
+                        /* Unbundled view: flat list with optional section headers */
+                        Object.entries(groupedAll).sort(([a], [b]) => a.localeCompare(b)).map(([group, perms]) => (
                           <div key={group || "all"} className={isAlphabetical ? "" : "mb-3"}>
                             {!isAlphabetical && group && (
                               <div className="text-[12px] font-semibold text-[#353A44] leading-4 tracking-[-0.024px] mb-2">
                                 {group}
                               </div>
                             )}
-                            {perms.map(perm => (
-                              <div key={perm.apiName} className="mb-2">
-                                <PermissionCard
-                                  permission={perm}
-                                  showCheckbox
-                                  isChecked={false}
-                                  onToggle={() => !exitingApiName && togglePermission(perm.apiName)}
-                                  currentGroup={group}
-                                  groupBy={groupBy}
-                                  isExiting={exitingApiName === perm.apiName}
-                                  pendingAccess={pendingAccess[perm.apiName]}
-                                  onPendingAccessChange={(access) => updatePendingAccess(perm.apiName, access)}
-                                />
-                              </div>
-                            ))}
+                            {perms.map(perm => {
+                              const isChecked = perm.apiName in permissionAccess;
+                              return (
+                                <div key={perm.apiName} className="mb-2">
+                                  <PermissionCard
+                                    permission={perm}
+                                    showCheckbox
+                                    isChecked={isChecked}
+                                    onToggle={() => togglePermission(perm.apiName)}
+                                    currentGroup={group}
+                                    groupBy={groupBy}
+                                    disabled={perm.apiName === REQUIRED_PERMISSION}
+                                    currentAccess={isChecked ? permissionAccess[perm.apiName] : undefined}
+                                    onAccessChange={isChecked ? (access) => updatePermissionAccess(perm.apiName, access) : undefined}
+                                    pendingAccess={!isChecked ? pendingAccess[perm.apiName] : undefined}
+                                    onPendingAccessChange={!isChecked ? (access) => updatePendingAccess(perm.apiName, access) : undefined}
+                                  />
+                                </div>
+                              );
+                            })}
                           </div>
-                        ))}
-                        {filteredAvailable.length === 0 && (
-                          <div className="text-center py-8 text-[#596171] text-[14px] leading-5 tracking-[-0.15px]">
-                            All permissions selected
-                          </div>
-                        )}
-                      </div>
+                        ))
+                      )}
+                      {filteredAll.length === 0 && (
+                        <div className="text-center py-8 text-[#596171] text-[14px] leading-5 tracking-[-0.15px]">
+                          No permissions match your search
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
