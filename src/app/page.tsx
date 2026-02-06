@@ -1063,7 +1063,7 @@ function CustomizeBundleCard({
                 {groupName}
               </span>
               <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-white text-[12px] text-[#596171] leading-4 rounded-full text-center">
-                {perms.length}
+                {perms.filter(p => p.apiName in permissionAccess).length} of {perms.length}
               </span>
             </div>
             {description && (
@@ -1716,10 +1716,9 @@ function CustomizeRoleModal({
               >
                   {/* Permissions header */}
                   <div className="flex items-center gap-2">
-                    <span className="flex-1 text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
+                    <span className="text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
                       Permissions
                     </span>
-                    <ToggleSwitch checked={isBundled} onChange={handleBundleToggle} label="Bundle" />
                     {/* AI Assistant toggle button - invisible (not removed) when assistant is open to prevent layout shift */}
                     <button
                       onClick={() => setIsAssistantOpen(true)}
@@ -1730,6 +1729,9 @@ function CustomizeRoleModal({
                       <SparkleIcon />
                       <span className="leading-5 tracking-[-0.15px]">Assistant</span>
                     </button>
+                    <div className="ml-auto">
+                      <ToggleSwitch checked={isBundled} onChange={handleBundleToggle} label="Bundle" />
+                    </div>
                   </div>
 
                   {/* Controls row - full width */}
@@ -1763,8 +1765,8 @@ function CustomizeRoleModal({
 
                   {/* Unified permission list */}
                   <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                    <div className="flex items-center gap-2.5 mb-2">
-                      <span className="flex-1 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">
+                    <div className="flex items-center gap-2.5 py-4">
+                      <span className="flex-1 text-[12px] font-semibold text-[#353A44] leading-4 tracking-[-0.024px]">
                         {selectedPermissions.length} of {allPermissions.length} selected
                       </span>
                     </div>
