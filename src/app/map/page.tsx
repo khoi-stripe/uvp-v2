@@ -7,6 +7,7 @@ import Link from "next/link";
 // Types for our visualization
 interface UVPEntry {
   uvpName: string;
+  humanFriendlyName?: string;
   actions: string;
   productCategory: string;
   taskCategory: string;
@@ -15,108 +16,6 @@ interface UVPEntry {
   description: string;
   roleAccess: Record<string, string>;
 }
-
-interface NodePosition {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-// Parse CSV data into our format
-const rawCSVData = `UVP/UVB Name,Actions,Product Category,Task Category,Action Type,Sensitivity Level,Description,super_admin,admin,view_only,developer,support,support_associate,analyst,refund_analyst,dispute_analyst,issuing_support_agent,tax_analyst,identity_analyst,iam_admin,sandbox_admin
-account_admin_management_operations,write,Account & Connect,Manage team access,Destructive,Non-sensitive,Full administrative account management,write,write,,write,,,,,,,,,,
-account_admin_management_operations,write,Account & Connect,Configure settings,Destructive,Non-sensitive,Full administrative account management,write,write,,write,,,,,,,,,,
-account_operations,"read, write",Account & Connect,Configure settings,Read + Write,Non-sensitive,Read access to base account details,write,write,read,,write,write,read,read,,,,,,read
-account_operations,"read, write",Account & Connect,Monitor platform,Read + Write,Non-sensitive,Read access to base account details,write,write,read,,write,write,read,read,,,,,,read
-accounts_kyc_basic,read,Account & Connect,Verify identity,Read-only,Contains PII,Read access to basic KYC fields,read,read,read,,,,,,,,read,,,
-accounts_kyc_basic,read,Account & Connect,Handle customer issues,Read-only,Contains PII,Read access to basic KYC fields,read,read,read,,,,,,,,read,,,
-application_fee_operations,"read, write",Account & Connect,Monitor platform,Read + Write,Financial data,Application fees for platforms,write,write,read,,write,,write,,,,,,,
-application_fee_operations,"read, write",Account & Connect,Export & analyze data,Read + Write,Financial data,Application fees for platforms,write,write,read,,write,,write,,,,,,,
-connect_settings,write,Account & Connect,Configure settings,Administrative,Non-sensitive,Manage Connect settings,write,write,,,write,write,,,,,,,,
-connect_settings,write,Account & Connect,Monitor platform,Administrative,Non-sensitive,Manage Connect settings,write,write,,,write,write,,,,,,,,
-connected_account_operations,"read, write",Account & Connect,Monitor platform,Read + Write,Contains PII,Connected accounts management,write,write,read,write,write,write,read,,,,,,,
-connected_account_operations,"read, write",Account & Connect,Handle customer issues,Read + Write,Contains PII,Connected accounts management,write,write,read,write,write,write,read,,,,,,,
-embeddable_key_admin,write,Account & Connect,Configure settings,Administrative,Payment credentials,Embeddable keys admin,write,write,,,,,,,,,,,,
-embeddable_key_admin,write,Account & Connect,Develop & integrate,Administrative,Payment credentials,Embeddable keys admin,write,write,,,,,,,,,,,,
-sandbox_creation,write,Account & Connect,Develop & integrate,Create & update,Non-sensitive,Create sandbox organizations,write,write,,write,,,,,,,,,,write
-team_management,"read, write",Account & Connect,Manage team access,Administrative,Non-sensitive,Manage team members and roles,write,write,read,,,,,,,,,,write,
-team_management,"read, write",Account & Connect,Configure settings,Administrative,Non-sensitive,Manage team members and roles,write,write,read,,,,,,,,,,write,
-sensitive_resources,read,Admin,Develop & integrate,Read-only,Payment credentials,API keys and secrets,read,read,read,read,,,,,,,,,,
-sensitive_resources,read,Admin,Configure settings,Read-only,Payment credentials,API keys and secrets,read,read,read,read,,,,,,,,,,
-billing_operations,"read, write",Billing & Subscriptions,Manage billing,Read + Write,Financial data,Billing meters and bills,write,write,read,write,,,write,,,,,,,
-billing_operations,"read, write",Billing & Subscriptions,Export & analyze data,Read + Write,Financial data,Billing meters and bills,write,write,read,write,,,write,,,,,,,
-billing_settings_operations,"read, write",Billing & Subscriptions,Configure settings,Administrative,Non-sensitive,Billing settings and profiles,write,write,read,write,write,write,write,read,read,,,,,
-billing_settings_operations,"read, write",Billing & Subscriptions,Manage billing,Administrative,Non-sensitive,Billing settings and profiles,write,write,read,write,write,write,write,read,read,,,,,
-credit_note_operations,"read, write",Billing & Subscriptions,Handle customer issues,Read + Write,Financial data,Manage credit notes,write,write,read,write,write,write,write,write,,,,,,
-credit_note_operations,"read, write",Billing & Subscriptions,Manage billing,Read + Write,Financial data,Manage credit notes,write,write,read,write,write,write,write,write,,,,,,
-invoice_operations,"read, write",Billing & Subscriptions,Handle customer issues,Read + Write,Financial data,Manage invoices and quotes,write,write,read,write,write,write,write,read,read,,,,,
-invoice_operations,"read, write",Billing & Subscriptions,Manage billing,Read + Write,Financial data,Manage invoices and quotes,write,write,read,write,write,write,write,read,read,,,,,
-invoice_operations,"read, write",Billing & Subscriptions,Export & analyze data,Read + Write,Financial data,Manage invoices and quotes,write,write,read,write,write,write,write,read,read,,,,,
-subscription_operations,"read, write",Billing & Subscriptions,Handle customer issues,Read + Write,Financial data,Manage subscriptions,write,write,read,write,write,write,write,read,read,,,,,
-subscription_operations,"read, write",Billing & Subscriptions,Manage billing,Read + Write,Financial data,Manage subscriptions,write,write,read,write,write,write,write,read,read,,,,,
-capital_operations,"read, write",Capital & Treasury,Monitor financials,Read + Write,Financial data,Capital for Platforms,write,write,read,write,,,write,,,,,,,
-capital_operations,"read, write",Capital & Treasury,Export & analyze data,Read + Write,Financial data,Capital for Platforms,write,write,read,write,,,write,,,,,,,
-treasury_operations,"read, write",Capital & Treasury,Monitor financials,Read + Write,Financial data,Treasury financial accounts,write,write,read,,,,read,,,,,,,
-treasury_operations,"read, write",Capital & Treasury,Export & analyze data,Read + Write,Financial data,Treasury financial accounts,write,write,read,,,,read,,,,,,,
-identity_verification_operations,"read, write",Compliance & Identity,Verify identity,Read + Write,Contains PII,Identity verification,write,write,read,write,,,write,,,,,write,,
-identity_verification_operations,"read, write",Compliance & Identity,Handle customer issues,Read + Write,Contains PII,Identity verification,write,write,read,write,,,write,,,,,write,,
-climate_operations,"read, write",Crypto & Climate,Process transactions,Read + Write,Non-sensitive,Climate orders,write,write,read,write,,,write,,,,,,,
-climate_operations,"read, write",Crypto & Climate,Configure settings,Read + Write,Non-sensitive,Climate orders,write,write,read,write,,,write,,,,,,,
-crypto_operations,"read, write",Crypto & Climate,Process transactions,Read + Write,Non-sensitive,Crypto financial accounts,write,write,read,write,,,write,,,,,,,
-customer_operations,"read, write",Customers,Handle customer issues,Read + Write,Contains PII,Manage customer profiles,write,write,read,write,write,write,write,read,read,,,,,
-customer_operations,"read, write",Customers,Export & analyze data,Read + Write,Contains PII,Manage customer profiles,write,write,read,write,write,write,write,read,read,,,,,
-customer_portal_operations,write,Customers,Configure settings,Create & update,Non-sensitive,Create customer portals,write,write,,,,,write,,,,,,,
-customer_portal_operations,write,Customers,Handle customer issues,Create & update,Non-sensitive,Create customer portals,write,write,,,,,write,,,,,,,
-dispute_operations,"read, write",Disputes & Fraud Prevention,Handle customer issues,Read + Write,Non-sensitive,Manage disputes,write,write,read,write,write,write,write,read,write,,,,,
-dispute_operations,"read, write",Disputes & Fraud Prevention,Manage disputes & fraud,Read + Write,Non-sensitive,Manage disputes,write,write,read,write,write,write,write,read,write,,,,,
-radar_operations,"read, write",Disputes & Fraud Prevention,Configure settings,Read + Write,Non-sensitive,Configure Radar fraud rules,write,write,read,write,read,read,read,read,,,,,,
-radar_operations,"read, write",Disputes & Fraud Prevention,Manage disputes & fraud,Read + Write,Non-sensitive,Configure Radar fraud rules,write,write,read,write,read,read,read,read,,,,,,
-review_operations,write,Disputes & Fraud Prevention,Handle customer issues,Create & update,Non-sensitive,Action fraud reviews,write,write,,,write,write,write,,,,,,,
-review_operations,write,Disputes & Fraud Prevention,Manage disputes & fraud,Create & update,Non-sensitive,Action fraud reviews,write,write,,,write,write,write,,,,,,,
-balance_operations,read,Financial Operations,Monitor financials,Read-only,Financial data,View account balances,read,read,read,,read,read,read,read,read,,,,,
-balance_operations,read,Financial Operations,Export & analyze data,Read-only,Financial data,View account balances,read,read,read,,read,read,read,read,read,,,,,
-balance_transfer_operations,write,Financial Operations,Transfer funds,Destructive,Financial data,Transfer balances (high risk),write,write,,,,,write,,,,,,,
-payout_operations,"read, write",Financial Operations,Transfer funds,Read + Write,Financial data,Manage payouts,write,write,read,,,,write,,,,,,,
-payout_operations,"read, write",Financial Operations,Monitor financials,Read + Write,Financial data,Manage payouts,write,write,read,,,,write,,,,,,,
-transfer_operations,"read, write",Financial Operations,Transfer funds,Read + Write,Financial data,Transfer operations,write,write,read,,,,write,,,,,,,
-transfer_operations,"read, write",Financial Operations,Monitor financials,Read + Write,Financial data,Transfer operations,write,write,read,,,,write,,,,,,,
-data_export_operations,read,Integrations & Data,Export & analyze data,Read-only,Financial data + PII,Export bulk data,read,read,read,read,,,read,,,,,,,
-dev_integration,"read, write",Integrations & Data,Develop & integrate,Read + Write,Non-sensitive,Development tools,write,write,read,write,,,write,,,,,,,
-reporting_operations,"read, write",Integrations & Data,Export & analyze data,Read + Write,Financial data,Run and access reports,write,write,"read, write",write,write,write,write,read,,,,,,
-reporting_operations,"read, write",Integrations & Data,Monitor financials,Read + Write,Financial data,Run and access reports,write,write,"read, write",write,write,write,write,read,,,,,,
-stripe_apps_development,"read, write",Integrations & Data,Develop & integrate,Read + Write,Non-sensitive,Build Stripe Apps,write,write,read,write,,,write,,,,,,,
-issuing_card_operations,"read, write",Issuing & Cards,Handle customer issues,Read + Write,Payment credentials,Manage issuing cards,write,write,read,,write,"read, write",write,,,,,,,
-issuing_card_operations,"read, write",Issuing & Cards,Manage cards,Read + Write,Payment credentials,Manage issuing cards,write,write,read,,write,"read, write",write,,,,,,,
-charge,read,Payments,Handle customer issues,Read-only,Non-sensitive,Charge read access,,,read,,,,,read,read,,,,,
-charge,read,Payments,Export & analyze data,Read-only,Non-sensitive,Charge read access,,,read,,,,,read,read,,,,,
-charge_operations,write,Payments,Handle customer issues,Create & update,Financial data,Process charges and refunds,write,write,,write,write,write,write,,,,,,,
-charge_operations,write,Payments,Process transactions,Create & update,Financial data,Process charges and refunds,write,write,,write,write,write,write,,,,,,,
-payment_intent,read,Payments,Handle customer issues,Read-only,Non-sensitive,Payment intent read,,,read,,,,,read,read,,,,,
-payment_intent,read,Payments,Export & analyze data,Read-only,Non-sensitive,Payment intent read,,,read,,,,,read,read,,,,,
-payment_intent_operations,write,Payments,Handle customer issues,Create & update,Non-sensitive,Manage payment intents,write,write,,write,write,write,write,,,,,,,
-payment_intent_operations,write,Payments,Process transactions,Create & update,Non-sensitive,Manage payment intents,write,write,,write,write,write,write,,,,,,,
-payment_processing,"read, write",Payments,Process transactions,Read + Write,Payment credentials,Manage payment methods,write,write,read,write,write,write,write,read,read,,,,,
-payment_processing,"read, write",Payments,Configure settings,Read + Write,Payment credentials,Manage payment methods,write,write,read,write,write,write,write,read,read,,,,,
-checkout_operations,"read, write",Products & Orders,Process transactions,Read + Write,Non-sensitive,Manage checkout,write,write,read,write,write,read,write,,,,,,,
-checkout_operations,"read, write",Products & Orders,Configure settings,Read + Write,Non-sensitive,Manage checkout,write,write,read,write,write,read,write,,,,,,,
-order_operations,"read, write",Products & Orders,Handle customer issues,Read + Write,Non-sensitive,Manage orders,write,write,read,write,write,write,write,read,read,,,,,
-order_operations,"read, write",Products & Orders,Process transactions,Read + Write,Non-sensitive,Manage orders,write,write,read,write,write,write,write,read,read,,,,,
-order_refund_operations,write,Products & Orders,Handle customer issues,Create & update,Financial data,Process order refunds,write,write,,,,,write,write,,,,,,
-product_operations,"read, write",Products & Orders,Manage catalog,Read + Write,Non-sensitive,Manage products and pricing,write,write,read,,write,read,write,read,read,,,,,
-product_operations,"read, write",Products & Orders,Configure settings,Read + Write,Non-sensitive,Manage products and pricing,write,write,read,,write,read,write,read,read,,,,,
-promotion_operations,"read, write",Products & Orders,Manage catalog,Read + Write,Non-sensitive,Manage promotions,write,write,read,write,write,write,write,,,,,,,
-promotion_operations,"read, write",Products & Orders,Configure settings,Read + Write,Non-sensitive,Manage promotions,write,write,read,write,write,write,write,,,,,,,
-dashboard_baseline,read,Support & Operations,All tasks,Read-only,Non-sensitive,Basic Dashboard access (required),read,read,read,read,read,read,read,read,read,read,read,read,read,read
-settings_security,write,Support & Operations,Configure settings,Administrative,Payment credentials,Security configuration,,,,,,,,,,,,,write,
-settings_security,write,Support & Operations,Manage team access,Administrative,Payment credentials,Security configuration,,,,,,,,,,,,,write,
-tax_automation_operations,"read, write",Tax,Configure settings,Read + Write,Non-sensitive,Tax automation rules,write,write,read,write,write,,write,,,,,,,
-tax_automation_operations,"read, write",Tax,Monitor tax compliance,Read + Write,Non-sensitive,Tax automation rules,write,write,read,write,write,,write,,,,,,,
-tax_filing_operations,"read, write",Tax,Configure settings,Read + Write,Financial data + PII,Tax filing management,write,write,read,read,,,write,,,,,,,
-tax_filing_operations,"read, write",Tax,Monitor tax compliance,Read + Write,Financial data + PII,Tax filing management,write,write,read,read,,,write,,,,,,,
-terminal_infrastructure,read,Terminal,Monitor hardware,Read-only,Non-sensitive,View terminal infrastructure,read,read,read,,read,read,read,,,,,,,
-terminal_operations,write,Terminal,Manage hardware,Create & update,Non-sensitive,Terminal POS operations,write,write,,,,,write,,,,,,,
-terminal_operations,write,Terminal,Process transactions,Create & update,Non-sensitive,Terminal POS operations,write,write,,,,,write,,,,,,,`;
 
 const roleNames = [
   "super_admin", "admin", "view_only", "developer", "support",
@@ -141,69 +40,80 @@ const roleDisplayNames: Record<string, string> = {
   sandbox_admin: "Sandbox Admin"
 };
 
+// Parse a single CSV row (handles quoted commas)
+function parseCSVRow(line: string): string[] {
+  const values: string[] = [];
+  let current = '';
+  let inQuotes = false;
+  for (const char of line) {
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      values.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  values.push(current.trim());
+  return values;
+}
+
 function parseCSV(csv: string): UVPEntry[] {
   const lines = csv.trim().split('\n');
-  const headers = lines[0].split(',');
+  if (lines.length < 2) return [];
+  const headers = parseCSVRow(lines[0]);
+  const hasHumanFriendly = headers[1] === "Human-Friendly Name";
+  // New format: 0=uvpName, 1=humanFriendlyName, 2=actions, 3=productCategory, 4=taskCategory, 5=actionType, 6=sensitivityLevel, 7=description, 8+=roles
+  // Old format: 0=uvpName, 1=actions, 2=productCategory, 3=taskCategory, 4=actionType, 5=sensitivityLevel, 6=description, 7+=roles
+  const descIdx = hasHumanFriendly ? 7 : 6;
+  const roleStartIdx = hasHumanFriendly ? 8 : 7;
   const entries: UVPEntry[] = [];
-  
+
   for (let i = 1; i < lines.length; i++) {
-    const values: string[] = [];
-    let current = '';
-    let inQuotes = false;
-    
-    for (const char of lines[i]) {
-      if (char === '"') {
-        inQuotes = !inQuotes;
-      } else if (char === ',' && !inQuotes) {
-        values.push(current.trim());
-        current = '';
-      } else {
-        current += char;
-      }
-    }
-    values.push(current.trim());
-    
+    const values = parseCSVRow(lines[i]);
     const roleAccess: Record<string, string> = {};
     roleNames.forEach((role, idx) => {
-      const value = values[7 + idx]?.trim();
+      const value = values[roleStartIdx + idx]?.trim();
       if (value) {
         roleAccess[role] = value;
       }
     });
-    
+
     entries.push({
       uvpName: values[0],
-      actions: values[1],
-      productCategory: values[2],
-      taskCategory: values[3],
-      actionType: values[4],
-      sensitivityLevel: values[5],
-      description: values[6],
+      ...(hasHumanFriendly && values[1] && { humanFriendlyName: values[1] }),
+      actions: hasHumanFriendly ? values[2] : values[1],
+      productCategory: hasHumanFriendly ? values[3] : values[2],
+      taskCategory: hasHumanFriendly ? values[4] : values[3],
+      actionType: hasHumanFriendly ? values[5] : values[4],
+      sensitivityLevel: hasHumanFriendly ? values[6] : values[5],
+      description: values[descIdx] ?? "",
       roleAccess,
     });
   }
-  
+
   return entries;
 }
 
-// Consolidate entries by UVP name (combine role access)
+// Consolidate entries by UVP name (combine role access, keep humanFriendlyName)
 function consolidateEntries(entries: UVPEntry[]): UVPEntry[] {
   const map = new Map<string, UVPEntry>();
-  
   for (const entry of entries) {
     const existing = map.get(entry.uvpName);
     if (existing) {
-      // Merge role access
       for (const [role, access] of Object.entries(entry.roleAccess)) {
         if (!existing.roleAccess[role]) {
           existing.roleAccess[role] = access;
         }
       }
+      if (entry.humanFriendlyName && !existing.humanFriendlyName) {
+        existing.humanFriendlyName = entry.humanFriendlyName;
+      }
     } else {
       map.set(entry.uvpName, { ...entry, roleAccess: { ...entry.roleAccess } });
     }
   }
-  
   return Array.from(map.values());
 }
 
@@ -241,6 +151,11 @@ function toDisplayName(apiName: string): string {
     .join(' ');
 }
 
+function getUvpDisplayName(uvpName: string, consolidated: UVPEntry[]): string {
+  const entry = consolidated.find((e) => e.uvpName === uvpName);
+  return entry?.humanFriendlyName || toDisplayName(uvpName);
+}
+
 type SelectionType = "actionType" | "uvp" | "role" | null;
 
 export default function PermissionsMapPage() {
@@ -250,9 +165,26 @@ export default function PermissionsMapPage() {
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [entries, setEntries] = useState<UVPEntry[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  
-  const entries = useMemo(() => parseCSV(rawCSVData), []);
+
+  useEffect(() => {
+    fetch("/uvp-permissions-map.csv")
+      .then((res) => {
+        if (!res.ok) throw new Error(`Failed to load CSV: ${res.status}`);
+        return res.text();
+      })
+      .then((csv) => {
+        setEntries(parseCSV(csv));
+        setLoadError(null);
+      })
+      .catch((err) => {
+        setLoadError(err instanceof Error ? err.message : "Failed to load data");
+        setEntries([]);
+      });
+  }, []);
+
   const consolidatedEntries = useMemo(() => consolidateEntries(entries), [entries]);
   
   // Get unique action types
@@ -431,7 +363,7 @@ export default function PermissionsMapPage() {
       const actions = relationships.uvpToActionTypes.get(selection.id) || new Set();
       const roles = relationships.uvpToRoles.get(selection.id) || new Set();
       return {
-        title: toDisplayName(selection.id),
+        title: getUvpDisplayName(selection.id, consolidatedEntries),
         subtitle: entry?.description || "Permission",
         actionTypes: Array.from(actions),
         roleCount: roles.size,
@@ -526,6 +458,21 @@ export default function PermissionsMapPage() {
             }}
           />
           
+          {/* Loading / error */}
+          {entries.length === 0 && !loadError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-[#0A0F1A]/80 z-10">
+              <div className="text-white/60">Loading permissions data…</div>
+            </div>
+          )}
+          {loadError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-[#0A0F1A]/80 z-10">
+              <div className="text-center max-w-md px-4">
+                <p className="text-red-400 font-medium">Could not load map data</p>
+                <p className="text-sm text-white/50 mt-1">{loadError}</p>
+                <p className="text-xs text-white/40 mt-2">Ensure public/uvp-permissions-map.csv exists.</p>
+              </div>
+            </div>
+          )}
           {/* Zoomable/pannable content */}
           <div 
             className="absolute inset-0 flex items-center justify-center"
@@ -535,6 +482,7 @@ export default function PermissionsMapPage() {
             }}
           >
             {/* Three column layout */}
+            {entries.length > 0 && (
             <div className="flex gap-12 items-start py-8">
               {/* Column 1: Action Types */}
               <div className="flex flex-col gap-3 min-w-[180px]">
@@ -613,8 +561,8 @@ export default function PermissionsMapPage() {
                           className="w-2 h-2 rounded-full flex-shrink-0"
                           style={{ backgroundColor: colors.border }}
                         />
-                        <span className="text-xs font-mono text-white/90 truncate flex-1">
-                          {uvp}
+                        <span className="text-xs text-white/90 truncate flex-1" title={uvp}>
+                          {getUvpDisplayName(uvp, consolidatedEntries)}
                         </span>
                         <span className="text-[10px] text-white/40">
                           {roleCount} roles
@@ -670,6 +618,7 @@ export default function PermissionsMapPage() {
                 })}
               </div>
             </div>
+            )}
           </div>
           
           {/* Legend */}
@@ -840,8 +789,9 @@ export default function PermissionsMapPage() {
                         key={uvp}
                         onClick={() => handleClick("uvp", uvp)}
                         className="text-left px-2 py-1.5 rounded bg-white/5 hover:bg-white/10 transition-colors"
+                        title={uvp}
                       >
-                        <span className="text-xs font-mono text-white/70">{uvp}</span>
+                        <span className="text-xs text-white/70">{getUvpDisplayName(uvp, consolidatedEntries)}</span>
                       </button>
                     ))}
                     {selectedDetails.uvps.length > 50 && (

@@ -357,11 +357,69 @@ export const roleCategories: RoleCategory[] = [
 // All roles flattened
 export const allRoles: Role[] = roleCategories.flatMap((cat) => cat.roles);
 
+// Human-friendly display names from CSV (UVP Mental Models with Role Mappings)
+const HUMAN_FRIENDLY_NAMES: Record<string, string> = {
+  account_admin_management_operations: "Account Administration",
+  account_operations: "Account Management",
+  accounts_kyc_basic: "Basic Identity Verification",
+  application_fee_operations: "Application Fees",
+  connect_settings: "Connect Platform Settings",
+  connected_account_operations: "Connected Account Management",
+  embeddable_key_admin: "Embedded Payment Keys",
+  sandbox_creation: "Sandbox Creation",
+  team_management: "Team & Role Management",
+  sensitive_resources: "API Keys & Secrets",
+  billing_operations: "Billing & Usage Metering",
+  billing_settings_operations: "Billing Settings & Profiles",
+  credit_note_operations: "Credit Notes",
+  invoice_operations: "Invoices & Quotes",
+  subscription_operations: "Subscriptions",
+  capital_operations: "Capital Financing",
+  treasury_operations: "Treasury Accounts",
+  identity_verification_operations: "Identity Verification",
+  climate_operations: "Climate Orders",
+  crypto_operations: "Crypto Accounts",
+  customer_operations: "Customer Profiles",
+  customer_portal_operations: "Customer Portal",
+  dispute_operations: "Disputes",
+  radar_operations: "Fraud Prevention Rules",
+  review_operations: "Fraud Reviews",
+  balance_operations: "Account Balance",
+  balance_transfer_operations: "Balance Transfers",
+  payout_operations: "Payouts",
+  transfer_operations: "Transfers",
+  data_export_operations: "Data Export",
+  dev_integration: "Developer Tools",
+  reporting_operations: "Financial Reports",
+  stripe_apps_development: "Stripe Apps Development",
+  issuing_card_operations: "Issuing Cards",
+  charge: "Charges (Read Only)",
+  charge_operations: "Charges & Refunds",
+  payment_intent: "Payment Intents (Read Only)",
+  payment_intent_operations: "Payment Intents",
+  payment_processing: "Payment Methods",
+  checkout_operations: "Checkout Sessions",
+  order_operations: "Orders",
+  order_refund_operations: "Order Refunds",
+  product_operations: "Products & Pricing",
+  promotion_operations: "Promotions & Coupons",
+  dashboard_baseline: "Dashboard Access (Basic)",
+  settings_security: "Security Settings",
+  tax_automation_operations: "Tax Automation",
+  tax_filing_operations: "Tax Filing",
+  terminal_infrastructure: "Terminal Hardware (View)",
+  terminal_operations: "Terminal Point of Sale",
+};
+
+function getPermissionDisplayName(apiName: string): string {
+  return HUMAN_FRIENDLY_NAMES[apiName] ?? toDisplayName(apiName);
+}
+
 // Permission data from CSV (consolidated by API name)
 export const permissions: Permission[] = [
   {
     apiName: "account_admin_management_operations",
-    displayName: toDisplayName("account_admin_management_operations"),
+    displayName: getPermissionDisplayName("account_admin_management_operations"),
     description: "Administrative account operations (does not include team member management)",
     productCategory: "Account & Connect",
     taskCategories: ["Configure settings"],
@@ -375,7 +433,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "account_operations",
-    displayName: toDisplayName("account_operations"),
+    displayName: getPermissionDisplayName("account_operations"),
     description: "Read access to base account details",
     productCategory: "Account & Connect",
     taskCategories: ["Configure settings", "Monitor platform"],
@@ -389,7 +447,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "accounts_kyc_basic",
-    displayName: toDisplayName("accounts_kyc_basic"),
+    displayName: getPermissionDisplayName("accounts_kyc_basic"),
     description: "Read access to basic KYC fields",
     productCategory: "Account & Connect",
     taskCategories: ["Verify identity", "Handle customer issues"],
@@ -403,7 +461,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "application_fee_operations",
-    displayName: toDisplayName("application_fee_operations"),
+    displayName: getPermissionDisplayName("application_fee_operations"),
     description: "Application fees for platforms",
     productCategory: "Account & Connect",
     taskCategories: ["Monitor platform", "Export & analyze data"],
@@ -417,7 +475,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "connect_settings",
-    displayName: toDisplayName("connect_settings"),
+    displayName: getPermissionDisplayName("connect_settings"),
     description: "Manage Connect settings",
     productCategory: "Account & Connect",
     taskCategories: ["Configure settings", "Monitor platform"],
@@ -431,7 +489,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "connected_account_operations",
-    displayName: toDisplayName("connected_account_operations"),
+    displayName: getPermissionDisplayName("connected_account_operations"),
     description: "Connected accounts management",
     productCategory: "Account & Connect",
     taskCategories: ["Monitor platform", "Handle customer issues"],
@@ -445,7 +503,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "embeddable_key_admin",
-    displayName: toDisplayName("embeddable_key_admin"),
+    displayName: getPermissionDisplayName("embeddable_key_admin"),
     description: "Embeddable keys admin",
     productCategory: "Account & Connect",
     taskCategories: ["Configure settings", "Develop & integrate"],
@@ -459,7 +517,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "sandbox_creation",
-    displayName: toDisplayName("sandbox_creation"),
+    displayName: getPermissionDisplayName("sandbox_creation"),
     description: "Create sandbox organizations",
     productCategory: "Account & Connect",
     taskCategories: ["Develop & integrate"],
@@ -473,7 +531,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "team_management",
-    displayName: toDisplayName("team_management"),
+    displayName: getPermissionDisplayName("team_management"),
     description: "Invite, remove, and change roles for team members",
     productCategory: "Account & Connect",
     taskCategories: ["Manage team access"],
@@ -488,7 +546,7 @@ export const permissions: Permission[] = [
   // Admin
   {
     apiName: "sensitive_resources",
-    displayName: toDisplayName("sensitive_resources"),
+    displayName: getPermissionDisplayName("sensitive_resources"),
     description: "API keys and secrets",
     productCategory: "Admin",
     taskCategories: ["Develop & integrate", "Configure settings"],
@@ -503,7 +561,7 @@ export const permissions: Permission[] = [
   // Billing & Subscriptions
   {
     apiName: "billing_operations",
-    displayName: toDisplayName("billing_operations"),
+    displayName: getPermissionDisplayName("billing_operations"),
     description: "Billing meters and bills",
     productCategory: "Billing & Subscriptions",
     taskCategories: ["Manage billing", "Export & analyze data"],
@@ -517,7 +575,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "billing_settings_operations",
-    displayName: toDisplayName("billing_settings_operations"),
+    displayName: getPermissionDisplayName("billing_settings_operations"),
     description: "Billing settings and profiles",
     productCategory: "Billing & Subscriptions",
     taskCategories: ["Configure settings", "Manage billing"],
@@ -531,7 +589,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "credit_note_operations",
-    displayName: toDisplayName("credit_note_operations"),
+    displayName: getPermissionDisplayName("credit_note_operations"),
     description: "Manage credit notes",
     productCategory: "Billing & Subscriptions",
     taskCategories: ["Handle customer issues", "Manage billing"],
@@ -545,7 +603,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "invoice_operations",
-    displayName: toDisplayName("invoice_operations"),
+    displayName: getPermissionDisplayName("invoice_operations"),
     description: "Manage invoices and quotes",
     productCategory: "Billing & Subscriptions",
     taskCategories: ["Handle customer issues", "Manage billing", "Export & analyze data"],
@@ -559,7 +617,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "subscription_operations",
-    displayName: toDisplayName("subscription_operations"),
+    displayName: getPermissionDisplayName("subscription_operations"),
     description: "Manage subscriptions",
     productCategory: "Billing & Subscriptions",
     taskCategories: ["Handle customer issues", "Manage billing"],
@@ -574,7 +632,7 @@ export const permissions: Permission[] = [
   // Capital & Treasury
   {
     apiName: "capital_operations",
-    displayName: toDisplayName("capital_operations"),
+    displayName: getPermissionDisplayName("capital_operations"),
     description: "Capital for Platforms",
     productCategory: "Capital & Treasury",
     taskCategories: ["Monitor financials", "Export & analyze data"],
@@ -588,7 +646,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "treasury_operations",
-    displayName: toDisplayName("treasury_operations"),
+    displayName: getPermissionDisplayName("treasury_operations"),
     description: "Treasury financial accounts",
     productCategory: "Capital & Treasury",
     taskCategories: ["Monitor financials", "Export & analyze data"],
@@ -603,7 +661,7 @@ export const permissions: Permission[] = [
   // Compliance & Identity
   {
     apiName: "identity_verification_operations",
-    displayName: toDisplayName("identity_verification_operations"),
+    displayName: getPermissionDisplayName("identity_verification_operations"),
     description: "Identity verification",
     productCategory: "Compliance & Identity",
     taskCategories: ["Verify identity", "Handle customer issues"],
@@ -618,7 +676,7 @@ export const permissions: Permission[] = [
   // Crypto & Climate
   {
     apiName: "climate_operations",
-    displayName: toDisplayName("climate_operations"),
+    displayName: getPermissionDisplayName("climate_operations"),
     description: "Climate orders",
     productCategory: "Crypto & Climate",
     taskCategories: ["Process transactions", "Configure settings"],
@@ -632,7 +690,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "crypto_operations",
-    displayName: toDisplayName("crypto_operations"),
+    displayName: getPermissionDisplayName("crypto_operations"),
     description: "Crypto financial accounts",
     productCategory: "Crypto & Climate",
     taskCategories: ["Process transactions"],
@@ -647,7 +705,7 @@ export const permissions: Permission[] = [
   // Customers
   {
     apiName: "customer_operations",
-    displayName: toDisplayName("customer_operations"),
+    displayName: getPermissionDisplayName("customer_operations"),
     description: "Manage customer profiles",
     productCategory: "Customers",
     taskCategories: ["Handle customer issues", "Export & analyze data"],
@@ -661,7 +719,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "customer_portal_operations",
-    displayName: toDisplayName("customer_portal_operations"),
+    displayName: getPermissionDisplayName("customer_portal_operations"),
     description: "Create customer portals",
     productCategory: "Customers",
     taskCategories: ["Configure settings", "Handle customer issues"],
@@ -676,7 +734,7 @@ export const permissions: Permission[] = [
   // Disputes & Fraud Prevention
   {
     apiName: "dispute_operations",
-    displayName: toDisplayName("dispute_operations"),
+    displayName: getPermissionDisplayName("dispute_operations"),
     description: "Manage disputes",
     productCategory: "Disputes & Fraud Prevention",
     taskCategories: ["Handle customer issues", "Manage disputes & fraud"],
@@ -690,7 +748,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "radar_operations",
-    displayName: toDisplayName("radar_operations"),
+    displayName: getPermissionDisplayName("radar_operations"),
     description: "Configure Radar fraud rules",
     productCategory: "Disputes & Fraud Prevention",
     taskCategories: ["Configure settings", "Manage disputes & fraud"],
@@ -704,7 +762,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "review_operations",
-    displayName: toDisplayName("review_operations"),
+    displayName: getPermissionDisplayName("review_operations"),
     description: "Action fraud reviews",
     productCategory: "Disputes & Fraud Prevention",
     taskCategories: ["Handle customer issues", "Manage disputes & fraud"],
@@ -719,7 +777,7 @@ export const permissions: Permission[] = [
   // Financial Operations
   {
     apiName: "balance_operations",
-    displayName: toDisplayName("balance_operations"),
+    displayName: getPermissionDisplayName("balance_operations"),
     description: "View account balances",
     productCategory: "Financial Operations",
     taskCategories: ["Monitor financials", "Export & analyze data"],
@@ -733,7 +791,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "balance_transfer_operations",
-    displayName: toDisplayName("balance_transfer_operations"),
+    displayName: getPermissionDisplayName("balance_transfer_operations"),
     description: "Transfer balances (high risk)",
     productCategory: "Financial Operations",
     taskCategories: ["Transfer funds"],
@@ -747,7 +805,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "payout_operations",
-    displayName: toDisplayName("payout_operations"),
+    displayName: getPermissionDisplayName("payout_operations"),
     description: "Manage payouts",
     productCategory: "Financial Operations",
     taskCategories: ["Transfer funds", "Monitor financials"],
@@ -761,7 +819,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "transfer_operations",
-    displayName: toDisplayName("transfer_operations"),
+    displayName: getPermissionDisplayName("transfer_operations"),
     description: "Transfer operations",
     productCategory: "Financial Operations",
     taskCategories: ["Transfer funds", "Monitor financials"],
@@ -776,7 +834,7 @@ export const permissions: Permission[] = [
   // Integrations & Data
   {
     apiName: "data_export_operations",
-    displayName: toDisplayName("data_export_operations"),
+    displayName: getPermissionDisplayName("data_export_operations"),
     description: "Export bulk data",
     productCategory: "Integrations & Data",
     taskCategories: ["Export & analyze data"],
@@ -790,7 +848,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "dev_integration",
-    displayName: toDisplayName("dev_integration"),
+    displayName: getPermissionDisplayName("dev_integration"),
     description: "Development tools",
     productCategory: "Integrations & Data",
     taskCategories: ["Develop & integrate"],
@@ -804,7 +862,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "reporting_operations",
-    displayName: toDisplayName("reporting_operations"),
+    displayName: getPermissionDisplayName("reporting_operations"),
     description: "Run and access reports",
     productCategory: "Integrations & Data",
     taskCategories: ["Export & analyze data", "Monitor financials"],
@@ -818,7 +876,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "stripe_apps_development",
-    displayName: toDisplayName("stripe_apps_development"),
+    displayName: getPermissionDisplayName("stripe_apps_development"),
     description: "Build Stripe Apps",
     productCategory: "Integrations & Data",
     taskCategories: ["Develop & integrate"],
@@ -833,7 +891,7 @@ export const permissions: Permission[] = [
   // Issuing & Cards
   {
     apiName: "issuing_card_operations",
-    displayName: toDisplayName("issuing_card_operations"),
+    displayName: getPermissionDisplayName("issuing_card_operations"),
     description: "Manage issuing cards",
     productCategory: "Issuing & Cards",
     taskCategories: ["Handle customer issues", "Manage cards"],
@@ -848,7 +906,7 @@ export const permissions: Permission[] = [
   // Payments
   {
     apiName: "charge",
-    displayName: toDisplayName("charge"),
+    displayName: getPermissionDisplayName("charge"),
     description: "Charge read access",
     productCategory: "Payments",
     taskCategories: ["Handle customer issues", "Export & analyze data"],
@@ -862,7 +920,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "charge_operations",
-    displayName: toDisplayName("charge_operations"),
+    displayName: getPermissionDisplayName("charge_operations"),
     description: "Process charges and refunds",
     productCategory: "Payments",
     taskCategories: ["Handle customer issues", "Process transactions"],
@@ -876,7 +934,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "payment_intent",
-    displayName: toDisplayName("payment_intent"),
+    displayName: getPermissionDisplayName("payment_intent"),
     description: "Payment intent read",
     productCategory: "Payments",
     taskCategories: ["Handle customer issues", "Export & analyze data"],
@@ -890,7 +948,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "payment_intent_operations",
-    displayName: toDisplayName("payment_intent_operations"),
+    displayName: getPermissionDisplayName("payment_intent_operations"),
     description: "Manage payment intents",
     productCategory: "Payments",
     taskCategories: ["Handle customer issues", "Process transactions"],
@@ -904,7 +962,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "payment_processing",
-    displayName: toDisplayName("payment_processing"),
+    displayName: getPermissionDisplayName("payment_processing"),
     description: "Manage payment methods",
     productCategory: "Payments",
     taskCategories: ["Process transactions", "Configure settings"],
@@ -919,7 +977,7 @@ export const permissions: Permission[] = [
   // Products & Orders
   {
     apiName: "checkout_operations",
-    displayName: toDisplayName("checkout_operations"),
+    displayName: getPermissionDisplayName("checkout_operations"),
     description: "Manage checkout",
     productCategory: "Products & Orders",
     taskCategories: ["Process transactions", "Configure settings"],
@@ -933,7 +991,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "order_operations",
-    displayName: toDisplayName("order_operations"),
+    displayName: getPermissionDisplayName("order_operations"),
     description: "Manage orders",
     productCategory: "Products & Orders",
     taskCategories: ["Handle customer issues", "Process transactions"],
@@ -947,7 +1005,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "order_refund_operations",
-    displayName: toDisplayName("order_refund_operations"),
+    displayName: getPermissionDisplayName("order_refund_operations"),
     description: "Process order refunds",
     productCategory: "Products & Orders",
     taskCategories: ["Handle customer issues"],
@@ -961,7 +1019,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "product_operations",
-    displayName: toDisplayName("product_operations"),
+    displayName: getPermissionDisplayName("product_operations"),
     description: "Manage products and pricing",
     productCategory: "Products & Orders",
     taskCategories: ["Manage catalog", "Configure settings"],
@@ -975,7 +1033,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "promotion_operations",
-    displayName: toDisplayName("promotion_operations"),
+    displayName: getPermissionDisplayName("promotion_operations"),
     description: "Manage promotions",
     productCategory: "Products & Orders",
     taskCategories: ["Manage catalog", "Configure settings"],
@@ -990,7 +1048,7 @@ export const permissions: Permission[] = [
   // Support & Operations
   {
     apiName: "dashboard_baseline",
-    displayName: toDisplayName("dashboard_baseline"),
+    displayName: getPermissionDisplayName("dashboard_baseline"),
     description: "Basic Dashboard access (required)",
     productCategory: "Support & Operations",
     taskCategories: ["All tasks"],
@@ -1004,7 +1062,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "settings_security",
-    displayName: toDisplayName("settings_security"),
+    displayName: getPermissionDisplayName("settings_security"),
     description: "Security configuration",
     productCategory: "Support & Operations",
     taskCategories: ["Configure settings", "Manage team access"],
@@ -1019,7 +1077,7 @@ export const permissions: Permission[] = [
   // Tax
   {
     apiName: "tax_automation_operations",
-    displayName: toDisplayName("tax_automation_operations"),
+    displayName: getPermissionDisplayName("tax_automation_operations"),
     description: "Tax automation rules",
     productCategory: "Tax",
     taskCategories: ["Configure settings", "Monitor tax compliance"],
@@ -1033,7 +1091,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "tax_filing_operations",
-    displayName: toDisplayName("tax_filing_operations"),
+    displayName: getPermissionDisplayName("tax_filing_operations"),
     description: "Tax filing management",
     productCategory: "Tax",
     taskCategories: ["Configure settings", "Monitor tax compliance"],
@@ -1048,7 +1106,7 @@ export const permissions: Permission[] = [
   // Terminal
   {
     apiName: "terminal_infrastructure",
-    displayName: toDisplayName("terminal_infrastructure"),
+    displayName: getPermissionDisplayName("terminal_infrastructure"),
     description: "View terminal infrastructure",
     productCategory: "Terminal",
     taskCategories: ["Monitor hardware"],
@@ -1062,7 +1120,7 @@ export const permissions: Permission[] = [
   },
   {
     apiName: "terminal_operations",
-    displayName: toDisplayName("terminal_operations"),
+    displayName: getPermissionDisplayName("terminal_operations"),
     description: "Terminal POS operations",
     productCategory: "Terminal",
     taskCategories: ["Manage hardware", "Process transactions"],
@@ -1079,6 +1137,64 @@ export const permissions: Permission[] = [
 // Helper to get unique values for grouping
 export const productCategories = [...new Set(permissions.map((p) => p.productCategory))].sort();
 export const taskCategories = [...new Set(permissions.flatMap((p) => p.taskCategories))].sort();
+
+// Bundle group descriptions (used in BundleCard when bundled view is active)
+export const GROUP_DESCRIPTIONS: Record<string, Record<string, string>> = {
+  productCategory: {
+    "Account & Connect": "Core account settings, connected accounts, team management, and platform configuration.",
+    "Admin": "API keys, secrets, and sensitive administrative resources.",
+    "Billing & Subscriptions": "Invoices, subscriptions, credit notes, and billing configuration.",
+    "Capital & Treasury": "Capital financing programs and treasury financial accounts.",
+    "Compliance & Identity": "Identity verification workflows and compliance-related operations.",
+    "Crypto & Climate": "Crypto accounts and Stripe Climate order management.",
+    "Customers": "Customer profiles, portal configuration, and customer data management.",
+    "Disputes & Fraud Prevention": "Dispute handling, Radar fraud rules, and fraud review actions.",
+    "Financial Operations": "Account balances, payouts, fund transfers, and balance operations.",
+    "Integrations & Data": "Developer tools, data exports, reports, and Stripe Apps.",
+    "Issuing & Cards": "Issuing card management and cardholder operations.",
+    "Payments": "Charges, payment intents, refunds, and payment method configuration.",
+    "Products & Orders": "Product catalog, pricing, checkout sessions, and order management.",
+    "Support & Operations": "Dashboard baseline access and security settings.",
+    "Tax": "Tax automation rules and tax filing management.",
+    "Terminal": "Terminal hardware and point-of-sale operations.",
+  },
+  taskCategory: {
+    "All tasks": "Baseline access required for all Dashboard users.",
+    "Configure settings": "Modify account, billing, and product settings.",
+    "Develop & integrate": "API keys, webhooks, developer tools, and Stripe Apps.",
+    "Export & analyze data": "Reports, data exports, and analytics access.",
+    "Handle customer issues": "Customer support, disputes, refunds, and billing inquiries.",
+    "Manage billing": "Invoices, subscriptions, credit notes, and billing meters.",
+    "Manage cards": "Issuing card lifecycle and cardholder management.",
+    "Manage catalog": "Products, pricing, and promotions management.",
+    "Manage disputes & fraud": "Dispute resolution and fraud prevention rule configuration.",
+    "Manage hardware": "Terminal device management and POS configuration.",
+    "Manage team access": "Team member invitations, role assignments, and security settings.",
+    "Monitor financials": "Balance monitoring, payouts, and financial account oversight.",
+    "Monitor hardware": "View terminal infrastructure and device status.",
+    "Monitor platform": "Platform health, connected accounts, and application fees.",
+    "Monitor tax compliance": "Tax automation and filing oversight.",
+    "Process transactions": "Create charges, payment intents, and checkout sessions.",
+    "Transfer funds": "Balance transfers and payout operations.",
+    "Verify identity": "KYC verification and identity document review.",
+  },
+  operationType: {
+    "Read-only": "View-only access with no ability to create, edit, or delete resources.",
+    "Write": "Create, update, or delete resources (may not include read access).",
+    "Read + Write": "Full access to view and modify resources.",
+  },
+  riskLevel: {
+    "Standard": "Routine operations with minimal risk of unintended impact.",
+    "Elevated": "Administrative operations that can change settings or access controls.",
+    "Critical": "High-impact operations involving fund transfers or account-level changes.",
+  },
+  sensitivity: {
+    "PII": "Permissions that access personally identifiable customer information.",
+    "Financial Data": "Permissions involving financial records, balances, or transaction data.",
+    "Payment Credentials": "Permissions with access to API keys, secrets, or payment tokens.",
+    "Non-sensitive": "Permissions that don't involve PII, financial data, or credentials.",
+  },
+};
 export const operationTypes = [...new Set(permissions.map((p) => p.operationType))].sort();
 export const riskLevels = ["Standard", "Elevated", "Critical"]; // Ordered by severity
 

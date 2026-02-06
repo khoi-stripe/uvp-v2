@@ -215,28 +215,19 @@ function Checkbox({
   );
 }
 
-// Clipboard icon for API name
-function ClipboardIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path fillRule="evenodd" clipRule="evenodd" d="M4 6.375C4 6.02982 4.27982 5.75 4.625 5.75H7.375C7.72018 5.75 8 6.02982 8 6.375C8 6.72018 7.72018 7 7.375 7H4.625C4.27982 7 4 6.72018 4 6.375Z" fill="#6C7688"/>
-      <path fillRule="evenodd" clipRule="evenodd" d="M4 8.625C4 8.27982 4.27982 8 4.625 8H7.375C7.72018 8 8 8.27982 8 8.625C8 8.97018 7.72018 9.25 7.375 9.25H4.625C4.27982 9.25 4 8.97018 4 8.625Z" fill="#6C7688"/>
-      <path fillRule="evenodd" clipRule="evenodd" d="M8.43699 1.5C8.21497 0.637386 7.43192 0 6.5 0H5.5C4.56808 0 3.78503 0.637386 3.56301 1.5H3C1.89543 1.5 1 2.39543 1 3.5V10C1 11.1046 1.89543 12 3 12H9C10.1046 12 11 11.1046 11 10V3.5C11 2.39543 10.1046 1.5 9 1.5H8.43699ZM4.9 3.1H7.1V2C7.1 1.66863 6.83137 1.4 6.5 1.4H5.5C5.16863 1.4 4.9 1.66863 4.9 2V3.1ZM8 4.5H4C3.72386 4.5 3.5 4.27614 3.5 4V2.9H3C2.66863 2.9 2.4 3.16863 2.4 3.5V10C2.4 10.3314 2.66863 10.6 3 10.6H9C9.33137 10.6 9.6 10.3314 9.6 10V3.5C9.6 3.16863 9.33137 2.9 9 2.9H8.5V4C8.5 4.27614 8.27614 4.5 8 4.5Z" fill="#6C7688"/>
-    </svg>
-  );
-}
-
 // Shared Permission Card Content component (just the text content, no badge)
 function PermissionCardContent({
   permission,
   showTaskCategories = false,
   currentGroup,
   groupBy,
+  insideBundle = false,
 }: {
   permission: Permission;
   showTaskCategories?: boolean;
   currentGroup?: string;
   groupBy?: string;
+  insideBundle?: boolean;
 }) {
   // Get other groups this permission belongs to (excluding current group)
   const getOtherGroups = (): string[] => {
@@ -253,23 +244,14 @@ function PermissionCardContent({
 
   return (
     <div className="flex-1 min-w-0 flex flex-col gap-4">
-      {/* Top section: title, description, API name */}
+      {/* Top section: title and description */}
       <div className="flex flex-col gap-1">
-        {/* Human-readable display name */}
-        <h4 className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">
+        <h4 className={`font-semibold text-[#353A44] ${insideBundle ? "text-[12px] leading-4 tracking-[-0.024px]" : "text-[14px] leading-5 tracking-[-0.15px]"}`}>
           {permission.displayName}
         </h4>
-        {/* Description */}
-        <p className="text-[14px] text-[#596171] leading-5">
+        <p className={`text-[#596171] ${insideBundle ? "text-[12px] leading-4" : "text-[14px] leading-5"}`}>
           {permission.description}
         </p>
-        {/* API name in white container with clipboard icon */}
-        <div className="flex items-center gap-1 mt-0.5">
-          <span className="inline-flex items-center gap-1 bg-white px-2 py-0.5 rounded text-[12px] text-[#596171] font-mono leading-4">
-            {permission.apiName}
-            <ClipboardIcon />
-          </span>
-        </div>
       </div>
       {/* Task categories as plain text */}
       {showTaskCategories && permission.taskCategories.length > 0 && (
@@ -393,6 +375,7 @@ function PermissionCard({
   onPendingAccessChange,
   isExiting = false,
   disabled = false,
+  insideBundle = false,
 }: {
   permission: Permission;
   showCheckbox?: boolean;
@@ -409,6 +392,7 @@ function PermissionCard({
   onPendingAccessChange?: (access: string) => void;
   isExiting?: boolean;
   disabled?: boolean;  // For required permissions that can't be toggled
+  insideBundle?: boolean;
 }) {
   // Default to permission's actions if not provided
   const { label: defaultLabel, hasWrite: defaultHasWrite } = getAccessLabel(permission.actions);
@@ -496,7 +480,8 @@ function PermissionCard({
         permission={permission} 
         showTaskCategories={showTaskCategories} 
         currentGroup={currentGroup} 
-        groupBy={groupBy} 
+        groupBy={groupBy}
+        insideBundle={insideBundle}
       />
       {renderAccessBadge()}
     </>
@@ -518,7 +503,11 @@ function PermissionCard({
 
   // Static version for main view
   return (
-    <div className="flex items-start gap-4 p-4 bg-[#F5F6F8] rounded">
+    <div className={`flex items-start gap-4 rounded ${
+      insideBundle
+        ? "pr-2 py-3"
+        : "p-4 bg-[#F5F6F8]"
+    }`}>
       {cardContent}
     </div>
   );
@@ -663,6 +652,7 @@ import {
   generateRoleDetails,
   generateRiskAssessment,
   generateRoleDescription,
+  GROUP_DESCRIPTIONS,
   type Role,
   type Permission,
   type RoleDetails,
@@ -787,6 +777,18 @@ const groupByOptions: { value: GroupByOption; label: string }[] = [
   { value: "riskLevel", label: "Risk" },
   { value: "sensitivity", label: "Sensitivity" },
 ];
+
+// When bundled, alphabetical doesn't make sense (no groups to bundle)
+const bundledGroupByOptions: { value: GroupByOption; label: string }[] = [
+  { value: "productCategory", label: "Product" },
+  { value: "taskCategory", label: "Task" },
+  { value: "operationType", label: "Operation" },
+  { value: "riskLevel", label: "Risk" },
+  { value: "sensitivity", label: "Sensitivity" },
+];
+
+// When unbundled, all options are available
+const unbundledGroupByOptions = groupByOptions;
 
 // Role overflow menu component
 function RoleMenu({ 
@@ -2730,11 +2732,114 @@ function SandboxView({
   );
 }
 
+// Toggle switch component matching Figma spec
+function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className="flex items-center gap-1.5 group"
+    >
+      <div
+        className={`relative w-[26px] h-[14px] rounded-full transition-colors duration-200 ${
+          checked ? "bg-[#635BFF]" : "bg-[#C0C8D2]"
+        }`}
+      >
+        <div
+          className={`absolute top-[2px] w-[10px] h-[10px] rounded-full bg-white shadow-[0_1px_2px_rgba(0,0,0,0.2)] transition-transform duration-200 ${
+            checked ? "translate-x-[14px]" : "translate-x-[2px]"
+          }`}
+        />
+      </div>
+      {label && (
+        <span className="text-[12px] font-medium text-[#596171] leading-4 select-none group-hover:text-[#353A44] transition-colors">
+          {label}
+        </span>
+      )}
+    </button>
+  );
+}
+
+// BundleCard component: collapsible card wrapping a group of permissions
+function BundleCard({
+  groupName,
+  description,
+  permissions: perms,
+  roleId,
+  groupBy,
+  customAccess,
+  defaultExpanded = false,
+}: {
+  groupName: string;
+  description?: string;
+  permissions: Permission[];
+  roleId: string;
+  groupBy: string;
+  customAccess?: Record<string, string>;
+  defaultExpanded?: boolean;
+}) {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+
+  return (
+    <div className="bg-[#F5F6F8] rounded-[4px] py-4 px-2 shrink-0 flex flex-col gap-2">
+      {/* Header */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center gap-4 px-2 text-left group"
+      >
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] truncate">
+              {groupName}
+            </span>
+            <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-white text-[12px] text-[#596171] leading-4 rounded-full text-center">
+              {perms.length}
+            </span>
+          </div>
+          {description && (
+            <p className="text-[14px] text-[#596171] leading-5 line-clamp-2 mt-0.5">
+              {description}
+            </p>
+          )}
+        </div>
+        {/* Chevron */}
+        <ChevronDown
+          size={12}
+          className={`text-[#474E5A] flex-shrink-0 transition-transform duration-200 ${
+            isExpanded ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {/* Expanded: permission cards */}
+      {isExpanded && (
+        <div className="flex flex-col divide-y divide-[#D8DEE4] ml-4">
+          {perms.map((permission) => (
+            <PermissionItem
+              key={permission.apiName}
+              permission={permission}
+              roleId={roleId}
+              showTaskCategories={false}
+              currentGroup={groupName}
+              groupBy={groupBy}
+              customAccess={customAccess?.[permission.apiName]}
+              insideBundle
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function RolesPermissionsPage() {
   const [selectedRole, setSelectedRole] = useState<Role>(allRoles[0]);
   // Only one category can be expanded at a time (accordion behavior)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(roleCategories[0]?.name || null);
-  const [groupBy, setGroupBy] = useState<GroupByOption>("alphabetical");
+  const [groupBy, setGroupBy] = useState<GroupByOption>("productCategory");
+  const [isBundled, setIsBundled] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const roleDetailsRef = useRef<HTMLElement>(null);
   const [isRiskExpanded, setIsRiskExpanded] = useState(false);
@@ -2895,7 +3000,7 @@ export default function RolesPermissionsPage() {
         <Topbar />
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col gap-8 overflow-hidden">
+        <div className="flex-1 min-h-0 flex flex-col gap-8 overflow-hidden">
         {/* Header */}
         <header className="flex-shrink-0 max-w-[1600px]">
           <div className="flex flex-col gap-2">
@@ -2920,7 +3025,7 @@ export default function RolesPermissionsPage() {
         </header>
 
         {/* Main content - 3 panels */}
-        <div className="flex flex-1 gap-6 overflow-hidden max-w-[1600px]">
+        <div className="flex flex-1 min-h-0 gap-6 overflow-hidden max-w-[1600px]">
         {/* Left Panel - Roles List */}
         <aside className="w-[240px] overflow-y-auto flex-shrink-0 pt-6 relative">
           {/* Header */}
@@ -3007,7 +3112,7 @@ export default function RolesPermissionsPage() {
         </aside>
 
         {/* Shared Container for Role Details + Permissions */}
-        <div className="flex-1 flex gap-4 p-2 bg-[#F5F6F8] rounded-xl overflow-hidden">
+        <div className="flex-1 min-h-0 flex gap-4 p-2 bg-[#F5F6F8] rounded-xl overflow-hidden">
           {/* Role Details Panel */}
           <section ref={roleDetailsRef} className="flex-1 flex flex-col gap-6 px-4 pt-[11px] pb-[13px] overflow-y-auto">
             {/* Header */}
@@ -3112,19 +3217,35 @@ export default function RolesPermissionsPage() {
           </section>
 
           {/* Permissions Panel */}
-          <main className="flex-1 flex flex-col gap-4 p-4 bg-white rounded-lg shadow-[0_2px_5px_0_rgba(48,49,61,0.08),0_1px_1px_0_rgba(0,0,0,0.12)] overflow-hidden">
+          <main className="flex-1 min-h-0 flex flex-col gap-4 p-4 bg-white rounded-lg shadow-[0_2px_5px_0_rgba(48,49,61,0.08),0_1px_1px_0_rgba(0,0,0,0.12)] overflow-hidden">
             {/* Header */}
             <div className="flex items-center gap-2">
-              <h2 className="flex-1 text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Permissions</h2>
+              <h2 className="text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Permissions</h2>
               <span className="bg-[#F5F6F8] text-[12px] text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center">
                 {searchQuery ? `${filteredPermissions.length}/${rolePermissions.length}` : rolePermissions.length}
               </span>
+              <div className="flex-1" />
+              <ToggleSwitch
+                checked={isBundled}
+                onChange={(v) => {
+                  setIsBundled(v);
+                  // When turning bundle ON and currently on alphabetical, auto-switch to productCategory
+                  if (v && groupBy === "alphabetical") {
+                    setGroupBy("productCategory");
+                  }
+                }}
+                label="Bundle"
+              />
             </div>
 
             {/* Controls */}
             <div className="flex items-end gap-2">
               {/* Group by selector */}
-              <Dropdown value={groupBy} onChange={setGroupBy} options={groupByOptions} />
+              <Dropdown
+                value={groupBy}
+                onChange={setGroupBy}
+                options={isBundled ? bundledGroupByOptions : unbundledGroupByOptions}
+              />
               {/* Search field */}
               <div className="flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white focus-within:border-[#635BFF] transition-colors">
                 <SearchIcon className="text-[#818DA0]" />
@@ -3147,9 +3268,24 @@ export default function RolesPermissionsPage() {
             </div>
 
             {/* Permissions list */}
-            <div className="flex-1 overflow-y-auto flex flex-col gap-4">
-              {/* Alphabetical (flat list) - show task categories as tags */}
-              {alphabeticalPermissions && (
+            <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2">
+              {/* Bundled view: collapsible BundleCards */}
+              {isBundled && groupedPermissions && Object.entries(groupedPermissions)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([groupName, perms]) => (
+                  <BundleCard
+                    key={groupName}
+                    groupName={groupName}
+                    description={GROUP_DESCRIPTIONS[groupBy]?.[groupName]}
+                    permissions={perms}
+                    roleId={selectedRole.id}
+                    groupBy={groupBy}
+                    customAccess={selectedRole.permissionAccess}
+                  />
+                ))}
+
+              {/* Unbundled: Alphabetical (flat list) - show task categories as tags */}
+              {!isBundled && alphabeticalPermissions && (
                 <div className="flex flex-col gap-2">
                   {alphabeticalPermissions.map((permission) => (
                     <PermissionItem
@@ -3163,8 +3299,8 @@ export default function RolesPermissionsPage() {
                 </div>
               )}
 
-              {/* Grouped list */}
-              {groupedPermissions && Object.entries(groupedPermissions)
+              {/* Unbundled: Grouped list with section headers */}
+              {!isBundled && groupedPermissions && Object.entries(groupedPermissions)
                 .sort(([a], [b]) => a.localeCompare(b))
                 .map(([groupName, perms]) => (
                   <div key={groupName} className="flex flex-col gap-2">
@@ -3281,6 +3417,7 @@ function PermissionItem({
   currentGroup,
   groupBy,
   customAccess,
+  insideBundle = false,
 }: {
   permission: Permission;
   roleId: string;
@@ -3288,6 +3425,7 @@ function PermissionItem({
   currentGroup?: string;
   groupBy?: string;
   customAccess?: string;  // For custom roles - the user-set access level
+  insideBundle?: boolean;
 }) {
   // For custom roles (or roles not in roleAccess), use the permission's actions field
   const access = permission.roleAccess[roleId];
@@ -3328,6 +3466,7 @@ function PermissionItem({
       groupBy={groupBy}
       accessLabel={accessLabel}
       hasWrite={hasWrite}
+      insideBundle={insideBundle}
     />
   );
 }
