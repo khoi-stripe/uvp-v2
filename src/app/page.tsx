@@ -3293,17 +3293,17 @@ export default function RolesPermissionsPage() {
                 <h2 className="text-[20px] font-bold text-[#353A44] leading-7 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
                   {selectedRole.name}
                 </h2>
+                <Tooltip content={`There are ${selectedRole.userCount} users with the ${selectedRole.name} role`}>
+                  <span className="bg-white text-[12px] text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center cursor-default">
+                    {selectedRole.userCount}
+                  </span>
+                </Tooltip>
                 {selectedRole.category === "Custom" && (
                   <span className="bg-[#e2fbfe] text-[#045ad0] text-[12px] font-normal px-2 py-0.5 rounded flex-shrink-0">
                     Custom
                   </span>
                 )}
                 <div className="flex-1" />
-                <Tooltip content={`There are ${selectedRole.userCount} users with the ${selectedRole.name} role`}>
-                  <span className="bg-white text-[12px] text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center cursor-default">
-                    {selectedRole.userCount}
-                  </span>
-                </Tooltip>
                 <RoleMenu 
                   onDuplicate={() => {
                     setModalMode("create");
