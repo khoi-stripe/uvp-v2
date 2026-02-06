@@ -243,9 +243,9 @@ function PermissionCardContent({
   const otherGroups = getOtherGroups();
 
   return (
-    <div className="flex-1 min-w-0 flex flex-col gap-4">
+    <div className={`flex-1 min-w-0 flex flex-col ${insideBundle ? "gap-0.5" : "gap-4"}`}>
       {/* Top section: title and description */}
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-0">
         <h4 className={`font-semibold text-[#353A44] ${insideBundle ? "text-[12px] leading-4 tracking-[-0.024px]" : "text-[14px] leading-5 tracking-[-0.15px]"}`}>
           {permission.displayName}
         </h4>
@@ -2813,23 +2813,29 @@ function BundleCard({
         />
       </button>
 
-      {/* Expanded: permission cards */}
-      {isExpanded && (
-        <div className="flex flex-col divide-y divide-[#D8DEE4] ml-4">
-          {perms.map((permission) => (
-            <PermissionItem
-              key={permission.apiName}
-              permission={permission}
-              roleId={roleId}
-              showTaskCategories={false}
-              currentGroup={groupName}
-              groupBy={groupBy}
-              customAccess={customAccess?.[permission.apiName]}
-              insideBundle
-            />
-          ))}
+      {/* Expandable permission cards */}
+      <div
+        className="grid transition-[grid-template-rows] duration-200 ease-in-out"
+        style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
+      >
+        <div className="overflow-hidden">
+          <div className="border-t border-[#D8DEE4] mx-2" />
+          <div className="flex flex-col divide-y divide-[#D8DEE4] ml-2">
+            {perms.map((permission) => (
+              <PermissionItem
+                key={permission.apiName}
+                permission={permission}
+                roleId={roleId}
+                showTaskCategories={false}
+                currentGroup={groupName}
+                groupBy={groupBy}
+                customAccess={customAccess?.[permission.apiName]}
+                insideBundle
+              />
+            ))}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
