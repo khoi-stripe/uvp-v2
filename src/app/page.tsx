@@ -239,13 +239,13 @@ function PermissionCardContent({
   showTaskCategories = false,
   currentGroup,
   groupBy,
-  insideBundle = false,
+  insideGroup = false,
 }: {
   permission: Permission;
   showTaskCategories?: boolean;
   currentGroup?: string;
   groupBy?: string;
-  insideBundle?: boolean;
+  insideGroup?: boolean;
 }) {
   // Get other groups this permission belongs to (excluding current group)
   const getOtherGroups = (): string[] => {
@@ -261,13 +261,13 @@ function PermissionCardContent({
   const otherGroups = getOtherGroups();
 
   return (
-    <div className={`flex-1 min-w-0 flex flex-col ${insideBundle ? "gap-0.5" : "gap-4"}`}>
+    <div className={`flex-1 min-w-0 flex flex-col ${insideGroup ? "gap-0.5" : "gap-4"}`}>
       {/* Top section: title and description */}
       <div className="flex flex-col gap-0">
-        <h4 className={`font-semibold text-[#353A44] ${insideBundle ? "text-[12px] leading-4 tracking-[-0.024px]" : "text-[14px] leading-5 tracking-[-0.15px]"}`}>
+        <h4 className={`font-semibold text-[#353A44] ${insideGroup ? "text-[12px] leading-4 tracking-[-0.024px]" : "text-[14px] leading-5 tracking-[-0.15px]"}`}>
           {permission.displayName}
         </h4>
-        <p className={`text-[#596171] ${insideBundle ? "text-[12px] leading-4" : "text-[14px] leading-5"}`}>
+        <p className={`text-[#596171] ${insideGroup ? "text-[12px] leading-4" : "text-[14px] leading-5"}`}>
           {permission.description}
         </p>
       </div>
@@ -393,7 +393,7 @@ function PermissionCard({
   onPendingAccessChange,
   isExiting = false,
   disabled = false,
-  insideBundle = false,
+  insideGroup = false,
 }: {
   permission: Permission;
   showCheckbox?: boolean;
@@ -410,7 +410,7 @@ function PermissionCard({
   onPendingAccessChange?: (access: string) => void;
   isExiting?: boolean;
   disabled?: boolean;  // For required permissions that can't be toggled
-  insideBundle?: boolean;
+  insideGroup?: boolean;
 }) {
   // Default to permission's actions if not provided
   const { label: defaultLabel, hasWrite: defaultHasWrite } = getAccessLabel(permission.actions);
@@ -499,7 +499,7 @@ function PermissionCard({
         showTaskCategories={showTaskCategories} 
         currentGroup={currentGroup} 
         groupBy={groupBy}
-        insideBundle={insideBundle}
+        insideGroup={insideGroup}
       />
       {renderAccessBadge()}
     </>
@@ -522,7 +522,7 @@ function PermissionCard({
   // Static version for main view
   return (
     <div className={`flex items-start gap-4 ${
-      insideBundle
+      insideGroup
         ? "py-3"
         : "p-4 bg-[#F5F6F8] rounded"
     }`}>
@@ -796,8 +796,8 @@ const groupByOptions: { value: GroupByOption; label: string }[] = [
   { value: "sensitivity", label: "Sensitivity" },
 ];
 
-// When bundled, alphabetical doesn't make sense (no groups to bundle)
-const bundledGroupByOptions: { value: GroupByOption; label: string }[] = [
+// When grouped, alphabetical doesn't make sense (no groups to collapse)
+const groupedGroupByOptions: { value: GroupByOption; label: string }[] = [
   { value: "productCategory", label: "Product" },
   { value: "taskCategory", label: "Task" },
   { value: "operationType", label: "Operation" },
@@ -805,8 +805,8 @@ const bundledGroupByOptions: { value: GroupByOption; label: string }[] = [
   { value: "sensitivity", label: "Sensitivity" },
 ];
 
-// When unbundled, all options are available
-const unbundledGroupByOptions = groupByOptions;
+// When ungrouped, all options are available
+const ungroupedGroupByOptions = groupByOptions;
 
 // Role overflow menu component
 function RoleMenu({ 
@@ -1019,13 +1019,13 @@ function AIAssistantDrawer({
   );
 }
 
-// Bundle card for the customize modal - includes group-level checkbox
-function CustomizeBundleCard({
+// Group card for the customize modal - includes group-level checkbox
+function CustomizeGroupCard({
   groupName,
   description,
   permissions: perms,
   checkState,
-  onToggleBundle,
+  onToggleGroup,
   permissionAccess,
   onTogglePermission,
   onAccessChange,
@@ -1035,7 +1035,7 @@ function CustomizeBundleCard({
   description?: string;
   permissions: Permission[];
   checkState: "all" | "none" | "some";
-  onToggleBundle: () => void;
+  onToggleGroup: () => void;
   permissionAccess: Record<string, string>;
   onTogglePermission: (apiName: string) => void;
   onAccessChange: (apiName: string, access: string) => void;
@@ -1051,7 +1051,7 @@ function CustomizeBundleCard({
         <Checkbox
           checked={checkState === "all"}
           indeterminate={checkState === "some"}
-          onChange={onToggleBundle}
+          onChange={onToggleGroup}
         />
         <button
           onClick={() => setIsExpanded(!isExpanded)}
@@ -1124,7 +1124,7 @@ function CustomizeBundleCard({
                     showTaskCategories={false}
                     currentGroup={groupName}
                     groupBy="productCategory"
-                    insideBundle
+                    insideGroup
                   />
                   {/* Access badge */}
                   {isChecked && supportsMultipleAccess && currentAccess ? (
@@ -1188,7 +1188,7 @@ function CustomizeRoleModal({
   const [pendingAccess, setPendingAccess] = useState<Record<string, string>>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [groupBy, setGroupBy] = useState<GroupByOption>("productCategory");
-  const [isBundled, setIsBundled] = useState(true);
+  const [isGrouped, setIsGrouped] = useState(true);
   const [isRiskExpandedModal, setIsRiskExpandedModal] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
@@ -1205,9 +1205,9 @@ function CustomizeRoleModal({
     }, 150); // Match animation duration
   };
 
-  // Handle bundle toggle with auto-switch logic
-  const handleBundleToggle = (on: boolean) => {
-    setIsBundled(on);
+  // Handle group toggle with auto-switch logic
+  const handleGroupToggle = (on: boolean) => {
+    setIsGrouped(on);
     if (on && groupBy === "alphabetical") {
       setGroupBy("productCategory");
     }
@@ -1227,7 +1227,7 @@ function CustomizeRoleModal({
         setPendingAccess({});
         setSearchQuery("");
         setGroupBy("productCategory");
-        setIsBundled(true);
+        setIsGrouped(true);
         return;
       }
 
@@ -1267,7 +1267,7 @@ function CustomizeRoleModal({
       setPendingAccess({});
       setSearchQuery("");
       setGroupBy("productCategory");
-      setIsBundled(true);
+      setIsGrouped(true);
     }
   }, [isOpen, baseRole.id, baseRole.permissionApiNames, baseRole.permissionAccess, baseRole.customDescription, initialState]);
 
@@ -1459,27 +1459,27 @@ function CustomizeRoleModal({
     }));
   };
 
-  // Bundle checkbox helpers
-  const getBundleCheckState = (perms: Permission[]): "all" | "none" | "some" => {
+  // Group checkbox helpers
+  const getGroupCheckState = (perms: Permission[]): "all" | "none" | "some" => {
     const checkedCount = perms.filter(p => p.apiName in permissionAccess).length;
     if (checkedCount === 0) return "none";
     if (checkedCount === perms.length) return "all";
     return "some";
   };
 
-  const toggleBundle = (perms: Permission[]) => {
-    const state = getBundleCheckState(perms);
+  const toggleGroup = (perms: Permission[]) => {
+    const state = getGroupCheckState(perms);
     setPermissionAccess(prev => {
       const next = { ...prev };
       if (state === "all") {
-        // Uncheck all in this bundle (except required)
+        // Uncheck all in this group (except required)
         for (const p of perms) {
           if (p.apiName !== REQUIRED_PERMISSION) {
             delete next[p.apiName];
           }
         }
       } else {
-        // Check all in this bundle
+        // Check all in this group
         for (const p of perms) {
           if (!(p.apiName in next)) {
             next[p.apiName] = p.actions;
@@ -1756,7 +1756,7 @@ function CustomizeRoleModal({
                       <span className="leading-5 tracking-[-0.15px]">Assistant</span>
                     </button>
                     <div className="ml-auto">
-                      <ToggleSwitch checked={isBundled} onChange={handleBundleToggle} label="Bundle" />
+                      <ToggleSwitch checked={isGrouped} onChange={handleGroupToggle} label="Group" />
                     </div>
                   </div>
 
@@ -1766,7 +1766,7 @@ function CustomizeRoleModal({
                     <Dropdown
                       value={groupBy}
                       onChange={setGroupBy}
-                      options={isBundled ? bundledGroupByOptions : unbundledGroupByOptions}
+                      options={isGrouped ? groupedGroupByOptions : ungroupedGroupByOptions}
                     />
                     {/* Search field - spans full width */}
                     <div className="flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white focus-within:border-[#635BFF] transition-colors">
@@ -1797,23 +1797,23 @@ function CustomizeRoleModal({
                       </span>
                     </div>
                     <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2">
-                      {isBundled ? (
-                        /* Bundled view: CustomizeBundleCard for each group */
+                      {isGrouped ? (
+                        /* Grouped view: CustomizeGroupCard for each group */
                         sortedGroupEntries.map(([group, perms]) => (
-                          <CustomizeBundleCard
+                          <CustomizeGroupCard
                             key={group}
                             groupName={group}
                             description={GROUP_DESCRIPTIONS[groupBy]?.[group]}
                             permissions={sortPermsInGroup(perms)}
-                            checkState={getBundleCheckState(perms)}
-                            onToggleBundle={() => toggleBundle(perms)}
+                            checkState={getGroupCheckState(perms)}
+                            onToggleGroup={() => toggleGroup(perms)}
                             permissionAccess={permissionAccess}
                             onTogglePermission={(apiName) => togglePermission(apiName)}
                             onAccessChange={updatePermissionAccess}
                           />
                         ))
                       ) : (
-                        /* Unbundled view: flat list with optional section headers */
+                        /* Ungrouped view: flat list with optional section headers */
                         sortedGroupEntries.map(([group, perms]) => (
                           <div key={group || "all"} className={isAlphabetical ? "" : "mb-3"}>
                             {!isAlphabetical && group && (
@@ -1925,7 +1925,7 @@ function CreateRoleModal({
   const [pendingAccess, setPendingAccess] = useState<Record<string, string>>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [groupBy, setGroupBy] = useState<GroupByOption>("productCategory");
-  const [isBundled, setIsBundled] = useState(true);
+  const [isGrouped, setIsGrouped] = useState(true);
   const [isClosing, setIsClosing] = useState(false);
   const [isBaseRoleDropdownOpen, setIsBaseRoleDropdownOpen] = useState(false);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
@@ -1945,9 +1945,9 @@ function CreateRoleModal({
     }, 150);
   };
 
-  // Handle bundle toggle with auto-switch logic
-  const handleBundleToggle = (on: boolean) => {
-    setIsBundled(on);
+  // Handle group toggle with auto-switch logic
+  const handleGroupToggle = (on: boolean) => {
+    setIsGrouped(on);
     if (on && groupBy === "alphabetical") {
       setGroupBy("productCategory");
     }
@@ -1966,7 +1966,7 @@ function CreateRoleModal({
         setPendingAccess({});
         setSearchQuery("");
         setGroupBy("productCategory");
-        setIsBundled(true);
+        setIsGrouped(true);
         setIsBaseRoleDropdownOpen(false);
         return;
       }
@@ -1980,7 +1980,7 @@ function CreateRoleModal({
       setPendingAccess({});
       setSearchQuery("");
       setGroupBy("productCategory");
-      setIsBundled(true);
+      setIsGrouped(true);
       setIsBaseRoleDropdownOpen(false);
       
       // Focus the role name input after a short delay
@@ -2150,16 +2150,16 @@ function CreateRoleModal({
     });
   };
 
-  // Bundle checkbox helpers
-  const getBundleCheckState = (perms: Permission[]): "all" | "none" | "some" => {
+  // Group checkbox helpers
+  const getGroupCheckState = (perms: Permission[]): "all" | "none" | "some" => {
     const checkedCount = perms.filter(p => p.apiName in permissionAccess).length;
     if (checkedCount === 0) return "none";
     if (checkedCount === perms.length) return "all";
     return "some";
   };
 
-  const toggleBundle = (perms: Permission[]) => {
-    const state = getBundleCheckState(perms);
+  const toggleGroup = (perms: Permission[]) => {
+    const state = getGroupCheckState(perms);
     setPermissionAccess(prev => {
       const next = { ...prev };
       if (state === "all") {
@@ -2431,7 +2431,7 @@ function CreateRoleModal({
                       <span className="leading-5 tracking-[-0.15px]">Assistant</span>
                     </button>
                     <div className="ml-auto">
-                      <ToggleSwitch checked={isBundled} onChange={handleBundleToggle} label="Bundle" />
+                      <ToggleSwitch checked={isGrouped} onChange={handleGroupToggle} label="Group" />
                     </div>
                   </div>
 
@@ -2440,7 +2440,7 @@ function CreateRoleModal({
                     <Dropdown
                       value={groupBy}
                       onChange={setGroupBy}
-                      options={isBundled ? bundledGroupByOptions : unbundledGroupByOptions}
+                      options={isGrouped ? groupedGroupByOptions : ungroupedGroupByOptions}
                     />
                     {/* Search field - spans full width */}
                     <div className="flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white focus-within:border-[#635BFF] transition-colors">
@@ -2471,23 +2471,23 @@ function CreateRoleModal({
                       </span>
                     </div>
                     <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2">
-                      {isBundled ? (
-                        /* Bundled view */
+                      {isGrouped ? (
+                        /* Grouped view */
                         sortedGroupEntries.map(([group, perms]) => (
-                          <CustomizeBundleCard
+                          <CustomizeGroupCard
                             key={group}
                             groupName={group}
                             description={GROUP_DESCRIPTIONS[groupBy]?.[group]}
                             permissions={sortPermsInGroup(perms)}
-                            checkState={getBundleCheckState(perms)}
-                            onToggleBundle={() => toggleBundle(perms)}
+                            checkState={getGroupCheckState(perms)}
+                            onToggleGroup={() => toggleGroup(perms)}
                             permissionAccess={permissionAccess}
                             onTogglePermission={(apiName) => togglePermission(apiName)}
                             onAccessChange={updatePermissionAccess}
                           />
                         ))
                       ) : (
-                        /* Unbundled view */
+                        /* Ungrouped view */
                         sortedGroupEntries.map(([group, perms]) => (
                           <div key={group || "all"} className={isAlphabetical ? "" : "mb-3"}>
                             {!isAlphabetical && group && (
@@ -2992,8 +2992,8 @@ function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange
   );
 }
 
-// BundleCard component: collapsible card wrapping a group of permissions
-function BundleCard({
+// GroupCard component: collapsible card wrapping a group of permissions
+function GroupCard({
   groupName,
   description,
   permissions: perms,
@@ -3059,7 +3059,7 @@ function BundleCard({
                 currentGroup={groupName}
                 groupBy={groupBy}
                 customAccess={customAccess?.[permission.apiName]}
-                insideBundle
+                insideGroup
               />
             ))}
           </div>
@@ -3074,7 +3074,7 @@ export default function RolesPermissionsPage() {
   // Only one category can be expanded at a time (accordion behavior)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(roleCategories[0]?.name || null);
   const [groupBy, setGroupBy] = useState<GroupByOption>("productCategory");
-  const [isBundled, setIsBundled] = useState(true);
+  const [isGrouped, setIsGrouped] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const roleDetailsRef = useRef<HTMLElement>(null);
   const [isRiskExpanded, setIsRiskExpanded] = useState(false);
@@ -3461,15 +3461,15 @@ export default function RolesPermissionsPage() {
               </span>
               <div className="flex-1" />
               <ToggleSwitch
-                checked={isBundled}
+                checked={isGrouped}
                 onChange={(v) => {
-                  setIsBundled(v);
-                  // When turning bundle ON and currently on alphabetical, auto-switch to productCategory
+                  setIsGrouped(v);
+                  // When turning group ON and currently on alphabetical, auto-switch to productCategory
                   if (v && groupBy === "alphabetical") {
                     setGroupBy("productCategory");
                   }
                 }}
-                label="Bundle"
+                label="Group"
               />
             </div>
 
@@ -3479,7 +3479,7 @@ export default function RolesPermissionsPage() {
               <Dropdown
                 value={groupBy}
                 onChange={setGroupBy}
-                options={isBundled ? bundledGroupByOptions : unbundledGroupByOptions}
+                options={isGrouped ? groupedGroupByOptions : ungroupedGroupByOptions}
               />
               {/* Search field */}
               <div className="flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white focus-within:border-[#635BFF] transition-colors">
@@ -3504,11 +3504,11 @@ export default function RolesPermissionsPage() {
 
             {/* Permissions list */}
             <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2">
-              {/* Bundled view: collapsible BundleCards */}
-              {isBundled && groupedPermissions && Object.entries(groupedPermissions)
+              {/* Grouped view: collapsible GroupCards */}
+              {isGrouped && groupedPermissions && Object.entries(groupedPermissions)
                 .sort(([a], [b]) => a.localeCompare(b))
                 .map(([groupName, perms]) => (
-                  <BundleCard
+                  <GroupCard
                     key={groupName}
                     groupName={groupName}
                     description={GROUP_DESCRIPTIONS[groupBy]?.[groupName]}
@@ -3519,8 +3519,8 @@ export default function RolesPermissionsPage() {
                   />
                 ))}
 
-              {/* Unbundled: Alphabetical (flat list) - show task categories as tags */}
-              {!isBundled && alphabeticalPermissions && (
+              {/* Ungrouped: Alphabetical (flat list) - show task categories as tags */}
+              {!isGrouped && alphabeticalPermissions && (
                 <div className="flex flex-col gap-2">
                   {alphabeticalPermissions.map((permission) => (
                     <PermissionItem
@@ -3534,8 +3534,8 @@ export default function RolesPermissionsPage() {
                 </div>
               )}
 
-              {/* Unbundled: Grouped list with section headers */}
-              {!isBundled && groupedPermissions && Object.entries(groupedPermissions)
+              {/* Ungrouped: list with section headers */}
+              {!isGrouped && groupedPermissions && Object.entries(groupedPermissions)
                 .sort(([a], [b]) => a.localeCompare(b))
                 .map(([groupName, perms]) => (
                   <div key={groupName} className="flex flex-col gap-2">
@@ -3652,7 +3652,7 @@ function PermissionItem({
   currentGroup,
   groupBy,
   customAccess,
-  insideBundle = false,
+  insideGroup = false,
 }: {
   permission: Permission;
   roleId: string;
@@ -3660,7 +3660,7 @@ function PermissionItem({
   currentGroup?: string;
   groupBy?: string;
   customAccess?: string;  // For custom roles - the user-set access level
-  insideBundle?: boolean;
+  insideGroup?: boolean;
 }) {
   // For custom roles (or roles not in roleAccess), use the permission's actions field
   const access = permission.roleAccess[roleId];
@@ -3701,7 +3701,7 @@ function PermissionItem({
       groupBy={groupBy}
       accessLabel={accessLabel}
       hasWrite={hasWrite}
-      insideBundle={insideBundle}
+      insideGroup={insideGroup}
     />
   );
 }

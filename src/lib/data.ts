@@ -1138,7 +1138,7 @@ export const permissions: Permission[] = [
 export const productCategories = [...new Set(permissions.map((p) => p.productCategory))].sort();
 export const taskCategories = [...new Set(permissions.flatMap((p) => p.taskCategories))].sort();
 
-// Bundle group descriptions (used in BundleCard when bundled view is active)
+// Group descriptions (used in GroupCard when grouped view is active)
 export const GROUP_DESCRIPTIONS: Record<string, Record<string, string>> = {
   productCategory: {
     "Account & Connect": "Core account settings, connected accounts, team management, and platform configuration.",
