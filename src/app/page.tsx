@@ -523,7 +523,7 @@ function PermissionCard({
   return (
     <div className={`flex items-start gap-4 ${
       insideBundle
-        ? "pr-2 py-3"
+        ? "py-3"
         : "p-4 bg-[#F5F6F8] rounded"
     }`}>
       {cardContent}
@@ -1099,7 +1099,7 @@ function CustomizeBundleCard({
                 <div
                   key={permission.apiName}
                   onClick={() => !isRequired && onTogglePermission(permission.apiName)}
-                  className={`flex items-start gap-4 pr-2 py-3 transition-all duration-150 ${
+                  className={`flex items-start gap-4 py-3 transition-all duration-150 ${
                     isRequired ? 'cursor-default' : 'hover:bg-[#EBEEF1]/50 cursor-pointer'
                   }`}
                 >
