@@ -1073,8 +1073,7 @@ function CustomizeBundleCard({
             )}
           </div>
           <ChevronDown
-            size={12}
-            className={`text-[#474E5A] flex-shrink-0 transition-transform duration-200 ${
+            className={`w-4 h-4 text-[#474E5A] flex-shrink-0 transition-transform duration-200 ${
               isExpanded ? "rotate-180" : ""
             }`}
           />
@@ -1088,7 +1087,7 @@ function CustomizeBundleCard({
       >
         <div className="overflow-hidden">
           <div className="border-t border-[#D8DEE4] mx-2" />
-          <div className="flex flex-col divide-y divide-[#D8DEE4] ml-2">
+          <div className="flex flex-col divide-y divide-[#D8DEE4] mx-2">
             {perms.map((permission) => {
               const isChecked = permission.apiName in permissionAccess;
               const isRequired = permission.apiName === REQUIRED_PERMISSION;
@@ -1925,11 +1924,14 @@ function CreateRoleModal({
   const [permissionAccess, setPermissionAccess] = useState<Record<string, string>>({});
   const [pendingAccess, setPendingAccess] = useState<Record<string, string>>({});
   const [searchQuery, setSearchQuery] = useState("");
-  const [groupBy, setGroupBy] = useState<GroupByOption>(initialGroupBy);
-  const [exitingApiName, setExitingApiName] = useState<string | null>(null);
+  const [groupBy, setGroupBy] = useState<GroupByOption>("productCategory");
+  const [isBundled, setIsBundled] = useState(true);
   const [isClosing, setIsClosing] = useState(false);
   const [isBaseRoleDropdownOpen, setIsBaseRoleDropdownOpen] = useState(false);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+
+  // Capture initial permission state for stable sort order
+  const initialAccessRef = useRef<Record<string, string>>({});
 
   // Required permission constant
   const REQUIRED_PERMISSION = "dashboard_baseline";
@@ -1943,6 +1945,14 @@ function CreateRoleModal({
     }, 150);
   };
 
+  // Handle bundle toggle with auto-switch logic
+  const handleBundleToggle = (on: boolean) => {
+    setIsBundled(on);
+    if (on && groupBy === "alphabetical") {
+      setGroupBy("productCategory");
+    }
+  };
+
   // Reset and initialize when modal opens (or restore from initialState if returning from sandbox)
   useEffect(() => {
     if (isOpen) {
@@ -1952,21 +1962,25 @@ function CreateRoleModal({
         setRoleName(initialState.roleName);
         setCustomDescription(initialState.customDescription);
         setPermissionAccess(initialState.permissionAccess);
+        initialAccessRef.current = { ...initialState.permissionAccess };
         setPendingAccess({});
         setSearchQuery("");
-        setGroupBy(initialGroupBy);
+        setGroupBy("productCategory");
+        setIsBundled(true);
         setIsBaseRoleDropdownOpen(false);
         return;
       }
 
+      const initialAccess = { [REQUIRED_PERMISSION]: "read" };
       setSelectedBaseRole(null);
       setRoleName("");
       setCustomDescription("");
-      // Start with just dashboard_baseline
-      setPermissionAccess({ [REQUIRED_PERMISSION]: "read" });
+      setPermissionAccess(initialAccess);
+      initialAccessRef.current = { ...initialAccess };
       setPendingAccess({});
       setSearchQuery("");
-      setGroupBy(initialGroupBy);
+      setGroupBy("productCategory");
+      setIsBundled(true);
       setIsBaseRoleDropdownOpen(false);
       
       // Focus the role name input after a short delay
@@ -1974,7 +1988,7 @@ function CreateRoleModal({
         roleNameInputRef.current?.focus();
       }, 100);
     }
-  }, [isOpen, initialGroupBy, initialState]);
+  }, [isOpen, initialState]);
 
   // When base role is selected, populate permissions and description
   const handleBaseRoleSelect = (role: Role) => {
@@ -2005,6 +2019,7 @@ function CreateRoleModal({
     }
     
     setPermissionAccess(accessMap);
+    initialAccessRef.current = { ...accessMap };
     setPendingAccess({});
     
     // Set description from role details
@@ -2015,10 +2030,12 @@ function CreateRoleModal({
 
   // Handle reset
   const handleReset = () => {
+    const resetAccess = { [REQUIRED_PERMISSION]: "read" };
     setSelectedBaseRole(null);
     setRoleName("");
     setCustomDescription("");
-    setPermissionAccess({ [REQUIRED_PERMISSION]: "read" });
+    setPermissionAccess(resetAccess);
+    initialAccessRef.current = { ...resetAccess };
     setPendingAccess({});
     setSearchQuery("");
     
@@ -2112,31 +2129,76 @@ function CreateRoleModal({
   const groupedAvailable = groupPerms(filteredAvailable);
   const isAlphabetical = groupBy === "alphabetical";
 
+  // Unified list: all permissions grouped together
+  const filteredAll = filterBySearch(allPermissions);
+  const groupedAll = groupPerms(filteredAll);
+
+  // Sort groups and permissions: active items first (based on initial state, frozen after load)
+  const sortedGroupEntries = Object.entries(groupedAll).sort(([aGroup, aPerms], [bGroup, bPerms]) => {
+    const aHasActive = aPerms.some(p => p.apiName in initialAccessRef.current) ? 0 : 1;
+    const bHasActive = bPerms.some(p => p.apiName in initialAccessRef.current) ? 0 : 1;
+    if (aHasActive !== bHasActive) return aHasActive - bHasActive;
+    return aGroup.localeCompare(bGroup);
+  });
+
+  const sortPermsInGroup = (perms: Permission[]) => {
+    return [...perms].sort((a, b) => {
+      const aActive = a.apiName in initialAccessRef.current ? 0 : 1;
+      const bActive = b.apiName in initialAccessRef.current ? 0 : 1;
+      if (aActive !== bActive) return aActive - bActive;
+      return a.displayName.localeCompare(b.displayName);
+    });
+  };
+
+  // Bundle checkbox helpers
+  const getBundleCheckState = (perms: Permission[]): "all" | "none" | "some" => {
+    const checkedCount = perms.filter(p => p.apiName in permissionAccess).length;
+    if (checkedCount === 0) return "none";
+    if (checkedCount === perms.length) return "all";
+    return "some";
+  };
+
+  const toggleBundle = (perms: Permission[]) => {
+    const state = getBundleCheckState(perms);
+    setPermissionAccess(prev => {
+      const next = { ...prev };
+      if (state === "all") {
+        for (const p of perms) {
+          if (p.apiName !== REQUIRED_PERMISSION) {
+            delete next[p.apiName];
+          }
+        }
+      } else {
+        for (const p of perms) {
+          if (!(p.apiName in next)) {
+            next[p.apiName] = p.actions;
+          }
+        }
+      }
+      return next;
+    });
+  };
+
   const togglePermission = (apiName: string) => {
     if (apiName === REQUIRED_PERMISSION) return;
     
-    setExitingApiName(apiName);
-    
-    setTimeout(() => {
-      setPermissionAccess(prev => {
-        const next = { ...prev };
-        if (apiName in next) {
-          delete next[apiName];
-        } else {
-          const accessLevel = pendingAccess[apiName];
-          const perm = allPermissions.find(p => p.apiName === apiName);
-          next[apiName] = accessLevel || perm?.actions || "read";
-          
-          setPendingAccess(pa => {
-            const newPa = { ...pa };
-            delete newPa[apiName];
-            return newPa;
-          });
-        }
-        return next;
-      });
-      setExitingApiName(null);
-    }, 200);
+    setPermissionAccess(prev => {
+      const next = { ...prev };
+      if (apiName in next) {
+        delete next[apiName];
+      } else {
+        const accessLevel = pendingAccess[apiName];
+        const perm = allPermissions.find(p => p.apiName === apiName);
+        next[apiName] = accessLevel || perm?.actions || "read";
+        
+        setPendingAccess(pa => {
+          const newPa = { ...pa };
+          delete newPa[apiName];
+          return newPa;
+        });
+      }
+      return next;
+    });
   };
 
   const updatePermissionAccess = (apiName: string, access: string) => {
@@ -2355,7 +2417,7 @@ function CreateRoleModal({
               >
                   {/* Permissions header */}
                   <div className="flex items-center gap-2">
-                    <span className="flex-1 text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
+                    <span className="text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
                       Permissions
                     </span>
                     {/* AI Assistant toggle button - invisible (not removed) when assistant is open to prevent layout shift */}
@@ -2368,6 +2430,9 @@ function CreateRoleModal({
                       <SparkleIcon />
                       <span className="leading-5 tracking-[-0.15px]">Assistant</span>
                     </button>
+                    <div className="ml-auto">
+                      <ToggleSwitch checked={isBundled} onChange={handleBundleToggle} label="Bundle" />
+                    </div>
                   </div>
 
                   {/* Controls row - full width */}
@@ -2375,7 +2440,7 @@ function CreateRoleModal({
                     <Dropdown
                       value={groupBy}
                       onChange={setGroupBy}
-                      options={groupByOptions}
+                      options={isBundled ? bundledGroupByOptions : unbundledGroupByOptions}
                     />
                     {/* Search field - spans full width */}
                     <div className="flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white focus-within:border-[#635BFF] transition-colors">
@@ -2398,94 +2463,66 @@ function CreateRoleModal({
                     </div>
                   </div>
 
-                  {/* Two-column permission lists */}
-                  <div className="flex-1 flex gap-4 min-h-0 overflow-hidden">
-                    {/* Current permissions */}
-                    <div className="flex-1 flex flex-col gap-2 overflow-hidden min-w-0">
-                      <div className="flex items-center gap-2.5">
-                        <span className="flex-1 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">Current</span>
-                        <span className="bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center">
-                          <AnimatedNumber value={selectedPermissions.length} />
-                        </span>
-                      </div>
-                      <div className="flex-1 overflow-y-auto">
-                        {Object.entries(groupedSelected).sort(([a], [b]) => a.localeCompare(b)).map(([group, perms]) => (
-                          <div key={group || "all"} className={isAlphabetical ? "" : "mb-3"}>
-                            {!isAlphabetical && group && (
-                              <div className="text-[12px] font-semibold text-[#353A44] leading-4 tracking-[-0.024px] mb-2">
-                                {group}
-                              </div>
-                            )}
-                            {perms.map(perm => (
-                              <div key={perm.apiName} className="mb-2">
-                                <PermissionCard
-                                  permission={perm}
-                                  showCheckbox
-                                  isChecked={true}
-                                  onToggle={() => !exitingApiName && togglePermission(perm.apiName)}
-                                  currentGroup={group}
-                                  groupBy={groupBy}
-                                  disabled={perm.apiName === REQUIRED_PERMISSION}
-                                  isExiting={exitingApiName === perm.apiName}
-                                  currentAccess={permissionAccess[perm.apiName]}
-                                  onAccessChange={(access) => updatePermissionAccess(perm.apiName, access)}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        ))}
-                        {filteredSelected.length === 0 && (
-                          <div className="text-center py-8 text-[#596171] text-[14px] leading-5 tracking-[-0.15px]">
-                            No permissions selected
-                          </div>
-                        )}
-                      </div>
+                  {/* Unified permission list */}
+                  <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                    <div className="flex items-center gap-2.5 py-4">
+                      <span className="flex-1 text-[12px] font-semibold text-[#353A44] leading-4 tracking-[-0.024px]">
+                        {selectedPermissions.length} of {allPermissions.length} selected
+                      </span>
                     </div>
-
-                    {/* Available permissions - collapses when assistant is open */}
-                    <div 
-                      className={`flex flex-col gap-2 overflow-hidden ${
-                        isAssistantOpen ? 'w-0 opacity-0 min-w-0' : 'flex-1 opacity-100 min-w-0'
-                      }`}
-                      style={{ transition: 'width 400ms cubic-bezier(0.4, 0, 0.2, 1), opacity 300ms cubic-bezier(0.4, 0, 0.2, 1)' }}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className="flex-1 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">Available</span>
-                        <span className="bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center">
-                          <AnimatedNumber value={availablePermissions.length} />
-                        </span>
-                      </div>
-                      <div className="flex-1 overflow-y-auto">
-                        {Object.entries(groupedAvailable).sort(([a], [b]) => a.localeCompare(b)).map(([group, perms]) => (
+                    <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2">
+                      {isBundled ? (
+                        /* Bundled view */
+                        sortedGroupEntries.map(([group, perms]) => (
+                          <CustomizeBundleCard
+                            key={group}
+                            groupName={group}
+                            description={GROUP_DESCRIPTIONS[groupBy]?.[group]}
+                            permissions={sortPermsInGroup(perms)}
+                            checkState={getBundleCheckState(perms)}
+                            onToggleBundle={() => toggleBundle(perms)}
+                            permissionAccess={permissionAccess}
+                            onTogglePermission={(apiName) => togglePermission(apiName)}
+                            onAccessChange={updatePermissionAccess}
+                          />
+                        ))
+                      ) : (
+                        /* Unbundled view */
+                        sortedGroupEntries.map(([group, perms]) => (
                           <div key={group || "all"} className={isAlphabetical ? "" : "mb-3"}>
                             {!isAlphabetical && group && (
                               <div className="text-[12px] font-semibold text-[#353A44] leading-4 tracking-[-0.024px] mb-2">
                                 {group}
                               </div>
                             )}
-                            {perms.map(perm => (
-                              <div key={perm.apiName} className="mb-2">
-                                <PermissionCard
-                                  permission={perm}
-                                  showCheckbox
-                                  isChecked={false}
-                                  onToggle={() => !exitingApiName && togglePermission(perm.apiName)}
-                                  currentGroup={group}
-                                  groupBy={groupBy}
-                                  isExiting={exitingApiName === perm.apiName}
-                                  pendingAccess={pendingAccess[perm.apiName]}
-                                  onPendingAccessChange={(access) => updatePendingAccess(perm.apiName, access)}
-                                />
-                              </div>
-                            ))}
+                            {sortPermsInGroup(perms).map(perm => {
+                              const isChecked = perm.apiName in permissionAccess;
+                              return (
+                                <div key={perm.apiName} className="mb-2">
+                                  <PermissionCard
+                                    permission={perm}
+                                    showCheckbox
+                                    isChecked={isChecked}
+                                    onToggle={() => togglePermission(perm.apiName)}
+                                    currentGroup={group}
+                                    groupBy={groupBy}
+                                    disabled={perm.apiName === REQUIRED_PERMISSION}
+                                    currentAccess={isChecked ? permissionAccess[perm.apiName] : undefined}
+                                    onAccessChange={isChecked ? (access) => updatePermissionAccess(perm.apiName, access) : undefined}
+                                    pendingAccess={!isChecked ? pendingAccess[perm.apiName] : undefined}
+                                    onPendingAccessChange={!isChecked ? (access) => updatePendingAccess(perm.apiName, access) : undefined}
+                                  />
+                                </div>
+                              );
+                            })}
                           </div>
-                        ))}
-                        {filteredAvailable.length === 0 && (
-                          <div className="text-center py-8 text-[#596171] text-[14px] leading-5 tracking-[-0.15px]">
-                            All permissions selected
-                          </div>
-                        )}
-                      </div>
+                        ))
+                      )}
+                      {filteredAll.length === 0 && (
+                        <div className="text-center py-8 text-[#596171] text-[14px] leading-5 tracking-[-0.15px]">
+                          No permissions match your search
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -2999,8 +3036,7 @@ function BundleCard({
         </div>
         {/* Chevron */}
         <ChevronDown
-          size={12}
-          className={`text-[#474E5A] flex-shrink-0 transition-transform duration-200 ${
+          className={`w-4 h-4 text-[#474E5A] flex-shrink-0 transition-transform duration-200 ${
             isExpanded ? "rotate-180" : ""
           }`}
         />
@@ -3013,7 +3049,7 @@ function BundleCard({
       >
         <div className="overflow-hidden">
           <div className="border-t border-[#D8DEE4] mx-2" />
-          <div className="flex flex-col divide-y divide-[#D8DEE4] ml-2">
+          <div className="flex flex-col divide-y divide-[#D8DEE4] mx-2">
             {perms.map((permission) => (
               <PermissionItem
                 key={permission.apiName}
