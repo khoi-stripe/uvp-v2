@@ -1047,7 +1047,7 @@ function CustomizeBundleCard({
   return (
     <div className="bg-[#F5F6F8] rounded-[4px] py-4 px-2 shrink-0 flex flex-col gap-2">
       {/* Header */}
-      <div className="flex items-center gap-3 px-2">
+      <div className="flex items-center gap-4 px-2">
         <Checkbox
           checked={checkState === "all"}
           indeterminate={checkState === "some"}
@@ -1087,7 +1087,7 @@ function CustomizeBundleCard({
       >
         <div className="overflow-hidden">
           <div className="border-t border-[#D8DEE4] mx-2" />
-          <div className="flex flex-col divide-y divide-[#D8DEE4] mx-2">
+          <div className="flex flex-col divide-y divide-[#D8DEE4] ml-6 mr-2">
             {perms.map((permission) => {
               const isChecked = permission.apiName in permissionAccess;
               const isRequired = permission.apiName === REQUIRED_PERMISSION;
@@ -3049,7 +3049,7 @@ function BundleCard({
       >
         <div className="overflow-hidden">
           <div className="border-t border-[#D8DEE4] mx-2" />
-          <div className="flex flex-col divide-y divide-[#D8DEE4] mx-2">
+          <div className="flex flex-col divide-y divide-[#D8DEE4] ml-6 mr-2">
             {perms.map((permission) => (
               <PermissionItem
                 key={permission.apiName}
