@@ -264,10 +264,10 @@ function PermissionCardContent({
     <div className={`flex-1 min-w-0 flex flex-col ${insideGroup ? "gap-0.5" : "gap-4"}`}>
       {/* Top section: title and description */}
       <div className="flex flex-col gap-0">
-        <h4 className={`font-semibold text-[#353A44] ${insideGroup ? "text-[12px] leading-4 tracking-[-0.024px]" : "text-[14px] leading-5 tracking-[-0.15px]"}`}>
+        <h4 className="font-semibold text-[#353A44] text-[14px] leading-5 tracking-[-0.15px]">
           {permission.displayName}
         </h4>
-        <p className={`text-[#596171] ${insideGroup ? "text-[12px] leading-4" : "text-[14px] leading-5"}`}>
+        <p className="text-[14px] text-[#596171] leading-5">
           {permission.description}
         </p>
       </div>
@@ -1756,7 +1756,7 @@ function CustomizeRoleModal({
                       <span className="leading-5 tracking-[-0.15px]">Assistant</span>
                     </button>
                     <div className="ml-auto">
-                      <ToggleSwitch checked={isGrouped} onChange={handleGroupToggle} label="Group" />
+                      <ToggleSwitch checked={isGrouped} onChange={handleGroupToggle} label="Bundle" />
                     </div>
                   </div>
 
@@ -2431,7 +2431,7 @@ function CreateRoleModal({
                       <span className="leading-5 tracking-[-0.15px]">Assistant</span>
                     </button>
                     <div className="ml-auto">
-                      <ToggleSwitch checked={isGrouped} onChange={handleGroupToggle} label="Group" />
+                      <ToggleSwitch checked={isGrouped} onChange={handleGroupToggle} label="Bundle" />
                     </div>
                   </div>
 
@@ -3469,7 +3469,7 @@ export default function RolesPermissionsPage() {
                     setGroupBy("productCategory");
                   }
                 }}
-                label="Group"
+                label="Bundle"
               />
             </div>
 
