@@ -1045,7 +1045,7 @@ function CustomizeGroupCard({
   const REQUIRED_PERMISSION = "dashboard_baseline";
 
   return (
-    <div className="bg-[#F5F6F8] rounded-[4px] py-4 px-2 shrink-0 flex flex-col gap-2">
+    <div className="bg-[#F5F6F8] rounded-[4px] py-4 px-2 shrink-0 flex flex-col">
       {/* Header */}
       <div className="flex items-center gap-4 px-2">
         <Checkbox
@@ -1067,7 +1067,7 @@ function CustomizeGroupCard({
               </span>
             </div>
             {description && (
-              <p className="text-[14px] text-[#596171] leading-5 line-clamp-2 mt-0.5">
+              <p className="text-[14px] text-[#596171] leading-5 line-clamp-2">
                 {description}
               </p>
             )}
@@ -1086,7 +1086,7 @@ function CustomizeGroupCard({
         style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
       >
         <div className="overflow-hidden">
-          <div className="border-t border-[#D8DEE4] mx-2" />
+          <div className="pt-4 mx-2"><div className="border-t border-[#D8DEE4]" /></div>
           <div className="flex flex-col divide-y divide-[#D8DEE4] ml-6 mr-2">
             {perms.map((permission) => {
               const isChecked = permission.apiName in permissionAccess;
@@ -3013,7 +3013,7 @@ function GroupCard({
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   return (
-    <div className="bg-[#F5F6F8] rounded-[4px] py-4 px-2 shrink-0 flex flex-col gap-2">
+    <div className="bg-[#F5F6F8] rounded-[4px] py-4 px-2 shrink-0 flex flex-col">
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
@@ -3029,7 +3029,7 @@ function GroupCard({
             </span>
           </div>
           {description && (
-            <p className="text-[14px] text-[#596171] leading-5 line-clamp-2 mt-0.5">
+            <p className="text-[14px] text-[#596171] leading-5 line-clamp-2">
               {description}
             </p>
           )}
@@ -3048,7 +3048,7 @@ function GroupCard({
         style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
       >
         <div className="overflow-hidden">
-          <div className="border-t border-[#D8DEE4] mx-2" />
+          <div className="pt-4 mx-2"><div className="border-t border-[#D8DEE4]" /></div>
           <div className="flex flex-col divide-y divide-[#D8DEE4] ml-6 mr-2">
             {perms.map((permission) => (
               <PermissionItem
