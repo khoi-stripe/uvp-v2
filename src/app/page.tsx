@@ -1030,6 +1030,8 @@ function CustomizeGroupCard({
   onTogglePermission,
   onAccessChange,
   defaultExpanded = false,
+  isFirst = false,
+  isLast = false,
 }: {
   groupName: string;
   description?: string;
@@ -1040,12 +1042,22 @@ function CustomizeGroupCard({
   onTogglePermission: (apiName: string) => void;
   onAccessChange: (apiName: string, access: string) => void;
   defaultExpanded?: boolean;
+  isFirst?: boolean;
+  isLast?: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const REQUIRED_PERMISSION = "dashboard_baseline";
 
+  const radiusClass = isFirst && isLast
+    ? "rounded-[4px]"
+    : isFirst
+    ? "rounded-t-[4px]"
+    : isLast
+    ? "rounded-b-[4px]"
+    : "";
+
   return (
-    <div className="bg-[#F5F6F8] rounded-[4px] py-4 px-2 shrink-0 flex flex-col">
+    <div className={`bg-[#F5F6F8] ${radiusClass} py-4 px-2 shrink-0 flex flex-col`}>
       {/* Header */}
       <div className="flex items-center gap-4 px-2">
         <Checkbox
@@ -1796,10 +1808,10 @@ function CustomizeRoleModal({
                         {selectedPermissions.length} of {allPermissions.length} selected
                       </span>
                     </div>
-                    <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2">
+                    <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isGrouped ? "gap-1" : "gap-2"}`}>
                       {isGrouped ? (
                         /* Grouped view: CustomizeGroupCard for each group */
-                        sortedGroupEntries.map(([group, perms]) => (
+                        sortedGroupEntries.map(([group, perms], idx) => (
                           <CustomizeGroupCard
                             key={group}
                             groupName={group}
@@ -1810,6 +1822,8 @@ function CustomizeRoleModal({
                             permissionAccess={permissionAccess}
                             onTogglePermission={(apiName) => togglePermission(apiName)}
                             onAccessChange={updatePermissionAccess}
+                            isFirst={idx === 0}
+                            isLast={idx === sortedGroupEntries.length - 1}
                           />
                         ))
                       ) : (
@@ -2470,10 +2484,10 @@ function CreateRoleModal({
                         {selectedPermissions.length} of {allPermissions.length} selected
                       </span>
                     </div>
-                    <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2">
+                    <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isGrouped ? "gap-1" : "gap-2"}`}>
                       {isGrouped ? (
                         /* Grouped view */
-                        sortedGroupEntries.map(([group, perms]) => (
+                        sortedGroupEntries.map(([group, perms], idx) => (
                           <CustomizeGroupCard
                             key={group}
                             groupName={group}
@@ -2484,6 +2498,8 @@ function CreateRoleModal({
                             permissionAccess={permissionAccess}
                             onTogglePermission={(apiName) => togglePermission(apiName)}
                             onAccessChange={updatePermissionAccess}
+                            isFirst={idx === 0}
+                            isLast={idx === sortedGroupEntries.length - 1}
                           />
                         ))
                       ) : (
@@ -3001,6 +3017,8 @@ function GroupCard({
   groupBy,
   customAccess,
   defaultExpanded = false,
+  isFirst = false,
+  isLast = false,
 }: {
   groupName: string;
   description?: string;
@@ -3009,11 +3027,21 @@ function GroupCard({
   groupBy: string;
   customAccess?: Record<string, string>;
   defaultExpanded?: boolean;
+  isFirst?: boolean;
+  isLast?: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
+  const radiusClass = isFirst && isLast
+    ? "rounded-[4px]"
+    : isFirst
+    ? "rounded-t-[4px]"
+    : isLast
+    ? "rounded-b-[4px]"
+    : "";
+
   return (
-    <div className="bg-[#F5F6F8] rounded-[4px] py-4 px-2 shrink-0 flex flex-col">
+    <div className={`bg-[#F5F6F8] ${radiusClass} py-4 px-2 shrink-0 flex flex-col`}>
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
@@ -3503,11 +3531,11 @@ export default function RolesPermissionsPage() {
             </div>
 
             {/* Permissions list */}
-            <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2">
+            <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isGrouped ? "gap-1" : "gap-2"}`}>
               {/* Grouped view: collapsible GroupCards */}
-              {isGrouped && groupedPermissions && Object.entries(groupedPermissions)
-                .sort(([a], [b]) => a.localeCompare(b))
-                .map(([groupName, perms]) => (
+              {isGrouped && groupedPermissions && (() => {
+                const entries = Object.entries(groupedPermissions).sort(([a], [b]) => a.localeCompare(b));
+                return entries.map(([groupName, perms], idx) => (
                   <GroupCard
                     key={groupName}
                     groupName={groupName}
@@ -3516,8 +3544,11 @@ export default function RolesPermissionsPage() {
                     roleId={selectedRole.id}
                     groupBy={groupBy}
                     customAccess={selectedRole.permissionAccess}
+                    isFirst={idx === 0}
+                    isLast={idx === entries.length - 1}
                   />
-                ))}
+                ));
+              })()}
 
               {/* Ungrouped: Alphabetical (flat list) - show task categories as tags */}
               {!isGrouped && alphabeticalPermissions && (
