@@ -521,10 +521,10 @@ function PermissionCard({
 
   // Static version for main view
   return (
-    <div className={`flex items-start gap-4 rounded ${
+    <div className={`flex items-start gap-4 ${
       insideBundle
         ? "pr-2 py-3"
-        : "p-4 bg-[#F5F6F8]"
+        : "p-4 bg-[#F5F6F8] rounded"
     }`}>
       {cardContent}
     </div>
@@ -1062,7 +1062,7 @@ function CustomizeBundleCard({
               <span className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] truncate">
                 {groupName}
               </span>
-              <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-white text-[12px] text-[#596171] leading-4 rounded-full text-center">
+              <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-white text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
                 {perms.filter(p => p.apiName in permissionAccess).length} of {perms.length}
               </span>
             </div>
@@ -2404,7 +2404,7 @@ function CreateRoleModal({
                     <div className="flex-1 flex flex-col gap-2 overflow-hidden min-w-0">
                       <div className="flex items-center gap-2.5">
                         <span className="flex-1 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">Current</span>
-                        <span className="bg-[#F5F6F8] text-[12px] text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center">
+                        <span className="bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center">
                           <AnimatedNumber value={selectedPermissions.length} />
                         </span>
                       </div>
@@ -2451,7 +2451,7 @@ function CreateRoleModal({
                     >
                       <div className="flex items-center gap-2.5">
                         <span className="flex-1 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">Available</span>
-                        <span className="bg-[#F5F6F8] text-[12px] text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center">
+                        <span className="bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center">
                           <AnimatedNumber value={availablePermissions.length} />
                         </span>
                       </div>
@@ -2987,7 +2987,7 @@ function BundleCard({
             <span className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] truncate">
               {groupName}
             </span>
-            <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-white text-[12px] text-[#596171] leading-4 rounded-full text-center">
+            <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-white text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
               {perms.length}
             </span>
           </div>
@@ -3253,7 +3253,7 @@ export default function RolesPermissionsPage() {
                     <span className="flex-1 text-left text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">
                       {category.name}
                     </span>
-                    <span className="text-[12px] text-[#596171] leading-4 min-w-[16px] px-1 text-center">
+                    <span className="text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 text-center">
                       {category.roles.length}
                     </span>
                     <ChevronDown 
@@ -3321,7 +3321,7 @@ export default function RolesPermissionsPage() {
                   {selectedRole.name}
                 </h2>
                 <Tooltip content={`There are ${selectedRole.userCount} users with the ${selectedRole.name} role`}>
-                  <span className="bg-white text-[12px] text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center cursor-default">
+                  <span className="bg-white text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center cursor-default">
                     {selectedRole.userCount}
                   </span>
                 </Tooltip>
@@ -3420,7 +3420,7 @@ export default function RolesPermissionsPage() {
             {/* Header */}
             <div className="flex items-center gap-2">
               <h2 className="text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Permissions</h2>
-              <span className="bg-[#F5F6F8] text-[12px] text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center">
+              <span className="bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center">
                 {searchQuery ? `${filteredPermissions.length}/${rolePermissions.length}` : rolePermissions.length}
               </span>
               <div className="flex-1" />
