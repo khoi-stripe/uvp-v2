@@ -895,6 +895,16 @@ function RoleMenu({
   );
 }
 
+function FilterIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path fillRule="evenodd" clipRule="evenodd" d="M0.5 3.125C0.5 2.64175 0.891751 2.25 1.375 2.25H14.625C15.1082 2.25 15.5 2.64175 15.5 3.125C15.5 3.60825 15.1082 4 14.625 4H1.375C0.891751 4 0.5 3.60825 0.5 3.125Z" fill="currentColor"/>
+      <path fillRule="evenodd" clipRule="evenodd" d="M3 8.00098C3 7.51773 3.39175 7.12598 3.875 7.12598H12.125C12.6082 7.12598 13 7.51773 13 8.00098C13 8.48423 12.6082 8.87598 12.125 8.87598H3.875C3.39175 8.87598 3 8.48423 3 8.00098Z" fill="currentColor"/>
+      <path fillRule="evenodd" clipRule="evenodd" d="M5 12.875C5 12.3918 5.39175 12 5.875 12H10.125C10.6082 12 11 12.3918 11 12.875C11 13.3582 10.6082 13.75 10.125 13.75H5.875C5.39175 13.75 5 13.3582 5 12.875Z" fill="currentColor"/>
+    </svg>
+  );
+}
+
 // Permissions overflow menu with toggle options
 function PermissionsOverflowMenu({
   showAll,
@@ -915,7 +925,7 @@ function PermissionsOverflowMenu({
         onClick={() => setIsOpen(!isOpen)}
         className="p-1 rounded-md hover:bg-[#EBEEF1] transition-colors"
       >
-        <MoreHorizontal className="w-5 h-5 text-[#474E5A]" />
+        <FilterIcon className="w-3 h-3 text-[#474E5A]" />
       </button>
 
       {isOpen && (
