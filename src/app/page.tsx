@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { ChevronDown, MoreHorizontal, X } from "lucide-react";
 
 // Animated ticker number component
@@ -240,12 +240,14 @@ function PermissionCardContent({
   currentGroup,
   groupBy,
   insideGroup = false,
+  isInactive = false,
 }: {
   permission: Permission;
   showTaskCategories?: boolean;
   currentGroup?: string;
   groupBy?: string;
   insideGroup?: boolean;
+  isInactive?: boolean;
 }) {
   // Get other groups this permission belongs to (excluding current group)
   const getOtherGroups = (): string[] => {
@@ -261,7 +263,7 @@ function PermissionCardContent({
   const otherGroups = getOtherGroups();
 
   return (
-    <div className={`flex-1 min-w-0 flex flex-col ${insideGroup ? "gap-0.5" : "gap-4"}`}>
+    <div className={`flex-1 min-w-0 flex flex-col ${insideGroup ? "gap-0.5" : "gap-2"}`}>
       {/* Top section: title and description */}
       <div className="flex flex-col gap-0">
         <h4 className="font-semibold text-[#353A44] text-[14px] leading-5 tracking-[-0.15px]">
@@ -394,6 +396,7 @@ function PermissionCard({
   isExiting = false,
   disabled = false,
   insideGroup = false,
+  isInactive = false,
 }: {
   permission: Permission;
   showCheckbox?: boolean;
@@ -411,11 +414,12 @@ function PermissionCard({
   isExiting?: boolean;
   disabled?: boolean;  // For required permissions that can't be toggled
   insideGroup?: boolean;
+  isInactive?: boolean;  // For "show all" mode - permission not assigned to current role
 }) {
   // Default to permission's actions if not provided
   const { label: defaultLabel, hasWrite: defaultHasWrite } = getAccessLabel(permission.actions);
-  const finalLabel = accessLabel ?? defaultLabel;
-  const finalHasWrite = hasWrite ?? defaultHasWrite;
+  const finalLabel = isInactive ? undefined : (accessLabel ?? defaultLabel);
+  const finalHasWrite = isInactive ? false : (hasWrite ?? defaultHasWrite);
   
   // Check if permission supports multiple access levels
   const supportsMultipleAccess = permission.actions.toLowerCase().includes("read") && 
@@ -428,6 +432,15 @@ function PermissionCard({
 
   // Render access badge or selector
   const renderAccessBadge = () => {
+    // For inactive permissions in "show all" mode
+    if (isInactive) {
+      return (
+        <span className="text-[12px] text-[#818DA0] flex-shrink-0">
+          No access
+        </span>
+      );
+    }
+
     // For available permissions that need access selection - show placeholder selector
     if (needsAccessSelection) {
       return (
@@ -500,6 +513,7 @@ function PermissionCard({
         currentGroup={currentGroup} 
         groupBy={groupBy}
         insideGroup={insideGroup}
+        isInactive={isInactive}
       />
       {renderAccessBadge()}
     </>
@@ -521,9 +535,9 @@ function PermissionCard({
 
   // Static version for main view
   return (
-    <div className={`flex items-start gap-4 ${
+    <div className={`flex items-start gap-4 transition-colors ${
       insideGroup
-        ? "py-3"
+        ? "py-3 hover:bg-[#EBEEF1]/50"
         : "p-4 bg-[#F5F6F8] rounded"
     }`}>
       {cardContent}
@@ -873,6 +887,53 @@ function RoleMenu({
                   </button>
                 </React.Fragment>
               ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// Permissions overflow menu with toggle options
+function PermissionsOverflowMenu({
+  showAll,
+  onShowAllChange,
+  isGrouped,
+  onGroupedChange,
+}: {
+  showAll: boolean;
+  onShowAllChange: (v: boolean) => void;
+  isGrouped: boolean;
+  onGroupedChange: (v: boolean) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="p-1 rounded-md hover:bg-[#EBEEF1] transition-colors"
+      >
+        <MoreHorizontal className="w-5 h-5 text-[#474E5A]" />
+      </button>
+
+      {isOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setIsOpen(false)}
+          />
+          <div className="absolute top-full right-0 mt-1 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_5px_15px_rgba(0,0,0,0.12),0_15px_35px_rgba(48,49,61,0.08)] z-20 whitespace-nowrap overflow-hidden">
+            <div className="p-2 flex flex-col gap-1">
+              <div className="flex items-center justify-between gap-6 px-2 py-1.5">
+                <span className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">Bundle</span>
+                <ToggleSwitch checked={isGrouped} onChange={onGroupedChange} />
+              </div>
+              <div className="flex items-center justify-between gap-6 px-2 py-1.5">
+                <span className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">Show all</span>
+                <ToggleSwitch checked={showAll} onChange={onShowAllChange} />
+              </div>
             </div>
           </div>
         </>
@@ -3019,6 +3080,8 @@ function GroupCard({
   defaultExpanded = false,
   isFirst = false,
   isLast = false,
+  activeApiNames,
+  showAll = false,
 }: {
   groupName: string;
   description?: string;
@@ -3029,6 +3092,8 @@ function GroupCard({
   defaultExpanded?: boolean;
   isFirst?: boolean;
   isLast?: boolean;
+  activeApiNames?: Set<string>;
+  showAll?: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
@@ -3053,7 +3118,9 @@ function GroupCard({
               {groupName}
             </span>
             <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-white text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
-              {perms.length}
+              {showAll && activeApiNames
+                ? `${perms.filter(p => activeApiNames.has(p.apiName)).length} of ${perms.length}`
+                : perms.length}
             </span>
           </div>
           {description && (
@@ -3088,6 +3155,7 @@ function GroupCard({
                 groupBy={groupBy}
                 customAccess={customAccess?.[permission.apiName]}
                 insideGroup
+                isInactive={showAll && activeApiNames ? !activeApiNames.has(permission.apiName) : false}
               />
             ))}
           </div>
@@ -3103,6 +3171,7 @@ export default function RolesPermissionsPage() {
   const [expandedCategory, setExpandedCategory] = useState<string | null>(roleCategories[0]?.name || null);
   const [groupBy, setGroupBy] = useState<GroupByOption>("productCategory");
   const [isGrouped, setIsGrouped] = useState(true);
+  const [showAll, setShowAll] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const roleDetailsRef = useRef<HTMLElement>(null);
   const [isRiskExpanded, setIsRiskExpanded] = useState(false);
@@ -3196,12 +3265,16 @@ export default function RolesPermissionsPage() {
     ? getAllPermissions().filter(p => selectedRole.permissionApiNames!.includes(p.apiName))
     : getPermissionsForRole(selectedRole.id);
   
+  // When showAll is true, display all permissions with inactive ones dimmed
+  const activeApiNames = useMemo(() => new Set(rolePermissions.map(p => p.apiName)), [rolePermissions]);
+  const displayPermissions = showAll ? getAllPermissions() : rolePermissions;
+
   // Generate risk assessment for the current role
   const riskAssessment = generateRiskAssessment(rolePermissions);
   
   // Filter permissions by search query
   const filteredPermissions = searchQuery
-    ? rolePermissions.filter(
+    ? displayPermissions.filter(
         (p) =>
           p.apiName.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -3209,14 +3282,31 @@ export default function RolesPermissionsPage() {
           p.productCategory.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.taskCategories.some(tc => tc.toLowerCase().includes(searchQuery.toLowerCase()))
       )
-    : rolePermissions;
+    : displayPermissions;
   
+  // Sort: active permissions first, then inactive
+  const sortedFilteredPermissions = showAll
+    ? [...filteredPermissions].sort((a, b) => {
+        const aActive = activeApiNames.has(a.apiName) ? 0 : 1;
+        const bActive = activeApiNames.has(b.apiName) ? 0 : 1;
+        if (aActive !== bActive) return aActive - bActive;
+        return a.displayName.localeCompare(b.displayName);
+      })
+    : filteredPermissions;
+
   const groupedPermissions = groupBy !== "alphabetical" 
-    ? groupPermissions(filteredPermissions, groupBy)
+    ? groupPermissions(sortedFilteredPermissions, groupBy)
     : null;
   
   const alphabeticalPermissions = groupBy === "alphabetical"
-    ? [...filteredPermissions].sort((a, b) => a.apiName.localeCompare(b.apiName))
+    ? [...sortedFilteredPermissions].sort((a, b) => {
+        if (showAll) {
+          const aActive = activeApiNames.has(a.apiName) ? 0 : 1;
+          const bActive = activeApiNames.has(b.apiName) ? 0 : 1;
+          if (aActive !== bActive) return aActive - bActive;
+        }
+        return a.apiName.localeCompare(b.apiName);
+      })
     : null;
 
   // Render sandbox view if active
@@ -3485,19 +3575,25 @@ export default function RolesPermissionsPage() {
             <div className="flex items-center gap-2">
               <h2 className="text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Permissions</h2>
               <span className="bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center">
-                {searchQuery ? `${filteredPermissions.length}/${rolePermissions.length}` : rolePermissions.length}
+                {showAll
+                  ? (searchQuery
+                    ? `${filteredPermissions.filter(p => activeApiNames.has(p.apiName)).length} of ${filteredPermissions.length}`
+                    : `${rolePermissions.length} of ${getAllPermissions().length}`)
+                  : (searchQuery
+                    ? `${filteredPermissions.length}/${rolePermissions.length}`
+                    : rolePermissions.length)}
               </span>
               <div className="flex-1" />
-              <ToggleSwitch
-                checked={isGrouped}
-                onChange={(v) => {
+              <PermissionsOverflowMenu
+                showAll={showAll}
+                onShowAllChange={setShowAll}
+                isGrouped={isGrouped}
+                onGroupedChange={(v) => {
                   setIsGrouped(v);
-                  // When turning group ON and currently on alphabetical, auto-switch to productCategory
                   if (v && groupBy === "alphabetical") {
                     setGroupBy("productCategory");
                   }
                 }}
-                label="Bundle"
               />
             </div>
 
@@ -3535,7 +3631,22 @@ export default function RolesPermissionsPage() {
               {/* Grouped view: collapsible GroupCards */}
               {isGrouped && groupedPermissions && (() => {
                 const entries = Object.entries(groupedPermissions).sort(([a], [b]) => a.localeCompare(b));
-                return entries.map(([groupName, perms], idx) => (
+                // When showAll is on, sort active bundles and permissions to the top
+                const sortedEntries = showAll
+                  ? entries
+                      .map(([groupName, perms]) => [groupName, [...perms].sort((a, b) => {
+                        const aActive = activeApiNames.has(a.apiName) ? 0 : 1;
+                        const bActive = activeApiNames.has(b.apiName) ? 0 : 1;
+                        if (aActive !== bActive) return aActive - bActive;
+                        return a.displayName.localeCompare(b.displayName);
+                      })] as [string, Permission[]])
+                      .sort(([, permsA], [, permsB]) => {
+                        const aHasActive = permsA.some(p => activeApiNames.has(p.apiName)) ? 0 : 1;
+                        const bHasActive = permsB.some(p => activeApiNames.has(p.apiName)) ? 0 : 1;
+                        return aHasActive - bHasActive;
+                      })
+                  : entries;
+                return sortedEntries.map(([groupName, perms], idx) => (
                   <GroupCard
                     key={groupName}
                     groupName={groupName}
@@ -3545,7 +3656,9 @@ export default function RolesPermissionsPage() {
                     groupBy={groupBy}
                     customAccess={selectedRole.permissionAccess}
                     isFirst={idx === 0}
-                    isLast={idx === entries.length - 1}
+                    isLast={idx === sortedEntries.length - 1}
+                    activeApiNames={showAll ? activeApiNames : undefined}
+                    showAll={showAll}
                   />
                 ));
               })()}
@@ -3560,6 +3673,7 @@ export default function RolesPermissionsPage() {
                       roleId={selectedRole.id}
                       showTaskCategories={true}
                       customAccess={selectedRole.permissionAccess?.[permission.apiName]}
+                      isInactive={showAll ? !activeApiNames.has(permission.apiName) : false}
                     />
                   ))}
                 </div>
@@ -3567,7 +3681,14 @@ export default function RolesPermissionsPage() {
 
               {/* Ungrouped: list with section headers */}
               {!isGrouped && groupedPermissions && Object.entries(groupedPermissions)
-                .sort(([a], [b]) => a.localeCompare(b))
+                .sort(([a], [b]) => {
+                  if (showAll) {
+                    const aHasActive = groupedPermissions[a].some(p => activeApiNames.has(p.apiName)) ? 0 : 1;
+                    const bHasActive = groupedPermissions[b].some(p => activeApiNames.has(p.apiName)) ? 0 : 1;
+                    if (aHasActive !== bHasActive) return aHasActive - bHasActive;
+                  }
+                  return a.localeCompare(b);
+                })
                 .map(([groupName, perms]) => (
                   <div key={groupName} className="flex flex-col gap-2">
                     <h3 className="text-[12px] font-semibold text-[#353A44] leading-4 tracking-[-0.024px]">
@@ -3583,6 +3704,7 @@ export default function RolesPermissionsPage() {
                           currentGroup={groupName}
                           groupBy={groupBy}
                           customAccess={selectedRole.permissionAccess?.[permission.apiName]}
+                          isInactive={showAll ? !activeApiNames.has(permission.apiName) : false}
                         />
                       ))}
                     </div>
@@ -3684,6 +3806,7 @@ function PermissionItem({
   groupBy,
   customAccess,
   insideGroup = false,
+  isInactive = false,
 }: {
   permission: Permission;
   roleId: string;
@@ -3692,6 +3815,7 @@ function PermissionItem({
   groupBy?: string;
   customAccess?: string;  // For custom roles - the user-set access level
   insideGroup?: boolean;
+  isInactive?: boolean;
 }) {
   // For custom roles (or roles not in roleAccess), use the permission's actions field
   const access = permission.roleAccess[roleId];
@@ -3730,9 +3854,10 @@ function PermissionItem({
       showTaskCategories={showTaskCategories}
       currentGroup={currentGroup}
       groupBy={groupBy}
-      accessLabel={accessLabel}
-      hasWrite={hasWrite}
+      accessLabel={isInactive ? undefined : accessLabel}
+      hasWrite={isInactive ? false : hasWrite}
       insideGroup={insideGroup}
+      isInactive={isInactive}
     />
   );
 }
