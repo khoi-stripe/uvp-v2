@@ -2376,7 +2376,7 @@ export function generateCannotDo(selectedPermissions: Permission[]): string[] {
     "dispute_operations": "Accept, challenge, or manage disputes",
     "order_refund_operations": "Issue refunds",
     "charge_operations": "Create new charges or payments",
-    "customer_pii_operations": "View or edit customer personal information",
+    "customer_operations": "View or edit customer personal information",
     "account_admin_management_operations": "Perform administrative account changes",
   };
 
