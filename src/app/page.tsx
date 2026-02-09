@@ -958,8 +958,11 @@ function PermissionsFilterMenu({
   const popover = usePopover();
   const options = isGrouped ? groupedGroupByOptions : ungroupedGroupByOptions;
 
+  const currentLabel = options.find(o => o.value === groupBy)?.label || groupBy;
+
   return (
-    <div className="relative">
+    <div className="relative flex items-center gap-1">
+      <span className="text-[12px] text-[#596171] leading-4">{currentLabel}</span>
       <button
         onClick={() => popover.toggle()}
         className="p-1 rounded-md hover:bg-[#EBEEF1] transition-colors"
