@@ -1,7 +1,42 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { ChevronDown, MoreHorizontal, X } from "lucide-react";
+
+// Hook for animated popover open/close
+function usePopover() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const open = useCallback(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setIsClosing(false);
+    setIsOpen(true);
+  }, []);
+
+  const close = useCallback(() => {
+    setIsClosing(true);
+    timeoutRef.current = setTimeout(() => {
+      setIsOpen(false);
+      setIsClosing(false);
+    }, 100); // matches popover-out animation duration
+  }, []);
+
+  const toggle = useCallback(() => {
+    if (isOpen && !isClosing) close();
+    else open();
+  }, [isOpen, isClosing, open, close]);
+
+  useEffect(() => {
+    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
+  }, []);
+
+  const isVisible = isOpen;
+  const animationClass = isClosing ? "animate-popover-out" : "animate-popover-in";
+
+  return { isVisible, animationClass, open, close, toggle };
+}
 
 // Animated ticker number component
 function AnimatedNumber({ value, className = "" }: { value: number; className?: string }) {
@@ -320,7 +355,7 @@ function AccessSelector({
   disabled?: boolean;
   showPlaceholder?: boolean;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const popover = usePopover();
   const hasValue = value && !showPlaceholder;
   const { label, hasWrite } = hasValue ? getAccessLabel(value) : { label: "Choose", hasWrite: false };
 
@@ -329,7 +364,7 @@ function AccessSelector({
       <button
         onClick={(e) => {
           e.stopPropagation();
-          if (!disabled) setIsOpen(!isOpen);
+          if (!disabled) popover.toggle();
         }}
         className={`flex items-center gap-1 text-[12px] font-medium px-2 py-0.5 rounded flex-shrink-0 transition-colors ${
           showPlaceholder
@@ -343,23 +378,23 @@ function AccessSelector({
         {!disabled && <ArrowUpDownIcon size={10} />}
       </button>
 
-      {isOpen && (
+      {popover.isVisible && (
         <>
           <div 
             className="fixed inset-0 z-10" 
             onClick={(e) => {
               e.stopPropagation();
-              setIsOpen(false);
+              popover.close();
             }} 
           />
-          <div className="absolute top-full right-0 mt-1 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_15px_35px_rgba(48,49,61,0.08),0_5px_15px_rgba(0,0,0,0.12)] z-20 min-w-[100px] p-1 overflow-hidden">
+          <div className={`absolute top-full right-0 mt-1 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_15px_35px_rgba(48,49,61,0.08),0_5px_15px_rgba(0,0,0,0.12)] z-20 min-w-[100px] p-1 overflow-hidden ${popover.animationClass}`}>
             {accessOptions.map((option) => (
               <button
                 key={option.value}
                 onClick={(e) => {
                   e.stopPropagation();
                   onChange(option.value);
-                  setIsOpen(false);
+                  popover.close();
                 }}
                 className={`w-full flex items-center justify-between gap-2 px-2.5 py-1.5 text-[12px] leading-4 text-[#353A44] rounded transition-colors ${
                   value === option.value && !showPlaceholder ? "bg-[#F5F6F8]" : "hover:bg-[#F5F6F8]"
@@ -750,14 +785,14 @@ function Dropdown<T extends string>({
   options: { value: T; label: string }[];
   width?: number;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const popover = usePopover();
   const selectedLabel = options.find((o) => o.value === value)?.label || options[0]?.label;
 
   return (
     <div className="relative">
       {/* Trigger button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => popover.toggle()}
         className="flex items-center justify-between gap-2 text-[14px] font-semibold leading-5 tracking-[-0.15px] border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white text-[#353A44] hover:bg-[#F5F6F8] transition-colors shadow-[0_1px_1px_rgba(33,37,44,0.16)]"
         style={{ width }}
       >
@@ -766,21 +801,21 @@ function Dropdown<T extends string>({
       </button>
 
       {/* Dropdown popover */}
-      {isOpen && (
+      {popover.isVisible && (
         <>
           {/* Backdrop to close dropdown */}
           <div 
             className="fixed inset-0 z-10" 
-            onClick={() => setIsOpen(false)} 
+            onClick={() => popover.close()} 
           />
           {/* Popover - with 4px internal padding */}
-          <div className="absolute top-full left-0 mt-1 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_15px_35px_rgba(48,49,61,0.08),0_5px_15px_rgba(0,0,0,0.12)] z-20 min-w-[168px] p-1 overflow-hidden">
+          <div className={`absolute top-full left-0 mt-1 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_15px_35px_rgba(48,49,61,0.08),0_5px_15px_rgba(0,0,0,0.12)] z-20 min-w-[168px] p-1 overflow-hidden ${popover.animationClass}`} style={{ "--popover-origin": "top left" } as React.CSSProperties}>
             {options.map((option) => (
               <button
                 key={option.value}
                 onClick={() => {
                   onChange(option.value);
-                  setIsOpen(false);
+                  popover.close();
                 }}
                 className={`w-full flex items-center justify-between gap-3 px-2.5 py-1.5 text-[14px] leading-5 tracking-[-0.15px] text-[#353A44] rounded transition-colors ${
                   value === option.value ? "bg-[#F5F6F8]" : "hover:bg-[#F5F6F8]"
@@ -802,7 +837,7 @@ function Dropdown<T extends string>({
 type GroupByOption = "alphabetical" | "productCategory" | "taskCategory" | "operationType" | "riskLevel" | "sensitivity";
 
 const groupByOptions: { value: GroupByOption; label: string }[] = [
-  { value: "alphabetical", label: "Alphabetical" },
+  { value: "alphabetical", label: "None" },
   { value: "productCategory", label: "Product" },
   { value: "taskCategory", label: "Task" },
   { value: "operationType", label: "Operation" },
@@ -836,7 +871,7 @@ function RoleMenu({
   onDelete?: () => void;
   onTestInSandbox?: () => void;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const popover = usePopover();
 
   const menuItems = isCustomRole
     ? [
@@ -855,27 +890,26 @@ function RoleMenu({
   return (
     <div className="relative">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => popover.toggle()}
         className="p-1 rounded-md hover:bg-[#EBEEF1] transition-colors"
       >
         <MoreHorizontal className="w-5 h-5 text-[#474E5A]" />
       </button>
 
-      {isOpen && (
+      {popover.isVisible && (
         <>
           <div 
             className="fixed inset-0 z-10" 
-            onClick={() => setIsOpen(false)} 
+            onClick={() => popover.close()} 
           />
-          <div className="absolute top-full right-0 mt-1 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_5px_15px_rgba(0,0,0,0.12),0_15px_35px_rgba(48,49,61,0.08)] z-20 whitespace-nowrap overflow-hidden">
+          <div className={`absolute top-full right-0 mt-1 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_5px_15px_rgba(0,0,0,0.12),0_15px_35px_rgba(48,49,61,0.08)] z-20 whitespace-nowrap overflow-hidden ${popover.animationClass}`}>
             <div className="p-1 flex flex-col">
               {menuItems.map((item, index) => (
                 <React.Fragment key={item.label}>
-                  {item.danger && index > 0 && <div className="h-px bg-[#EBEEF1] my-1" />}
                   <button
                     onClick={() => {
                       item.onClick();
-                      setIsOpen(false);
+                      popover.close();
                     }}
                     className={`w-full text-left px-[10px] py-[6px] text-[14px] leading-5 tracking-[-0.15px] rounded transition-colors ${
                       item.danger 
@@ -905,45 +939,72 @@ function FilterIcon({ className }: { className?: string }) {
   );
 }
 
-// Permissions overflow menu with toggle options
-function PermissionsOverflowMenu({
+// Permissions filter menu with toggle options and group-by selector
+function PermissionsFilterMenu({
   showAll,
   onShowAllChange,
   isGrouped,
   onGroupedChange,
+  groupBy,
+  onGroupByChange,
 }: {
-  showAll: boolean;
-  onShowAllChange: (v: boolean) => void;
+  showAll?: boolean;
+  onShowAllChange?: (v: boolean) => void;
   isGrouped: boolean;
   onGroupedChange: (v: boolean) => void;
+  groupBy: GroupByOption;
+  onGroupByChange: (v: GroupByOption) => void;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const popover = usePopover();
+  const options = isGrouped ? groupedGroupByOptions : ungroupedGroupByOptions;
 
   return (
     <div className="relative">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => popover.toggle()}
         className="p-1 rounded-md hover:bg-[#EBEEF1] transition-colors"
       >
         <FilterIcon className="w-3 h-3 text-[#474E5A]" />
       </button>
 
-      {isOpen && (
+      {popover.isVisible && (
         <>
           <div
             className="fixed inset-0 z-10"
-            onClick={() => setIsOpen(false)}
+            onClick={() => popover.close()}
           />
-          <div className="absolute top-full right-0 mt-1 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_5px_15px_rgba(0,0,0,0.12),0_15px_35px_rgba(48,49,61,0.08)] z-20 whitespace-nowrap overflow-hidden">
-            <div className="p-2 flex flex-col gap-1">
+          <div className={`absolute top-full right-0 mt-1 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_5px_15px_rgba(0,0,0,0.12),0_15px_35px_rgba(48,49,61,0.08)] z-20 whitespace-nowrap overflow-hidden ${popover.animationClass}`}>
+            <div className="p-2 flex flex-col">
+              <div className="px-2 py-1.5">
+                <span className="text-[12px] font-semibold text-[#818DA0] leading-4 tracking-[-0.024px] uppercase">Group by</span>
+              </div>
+              {options.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => {
+                    onGroupByChange(option.value);
+                  }}
+                  className={`w-full flex items-center justify-between gap-3 px-2 py-1.5 text-[14px] leading-5 tracking-[-0.15px] text-[#353A44] rounded transition-colors ${
+                    groupBy === option.value ? "bg-[#F5F6F8]" : "hover:bg-[#F5F6F8]"
+                  }`}
+                >
+                  <span className={groupBy === option.value ? "font-semibold" : ""}>
+                    {option.label}
+                  </span>
+                  {groupBy === option.value && <CheckCircleFilledIcon size={12} />}
+                </button>
+              ))}
+              <div className="h-px bg-[#EBEEF1] my-1" />
               <div className="flex items-center justify-between gap-6 px-2 py-1.5">
-                <span className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">Bundle</span>
+                <span className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">Bundle permissions</span>
                 <ToggleSwitch checked={isGrouped} onChange={onGroupedChange} />
               </div>
-              <div className="flex items-center justify-between gap-6 px-2 py-1.5">
-                <span className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">Show all</span>
-                <ToggleSwitch checked={showAll} onChange={onShowAllChange} />
-              </div>
+              {showAll !== undefined && onShowAllChange && (
+                <div className="flex items-center justify-between gap-6 px-2 py-1.5">
+                  <span className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">Show all permissions</span>
+                  <ToggleSwitch checked={showAll} onChange={onShowAllChange} />
+                </div>
+              )}
             </div>
           </div>
         </>
@@ -1839,18 +1900,17 @@ function CustomizeRoleModal({
                       <span className="leading-5 tracking-[-0.15px]">Assistant</span>
                     </button>
                     <div className="ml-auto">
-                      <ToggleSwitch checked={isGrouped} onChange={handleGroupToggle} label="Bundle" />
+                      <PermissionsFilterMenu
+                        isGrouped={isGrouped}
+                        onGroupedChange={handleGroupToggle}
+                        groupBy={groupBy}
+                        onGroupByChange={setGroupBy}
+                      />
                     </div>
                   </div>
 
                   {/* Controls row - full width */}
                   <div className="flex items-center gap-2">
-                    {/* Group by dropdown */}
-                    <Dropdown
-                      value={groupBy}
-                      onChange={setGroupBy}
-                      options={isGrouped ? groupedGroupByOptions : ungroupedGroupByOptions}
-                    />
                     {/* Search field - spans full width */}
                     <div className="flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white focus-within:border-[#635BFF] transition-colors">
                       <SearchIcon className="text-[#818DA0]" />
@@ -2012,7 +2072,7 @@ function CreateRoleModal({
   const [groupBy, setGroupBy] = useState<GroupByOption>("productCategory");
   const [isGrouped, setIsGrouped] = useState(true);
   const [isClosing, setIsClosing] = useState(false);
-  const [isBaseRoleDropdownOpen, setIsBaseRoleDropdownOpen] = useState(false);
+  const baseRolePopover = usePopover();
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
 
   // Capture initial permission state for stable sort order
@@ -2052,7 +2112,7 @@ function CreateRoleModal({
         setSearchQuery("");
         setGroupBy("productCategory");
         setIsGrouped(true);
-        setIsBaseRoleDropdownOpen(false);
+        baseRolePopover.close();
         return;
       }
 
@@ -2066,7 +2126,7 @@ function CreateRoleModal({
       setSearchQuery("");
       setGroupBy("productCategory");
       setIsGrouped(true);
-      setIsBaseRoleDropdownOpen(false);
+      baseRolePopover.close();
       
       // Focus the role name input after a short delay
       setTimeout(() => {
@@ -2078,7 +2138,7 @@ function CreateRoleModal({
   // When base role is selected, populate permissions and description
   const handleBaseRoleSelect = (role: Role) => {
     setSelectedBaseRole(role);
-    setIsBaseRoleDropdownOpen(false);
+    baseRolePopover.close();
     
     // Build permission access map from selected role
     const accessMap: Record<string, string> = {};
@@ -2384,7 +2444,7 @@ function CreateRoleModal({
                   </label>
                   <div className="relative">
                     <button
-                      onClick={() => setIsBaseRoleDropdownOpen(!isBaseRoleDropdownOpen)}
+                      onClick={() => baseRolePopover.toggle()}
                       className="w-full flex items-center justify-between gap-2 px-2 py-1.5 text-[14px] leading-5 tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white hover:bg-[#F5F6F8] transition-colors shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
                     >
                       <span className={selectedBaseRole ? "text-[#353A44]" : "text-[#818DA0]"}>
@@ -2393,13 +2453,13 @@ function CreateRoleModal({
                       <ArrowUpDownIcon size={12} />
                     </button>
                     
-                    {isBaseRoleDropdownOpen && (
+                    {baseRolePopover.isVisible && (
                       <>
                         <div 
                           className="fixed inset-0 z-10" 
-                          onClick={() => setIsBaseRoleDropdownOpen(false)} 
+                          onClick={() => baseRolePopover.close()} 
                         />
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_15px_35px_rgba(48,49,61,0.08),0_5px_15px_rgba(0,0,0,0.12)] z-20 max-h-[300px] overflow-y-auto p-1">
+                        <div className={`absolute top-full left-0 right-0 mt-1 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_15px_35px_rgba(48,49,61,0.08),0_5px_15px_rgba(0,0,0,0.12)] z-20 max-h-[300px] overflow-y-auto p-1 ${baseRolePopover.animationClass}`} style={{ "--popover-origin": "top left" } as React.CSSProperties}>
                           {allRoles.map((role) => (
                             <button
                               key={role.id}
@@ -2516,17 +2576,17 @@ function CreateRoleModal({
                       <span className="leading-5 tracking-[-0.15px]">Assistant</span>
                     </button>
                     <div className="ml-auto">
-                      <ToggleSwitch checked={isGrouped} onChange={handleGroupToggle} label="Bundle" />
+                      <PermissionsFilterMenu
+                        isGrouped={isGrouped}
+                        onGroupedChange={handleGroupToggle}
+                        groupBy={groupBy}
+                        onGroupByChange={setGroupBy}
+                      />
                     </div>
                   </div>
 
                   {/* Controls row - full width */}
                   <div className="flex items-center gap-2">
-                    <Dropdown
-                      value={groupBy}
-                      onChange={setGroupBy}
-                      options={isGrouped ? groupedGroupByOptions : ungroupedGroupByOptions}
-                    />
                     {/* Search field - spans full width */}
                     <div className="flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white focus-within:border-[#635BFF] transition-colors">
                       <SearchIcon className="text-[#818DA0]" />
@@ -3594,7 +3654,7 @@ export default function RolesPermissionsPage() {
                     : rolePermissions.length)}
               </span>
               <div className="flex-1" />
-              <PermissionsOverflowMenu
+              <PermissionsFilterMenu
                 showAll={showAll}
                 onShowAllChange={setShowAll}
                 isGrouped={isGrouped}
@@ -3604,17 +3664,13 @@ export default function RolesPermissionsPage() {
                     setGroupBy("productCategory");
                   }
                 }}
+                groupBy={groupBy}
+                onGroupByChange={setGroupBy}
               />
             </div>
 
             {/* Controls */}
-            <div className="flex items-end gap-2">
-              {/* Group by selector */}
-              <Dropdown
-                value={groupBy}
-                onChange={setGroupBy}
-                options={isGrouped ? groupedGroupByOptions : ungroupedGroupByOptions}
-              />
+            <div className="flex items-center gap-2">
               {/* Search field */}
               <div className="flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white focus-within:border-[#635BFF] transition-colors">
                 <SearchIcon className="text-[#818DA0]" />
