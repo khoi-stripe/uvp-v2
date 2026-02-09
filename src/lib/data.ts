@@ -50,226 +50,231 @@ export function toDisplayName(apiName: string): string {
     .join(' ');
 }
 
-// Role details from CSV
+// Role details - accurate to CSV permission mappings (Feb 2026)
 const roleDetailsMap: Record<string, RoleDetails> = {
   super_admin: {
     description: "For account creators and C-level executives who need absolute control. This role allows all privileged actions including assigning Super Administrator to others. High security risk if compromised.",
     canDo: [
       "All Administrator capabilities",
       "Assign Super Administrator role to others",
-      "Full account control",
+      "Perform data migration operations",
       "Manage all team members and roles",
-      "Access all account data and settings"
+      "Access all account data, settings, and API keys"
     ],
     cannotDo: [
-      "Cannot change the account owner (only the owner can transfer ownership)"
+      "Cannot transfer account ownership (only the owner can)"
     ],
   },
   admin: {
-    description: "For account owners and senior management who need complete control. Full access to the account with the ability to manage all settings and perform all actions.",
+    description: "For account owners and senior management who need complete control. Write access to nearly all permissions across the platform.",
     canDo: [
       "Manage all aspects of the account",
-      "Invite and manage team members",
+      "Invite and manage team members and roles",
       "View and edit all financial data",
-      "Configure account settings",
-      "Access API keys and webhooks",
-      "Manage disputes and refunds"
+      "Configure all account and product settings",
+      "Access API keys, secrets, and webhooks",
+      "Manage disputes, refunds, and payouts"
     ],
     cannotDo: [
       "Cannot assign Super Administrator role",
-      "Cannot delete the account"
+      "Cannot perform data migration operations"
     ],
   },
   developer: {
-    description: "For engineering teams building and maintaining integrations. Access to view and manage technical integration settings including API keys and webhooks.",
+    description: "For engineering teams building and maintaining integrations. Broad write access to payments, billing, and platform features alongside developer tools.",
     canDo: [
-      "View API keys and create restricted keys",
-      "Access webhooks and logs",
-      "Test in sandbox mode",
-      "View documentation",
-      "Access developer tools",
-      "View payment data"
+      "Access API keys, secrets, and developer tools",
+      "Process charges and manage payment methods",
+      "Manage disputes, customers, and billing",
+      "Build and manage Stripe Apps",
+      "Run and export financial reports",
+      "Configure tax rates and automation"
     ],
     cannotDo: [
-      "Cannot manage team members",
-      "Cannot edit business settings",
-      "Cannot process refunds",
-      "Cannot access sensitive financial reports"
+      "Cannot manage team members or roles",
+      "Cannot create payouts or transfer balances",
+      "Cannot issue order refunds",
+      "Cannot configure security settings or 2FA"
     ],
   },
   analyst: {
-    description: "For finance teams, business analysts, and executives who need visibility. Read-only access to reports and data across the account.",
+    description: "For finance teams and business analysts. Extensive write access across payments, billing, products, and operations — not a read-only role.",
     canDo: [
-      "View all reports and analytics",
-      "Export data",
-      "View payment and customer information",
-      "Access financial reports",
-      "View balance and payout information"
+      "Process charges, refunds, and manage payments",
+      "Manage billing, invoicing, and subscriptions",
+      "Create payouts and transfer balances",
+      "Run and export financial reports",
+      "Manage products, pricing, and catalogs",
+      "Configure terminal and hardware operations"
     ],
     cannotDo: [
-      "Cannot make any changes",
-      "Cannot process refunds",
-      "Cannot edit customers or payments",
-      "Cannot access API keys"
+      "Cannot manage team members or roles",
+      "Cannot access API keys and secrets",
+      "Cannot perform account administration",
+      "Cannot configure security settings"
     ],
   },
   support: {
-    description: "For customer support teams handling day-to-day customer issues. This role allows refunding payments, resolving disputes, and updating products.",
+    description: "For customer support teams handling day-to-day customer issues. Write access to charges, disputes, billing, and customer data.",
     canDo: [
-      "View customer details",
-      "View payment information",
-      "Create and manage refunds",
-      "View and respond to disputes",
-      "Issue credit notes",
-      "View subscriptions and invoices",
-      "Update products"
+      "Process charges, refunds, and manage disputes",
+      "Manage customer profiles and consent",
+      "Update subscriptions, invoices, and credit notes",
+      "Manage orders, returns, and fraud reviews",
+      "Access Secret Store and financial reports",
+      "Update products, promotions, and platform blocklists"
     ],
     cannotDo: [
-      "Cannot access API keys",
-      "Cannot manage team members",
-      "Cannot change account settings",
-      "Cannot access detailed financial reports"
+      "Cannot access API keys (sensitive_resources)",
+      "Cannot manage team members or roles",
+      "Cannot create payouts or transfer balances",
+      "Cannot configure account or security settings"
     ],
   },
   support_associate: {
-    description: "For junior support staff handling basic inquiries. Limited support access for viewing customer information and payment details.",
+    description: "For support staff with broad write access to customer-facing operations including payments, disputes, and billing.",
     canDo: [
-      "View customer information",
-      "View payment details",
-      "View subscriptions and invoices",
-      "View disputes (read-only)"
+      "Process charges and manage payment methods",
+      "Manage disputes and approve fraud reviews",
+      "Manage customer profiles and consent",
+      "Update subscriptions, invoices, and credit notes",
+      "Access Secret Store and financial reports",
+      "Manage orders, returns, and promotions"
     ],
     cannotDo: [
-      "Cannot process refunds",
-      "Cannot manage disputes",
-      "Cannot edit customer data",
-      "Cannot access API keys"
+      "Cannot access API keys (sensitive_resources)",
+      "Cannot manage team members or roles",
+      "Cannot create payouts or transfer balances",
+      "Cannot configure account or security settings"
     ],
   },
   view_only: {
-    description: "For team members who need visibility without the ability to make changes. Read-only access to most parts of the Dashboard.",
+    description: "For team members who need visibility with minimal write access. Read access to most Dashboard areas plus write access to reports and user support.",
     canDo: [
-      "View payments and customers",
-      "View basic reports",
-      "View product and subscription data",
-      "View disputes"
+      "View payments, customers, and balances",
+      "View products, subscriptions, and invoices",
+      "View disputes and fraud prevention data",
+      "Run and export financial reports",
+      "Access user support features"
     ],
     cannotDo: [
-      "Cannot make any changes",
-      "Cannot process refunds",
-      "Cannot export data in bulk",
+      "Cannot process payments, charges, or refunds",
+      "Cannot manage disputes or fraud reviews",
       "Cannot access API keys",
-      "Cannot view sensitive financial data"
+      "Cannot manage team members or configure settings"
     ],
   },
   dispute_analyst: {
-    description: "For fraud and risk teams focused on dispute management. Specialized access for managing disputes and chargebacks.",
+    description: "For fraud and risk teams focused on dispute management. Write access to disputes plus read-only view of payments, customers, and billing.",
     canDo: [
       "View and manage disputes",
-      "Upload evidence",
-      "Accept or challenge disputes",
-      "View dispute analytics",
-      "Access Radar for fraud prevention"
+      "View charges, payment intents, and orders",
+      "View customer profiles and billing details",
+      "View subscriptions and invoices",
+      "Manage customer consent for data access"
     ],
     cannotDo: [
-      "Cannot process refunds outside of disputes",
-      "Cannot manage customers",
-      "Cannot access API keys",
-      "Cannot manage team members"
+      "Cannot process refunds",
+      "Cannot access Radar fraud rules",
+      "Cannot access API keys or secrets",
+      "Cannot manage team members",
+      "Cannot access financial reports"
     ],
   },
   refund_analyst: {
-    description: "For finance operations teams focused on refund processing. Specialized access for processing full and partial refunds.",
+    description: "For finance operations teams focused on refund processing. Write access to refunds and credit notes with read-only view of payment and customer data.",
     canDo: [
-      "View payments and charges",
-      "Create full and partial refunds",
-      "View customer information",
-      "View refund history"
+      "Issue order refunds and credit notes",
+      "View payments, charges, and payment intents",
+      "View customer profiles and subscriptions",
+      "View invoices and billing settings",
+      "View disputes and Radar fraud data",
+      "View financial reports"
     ],
     cannotDo: [
-      "Cannot manage disputes",
-      "Cannot access API keys",
-      "Cannot manage subscriptions",
-      "Cannot access financial reports",
+      "Cannot process new charges or payments",
+      "Cannot manage disputes (read-only)",
+      "Cannot access API keys or secrets",
       "Cannot manage team members"
     ],
   },
   identity_analyst: {
-    description: "For compliance and KYC teams managing identity verification. Specialized access for verifying identity documents and managing KYC workflows.",
+    description: "For compliance and KYC teams managing identity verification. Write access to verification sessions with read-only view of KYC data and reports.",
     canDo: [
-      "View and verify identity documents",
-      "Manage KYC workflows",
-      "Review verification sessions",
-      "Access compliance data"
+      "Manage identity verification sessions",
+      "View basic KYC and identity data",
+      "View identity product settings",
+      "View financial reports",
+      "View account details and event logs"
     ],
     cannotDo: [
-      "Cannot access payment information",
-      "Cannot process refunds",
+      "Cannot access payment or customer data",
+      "Cannot process refunds or manage disputes",
       "Cannot manage team members",
-      "Cannot access API keys"
+      "Cannot access API keys or secrets"
     ],
   },
   tax_analyst: {
-    description: "For tax and accounting teams managing tax compliance. Specialized access for tax reporting, settings, and document management.",
+    description: "For tax and accounting teams managing tax compliance. Write access to tax reporting, filing, and financial reports.",
     canDo: [
-      "View tax reports",
-      "Manage tax settings",
-      "Download tax documents",
-      "Configure tax automation",
-      "Access 1099 and tax ID information"
+      "Manage tax reporting and filing",
+      "Perform tax admin operations",
+      "Manage global tax reporting and exports",
+      "Run and access financial reports",
+      "Manage customer consent for data access"
     ],
     cannotDo: [
-      "Cannot access general financial reports",
-      "Cannot process payments",
+      "Cannot configure tax automation or tax rates",
+      "Cannot access payment or customer data",
       "Cannot manage team members",
-      "Cannot access API keys"
+      "Cannot access API keys or secrets"
     ],
   },
   iam_admin: {
-    description: "For security and IT teams managing access control. Specialized access for managing team members, roles, and security settings.",
+    description: "For security and IT teams managing access control. Write access to team management and security settings with limited read-only access elsewhere.",
     canDo: [
-      "Manage team members and roles",
-      "Configure SSO and SAML",
-      "Manage security settings",
-      "Set up two-factor authentication",
-      "View audit logs"
+      "Manage team members and custom roles",
+      "Configure security settings and 2FA",
+      "Manage sandbox login access",
+      "Manage customer consent for data access",
+      "View account details and data portability"
     ],
     cannotDo: [
-      "Cannot access financial data",
-      "Cannot process payments",
-      "Cannot view customer PII",
-      "Cannot access API keys for integrations"
+      "Cannot configure SSO or SAML settings",
+      "Cannot access financial data or reports",
+      "Cannot process payments or refunds",
+      "Cannot access API keys or secrets"
     ],
   },
   issuing_support_agent: {
-    description: "For support teams focused on card issuing operations. Specialized access for managing Issuing cards and cardholders.",
+    description: "For support teams focused on card issuing. Very limited role with issuing-specific operations, Opal access, and user support.",
     canDo: [
-      "View and manage issuing cards",
-      "View cardholder information",
-      "Manage card disputes",
-      "View card transactions",
-      "Update card status"
+      "Perform issuing support agent operations",
+      "Access user support features",
+      "View Opal direct banking data",
+      "View account details and dashboard"
     ],
     cannotDo: [
-      "Cannot access general payment data",
-      "Cannot manage team members",
-      "Cannot access API keys",
-      "Cannot access non-Issuing products"
+      "Cannot manage issuing cards directly",
+      "Cannot access payment or customer data",
+      "Cannot manage disputes or process refunds",
+      "Cannot access API keys or secrets",
+      "Cannot manage team members"
     ],
   },
   sandbox_admin: {
-    description: "For developers and QA teams testing integrations. Full administrative access to sandbox/test environments only.",
+    description: "For developers and QA teams testing integrations. Access to create sandbox environments and configure SSO/OAuth settings.",
     canDo: [
-      "Full access to sandbox mode",
-      "Create test data",
-      "Access sandbox API keys",
-      "Test integrations",
-      "Invite sandbox users"
+      "Create and manage sandbox environments",
+      "Configure SSO and OAuth settings",
+      "Access sandbox login",
+      "View account details and data portability"
     ],
     cannotDo: [
-      "Cannot access production data",
-      "Cannot affect live transactions",
-      "Cannot access production API keys"
+      "Cannot access production payment data",
+      "Cannot access developer tools or API keys",
+      "Cannot process payments or refunds",
+      "Cannot manage team members"
     ],
   },
 };
