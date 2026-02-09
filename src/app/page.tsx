@@ -3465,7 +3465,7 @@ export default function RolesPermissionsPage() {
                   key={category.name} 
                   className="border-b border-[#EBEEF1] transition-[padding] duration-300"
                   style={{ 
-                    padding: isExpanded ? '16px 0' : '4px 0',
+                    padding: isExpanded ? '4px 0' : '4px 0',
                     transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
                   }}
                 >
