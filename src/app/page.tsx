@@ -470,7 +470,7 @@ function PermissionCard({
     // For inactive permissions in "show all" mode
     if (isInactive) {
       return (
-        <span className="text-[12px] text-[#818DA0] flex-shrink-0">
+        <span className="text-[12px] font-medium px-2 py-0.5 rounded flex-shrink-0 bg-[#F0F1F3] text-[#818DA0]">
           No access
         </span>
       );
