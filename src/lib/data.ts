@@ -154,13 +154,13 @@ const roleDetailsMap: Record<string, RoleDetails> = {
       "View payments, customers, and balances",
       "View products, subscriptions, and invoices",
       "View disputes and fraud prevention data",
+      "View API keys and secrets (read-only)",
       "Run and export financial reports",
       "Access user support features"
     ],
     cannotDo: [
       "Cannot process payments, charges, or refunds",
       "Cannot manage disputes or fraud reviews",
-      "Cannot access API keys",
       "Cannot manage team members or configure settings"
     ],
   },
