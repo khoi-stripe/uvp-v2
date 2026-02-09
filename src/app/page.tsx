@@ -301,10 +301,10 @@ function PermissionCardContent({
     <div className={`flex-1 min-w-0 flex flex-col ${insideGroup ? "gap-0.5" : "gap-2"}`}>
       {/* Top section: title and description */}
       <div className="flex flex-col gap-0">
-        <h4 className="font-semibold text-[#353A44] text-[13px] leading-5 tracking-[-0.15px]">
+        <h4 className="font-semibold text-[#353A44] text-[13px] leading-[19px] tracking-[-0.15px]">
           {permission.displayName}
         </h4>
-        <p className="text-[13px] text-[#596171] leading-5">
+        <p className="text-[13px] text-[#596171] leading-[19px]">
           {permission.description}
         </p>
       </div>
@@ -621,7 +621,7 @@ function RiskAssessmentCard({
         className="w-full flex items-center justify-between gap-3 cursor-pointer hover:opacity-80 transition-opacity"
       >
         <div className="flex items-center gap-2">
-          <span className="text-[13px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">Risk Assessment</span>
+          <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Risk Assessment</span>
           <span className={`w-2 h-2 rounded-full ${
             assessment.overallRisk === "High" ? "bg-[#DF1B41]" :
             assessment.overallRisk === "Medium" ? "bg-[#D97706]" :
@@ -764,7 +764,7 @@ function Tooltip({ children, content, position: pos = "below" }: { children: Rea
           className={`fixed z-[9999] px-4 py-3 bg-white border border-[#D8DEE4] rounded-lg shadow-[0px_2px_5px_rgba(64,68,82,0.08),0px_3px_9px_rgba(64,68,82,0.08)] whitespace-nowrap -translate-x-1/2 ${pos === "above" ? "-translate-y-full" : ""}`}
           style={{ top: tooltipPosition.top, left: tooltipPosition.left }}
         >
-          <p className="text-[13px] text-[#353A44] leading-5 tracking-[-0.15px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
+          <p className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
             {content}
           </p>
         </div>
@@ -793,7 +793,7 @@ function Dropdown<T extends string>({
       {/* Trigger button */}
       <button
         onClick={() => popover.toggle()}
-        className="flex items-center justify-between gap-2 text-[13px] font-semibold leading-5 tracking-[-0.15px] border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white text-[#353A44] hover:bg-[#F5F6F8] transition-colors shadow-[0_1px_1px_rgba(33,37,44,0.16)]"
+        className="flex items-center justify-between gap-2 text-[13px] font-semibold leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white text-[#353A44] hover:bg-[#F5F6F8] transition-colors shadow-[0_1px_1px_rgba(33,37,44,0.16)]"
         style={{ width }}
       >
         <span>{selectedLabel}</span>
@@ -817,7 +817,7 @@ function Dropdown<T extends string>({
                   onChange(option.value);
                   popover.close();
                 }}
-                className={`w-full flex items-center justify-between gap-3 px-2.5 py-1.5 text-[13px] leading-5 tracking-[-0.15px] text-[#353A44] rounded transition-colors ${
+                className={`w-full flex items-center justify-between gap-3 px-2.5 py-1.5 text-[13px] leading-[19px] tracking-[-0.15px] text-[#353A44] rounded transition-colors ${
                   value === option.value ? "bg-[#F5F6F8]" : "hover:bg-[#F5F6F8]"
                 }`}
               >
@@ -911,7 +911,7 @@ function RoleMenu({
                       item.onClick();
                       popover.close();
                     }}
-                    className={`w-full text-left px-[10px] py-[6px] text-[13px] leading-5 tracking-[-0.15px] rounded transition-colors ${
+                    className={`w-full text-left px-[10px] py-[6px] text-[13px] leading-[19px] tracking-[-0.15px] rounded transition-colors ${
                       item.danger 
                         ? "text-[#C0123C] hover:bg-[#FEF2F4]" 
                         : "text-[#353A44] hover:bg-[#F5F6F8]"
@@ -965,7 +965,7 @@ function PermissionsFilterMenu({
         onClick={() => popover.toggle()}
         className="flex items-center gap-1 cursor-pointer"
       >
-        <span className="text-[13px] text-[#596171] leading-4">Group by: <span className="text-[#635BFF]">{currentLabel}</span></span>
+        <span className="text-[13px] text-[#596171] leading-[19px]">Group by: <span className="text-[#635BFF]">{currentLabel}</span></span>
         <span className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#EBEEF1] transition-colors">
           <ControlIcon className="w-3 h-3 text-[#474E5A]" />
         </span>
@@ -988,7 +988,7 @@ function PermissionsFilterMenu({
                   onClick={() => {
                     onGroupByChange(option.value);
                   }}
-                  className={`w-full flex items-center justify-between gap-3 px-2 py-1.5 text-[13px] leading-5 tracking-[-0.15px] text-[#353A44] rounded transition-colors ${
+                  className={`w-full flex items-center justify-between gap-3 px-2 py-1.5 text-[13px] leading-[19px] tracking-[-0.15px] text-[#353A44] rounded transition-colors ${
                     groupBy === option.value ? "bg-[#F5F6F8]" : "hover:bg-[#F5F6F8]"
                   }`}
                 >
@@ -1000,12 +1000,12 @@ function PermissionsFilterMenu({
               ))}
               <div className="h-px bg-[#EBEEF1] my-1" />
               <div className="flex items-center justify-between gap-6 px-2 py-1.5">
-                <span className="text-[13px] text-[#353A44] leading-5 tracking-[-0.15px]">Bundle groups</span>
+                <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Bundle groups</span>
                 <ToggleSwitch checked={isGrouped} onChange={onGroupedChange} />
               </div>
               {showAll !== undefined && onShowAllChange && (
                 <div className="flex items-center justify-between gap-6 px-2 py-1.5">
-                  <span className="text-[13px] text-[#353A44] leading-5 tracking-[-0.15px]">Show all permissions</span>
+                  <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Show all permissions</span>
                   <ToggleSwitch checked={showAll} onChange={onShowAllChange} />
                 </div>
               )}
@@ -1094,7 +1094,7 @@ function AIAssistantDrawer({
             {/* Content */}
             <div className="relative z-10 flex flex-col gap-4 flex-1 overflow-y-auto">
               {!submittedMessage ? (
-                <p className="text-[13px] text-[#353A44] leading-5 tracking-[-0.15px]">
+                <p className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">
                   Describe how you want to customize this role and I'll add or remove the appropriate permissions.
                 </p>
               ) : (
@@ -1102,13 +1102,13 @@ function AIAssistantDrawer({
                   {/* User message */}
                   <div className="flex justify-end">
                     <div className="bg-[#635BFF] text-white rounded-[12px] rounded-br-[4px] px-3 py-2 max-w-[85%]">
-                      <p className="text-[13px] leading-5 tracking-[-0.15px]">{submittedMessage}</p>
+                      <p className="text-[13px] leading-[19px] tracking-[-0.15px]">{submittedMessage}</p>
                     </div>
                   </div>
                   {/* Assistant response */}
                   <div className="flex justify-start">
                     <div className="bg-[#F5F6F8] text-[#353A44] rounded-[12px] rounded-bl-[4px] px-3 py-2 max-w-[85%]">
-                      <p className="text-[13px] leading-5 tracking-[-0.15px]">
+                      <p className="text-[13px] leading-[19px] tracking-[-0.15px]">
                         Stripe Assistant has not been implemented for this prototype.
                       </p>
                     </div>
@@ -1132,7 +1132,7 @@ function AIAssistantDrawer({
                     }
                   }}
                   placeholder="Describe the role"
-                  className="flex-1 text-[13px] text-[#353A44] leading-5 tracking-[-0.15px] bg-transparent outline-none resize-none placeholder:text-[#818DA0] min-h-[68px] py-1"
+                  className="flex-1 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] bg-transparent outline-none resize-none placeholder:text-[#818DA0] min-h-[68px] py-1"
                 />
               </div>
               <div className="flex flex-col h-full items-end justify-end">
@@ -1207,7 +1207,7 @@ function CustomizeGroupCard({
         >
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-[13px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] truncate">
+              <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px] truncate">
                 {groupName}
               </span>
               <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-white text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
@@ -1215,7 +1215,7 @@ function CustomizeGroupCard({
               </span>
             </div>
             {description && (
-              <p className="text-[13px] text-[#596171] leading-5 line-clamp-2">
+              <p className="text-[13px] text-[#596171] leading-[19px] line-clamp-2">
                 {description}
               </p>
             )}
@@ -1746,7 +1746,7 @@ function CustomizeRoleModal({
             </h2>
             <button
               onClick={handleRevert}
-              className="px-3 py-1 text-[13px] font-medium text-[#353A44] leading-5 tracking-[-0.15px] border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
+              className="px-3 py-1 text-[13px] font-medium text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
             >
               Revert
             </button>
@@ -1797,7 +1797,7 @@ function CustomizeRoleModal({
                       onChange={(e) => setCustomDescription(e.target.value)}
                       rows={4}
                       autoFocus
-                      className="text-[13px] text-[#353A44] leading-5 tracking-[-0.15px] bg-white border border-[#D8DEE4] rounded-[6px] px-2 py-1 outline-none resize-y focus:shadow-[0px_0px_0px_4px_rgba(8,142,249,0.36)] focus:border-[#D8DEE4] transition-shadow"
+                      className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] bg-white border border-[#D8DEE4] rounded-[6px] px-2 py-1 outline-none resize-y focus:shadow-[0px_0px_0px_4px_rgba(8,142,249,0.36)] focus:border-[#D8DEE4] transition-shadow"
                     />
                     <button
                       onClick={() => {
@@ -1811,7 +1811,7 @@ function CustomizeRoleModal({
                   </div>
                 ) : (
                   <div className="flex flex-col gap-1">
-                    <p className="text-[13px] text-[#596171] leading-5 tracking-[-0.15px]">
+                    <p className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px]">
                       {previewDetails.description}
                     </p>
                     <button
@@ -1832,14 +1832,14 @@ function CustomizeRoleModal({
                   <div className="pb-4">
                     <div className="flex items-center gap-2 mb-3">
                       <CheckCircleIcon />
-                      <span className="text-[13px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">Can</span>
+                      <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Can</span>
                     </div>
                     <ul className="list-disc pl-6 flex flex-col gap-1.5">
                       {previewDetails.canDo.slice(0, 5).map((item, i) => (
-                        <li key={i} className="text-[13px] text-[#353A44] leading-5 tracking-[-0.15px]">{item}</li>
+                        <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">{item}</li>
                       ))}
                       {previewDetails.canDo.length > 5 && (
-                        <li className="text-[13px] text-[#596171] leading-5 tracking-[-0.15px]">+{previewDetails.canDo.length - 5} more</li>
+                        <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px]">+{previewDetails.canDo.length - 5} more</li>
                       )}
                     </ul>
                   </div>
@@ -1851,14 +1851,14 @@ function CustomizeRoleModal({
                   <div className="pb-4">
                     <div className="flex items-center gap-2 mb-3">
                       <CancelCircleIcon />
-                      <span className="text-[13px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">Cannot</span>
+                      <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Cannot</span>
                     </div>
                     <ul className="list-disc pl-6 flex flex-col gap-1.5">
                       {previewDetails.cannotDo.slice(0, 5).map((item, i) => (
-                        <li key={i} className="text-[13px] text-[#353A44] leading-5 tracking-[-0.15px]">{item}</li>
+                        <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">{item}</li>
                       ))}
                       {previewDetails.cannotDo.length > 5 && (
-                        <li className="text-[13px] text-[#596171] leading-5 tracking-[-0.15px]">+{previewDetails.cannotDo.length - 5} more</li>
+                        <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px]">+{previewDetails.cannotDo.length - 5} more</li>
                       )}
                     </ul>
                   </div>
@@ -1867,7 +1867,7 @@ function CustomizeRoleModal({
                   <div className="h-px bg-[#EBEEF1] my-4" />
 
                   {/* Note */}
-                  <p className="text-[13px] text-[#596171] leading-5">
+                  <p className="text-[13px] text-[#596171] leading-[19px]">
                     Note: The capabilities listed are highlights only. Refer to the permissions panel for the complete, authoritative list of what each role can access.
                   </p>
                 </div>
@@ -1923,7 +1923,7 @@ function CustomizeRoleModal({
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search"
-                        className="flex-1 text-[13px] text-[#353A44] leading-5 tracking-[-0.15px] bg-transparent outline-none placeholder:text-[#818DA0]"
+                        className="flex-1 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] bg-transparent outline-none placeholder:text-[#818DA0]"
                       />
                       {searchQuery && (
                         <button
@@ -1994,7 +1994,7 @@ function CustomizeRoleModal({
                         ))
                       )}
                       {filteredAll.length === 0 && (
-                        <div className="text-center py-8 text-[#596171] text-[13px] leading-5 tracking-[-0.15px]">
+                        <div className="text-center py-8 text-[#596171] text-[13px] leading-[19px] tracking-[-0.15px]">
                           No permissions match your search
                         </div>
                       )}
@@ -2031,14 +2031,14 @@ function CustomizeRoleModal({
                 permissionAccess: { ...permissionAccess },
               });
             }}
-            className="flex items-center gap-2 px-3 py-1.5 text-[13px] font-medium text-[#353A44] leading-5 tracking-[-0.15px] hover:bg-[#F5F6F8] border border-[#D8DEE4] rounded-md transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
+            className="flex items-center gap-2 px-3 py-1.5 text-[13px] font-medium text-[#353A44] leading-[19px] tracking-[-0.15px] hover:bg-[#F5F6F8] border border-[#D8DEE4] rounded-md transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
           >
             <SandboxIcon />
             Test in sandbox
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-1.5 bg-[#675DFF] text-white text-[13px] font-semibold leading-5 tracking-[-0.15px] rounded-md hover:bg-[#5851DB] transition-colors shadow-[0px_1px_1px_0px_rgba(47,14,99,0.32)]"
+            className="px-4 py-1.5 bg-[#675DFF] text-white text-[13px] font-semibold leading-[19px] tracking-[-0.15px] rounded-md hover:bg-[#5851DB] transition-colors shadow-[0px_1px_1px_0px_rgba(47,14,99,0.32)]"
           >
             Save
           </button>
@@ -2429,7 +2429,7 @@ function CreateRoleModal({
             </h2>
             <button
               onClick={handleReset}
-              className="px-3 py-1 text-[13px] font-medium text-[#353A44] leading-5 tracking-[-0.15px] border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
+              className="px-3 py-1 text-[13px] font-medium text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
             >
               Reset
             </button>
@@ -2443,13 +2443,13 @@ function CreateRoleModal({
               <div className="flex-1 flex flex-col gap-6 px-4 py-[13px] overflow-y-auto min-w-0">
                 {/* Start from existing role dropdown */}
                 <div className="flex flex-col gap-2">
-                  <label className="text-[13px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">
+                  <label className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                     Start from an existing role
                   </label>
                   <div className="relative">
                     <button
                       onClick={() => baseRolePopover.toggle()}
-                      className="w-full flex items-center justify-between gap-2 px-2 py-1.5 text-[13px] leading-5 tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white hover:bg-[#F5F6F8] transition-colors shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
+                      className="w-full flex items-center justify-between gap-2 px-2 py-1.5 text-[13px] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white hover:bg-[#F5F6F8] transition-colors shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
                     >
                       <span className={selectedBaseRole ? "text-[#353A44]" : "text-[#818DA0]"}>
                         {selectedBaseRole ? selectedBaseRole.name : "Choose an option"}
@@ -2468,7 +2468,7 @@ function CreateRoleModal({
                             <button
                               key={role.id}
                               onClick={() => handleBaseRoleSelect(role)}
-                              className={`w-full flex items-center justify-between gap-3 px-2.5 py-1.5 text-[13px] leading-5 tracking-[-0.15px] text-[#353A44] rounded transition-colors ${
+                              className={`w-full flex items-center justify-between gap-3 px-2.5 py-1.5 text-[13px] leading-[19px] tracking-[-0.15px] text-[#353A44] rounded transition-colors ${
                                 selectedBaseRole?.id === role.id ? "bg-[#F5F6F8]" : "hover:bg-[#F5F6F8]"
                               }`}
                             >
@@ -2495,20 +2495,20 @@ function CreateRoleModal({
                     value={roleName}
                     onChange={(e) => setRoleName(e.target.value)}
                     placeholder="Role name"
-                    className="w-full px-2 py-1.5 text-[13px] text-[#353A44] leading-5 tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white outline-none placeholder:text-[#818DA0] focus:border-[#635BFF] focus:shadow-[0px_0px_0px_4px_rgba(8,142,249,0.36)] transition-shadow"
+                    className="w-full px-2 py-1.5 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white outline-none placeholder:text-[#818DA0] focus:border-[#635BFF] focus:shadow-[0px_0px_0px_4px_rgba(8,142,249,0.36)] transition-shadow"
                   />
                 </div>
 
                 {/* Description textarea */}
                 <div className="flex flex-col gap-1">
-                  <label className="text-[13px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">
+                  <label className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                     Description
                   </label>
                   <textarea
                     value={customDescription}
                     onChange={(e) => setCustomDescription(e.target.value)}
                     rows={4}
-                    className="w-full px-2 py-1.5 text-[13px] text-[#353A44] leading-5 tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white outline-none resize-y placeholder:text-[#818DA0] focus:border-[#635BFF] focus:shadow-[0px_0px_0px_4px_rgba(8,142,249,0.36)] transition-shadow"
+                    className="w-full px-2 py-1.5 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white outline-none resize-y placeholder:text-[#818DA0] focus:border-[#635BFF] focus:shadow-[0px_0px_0px_4px_rgba(8,142,249,0.36)] transition-shadow"
                   />
                 </div>
 
@@ -2518,15 +2518,15 @@ function CreateRoleModal({
                   <div className={previewDetails.canDo.length > 0 ? "pb-4" : ""}>
                     <div className="flex items-center gap-2 mb-2">
                       <CheckCircleIcon />
-                      <span className="text-[13px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">Can</span>
+                      <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Can</span>
                     </div>
                     {previewDetails.canDo.length > 0 ? (
                       <ul className="list-disc pl-4 flex flex-col gap-1">
                         {previewDetails.canDo.slice(0, 5).map((item, i) => (
-                          <li key={i} className="text-[13px] text-[#353A44] leading-5 tracking-[-0.15px] pl-1">{item}</li>
+                          <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] pl-1">{item}</li>
                         ))}
                         {previewDetails.canDo.length > 5 && (
-                          <li className="text-[13px] text-[#596171] leading-5 tracking-[-0.15px] pl-1">+{previewDetails.canDo.length - 5} more</li>
+                          <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px] pl-1">+{previewDetails.canDo.length - 5} more</li>
                         )}
                       </ul>
                     ) : (
@@ -2543,14 +2543,14 @@ function CreateRoleModal({
                       <div>
                         <div className="flex items-center gap-2 mb-2">
                           <CancelCircleIcon />
-                          <span className="text-[13px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">Cannot</span>
+                          <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Cannot</span>
                         </div>
                         <ul className="list-disc pl-4 flex flex-col gap-1">
                           {previewDetails.cannotDo.slice(0, 5).map((item, i) => (
-                            <li key={i} className="text-[13px] text-[#353A44] leading-5 tracking-[-0.15px] pl-1">{item}</li>
+                            <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] pl-1">{item}</li>
                           ))}
                           {previewDetails.cannotDo.length > 5 && (
-                            <li className="text-[13px] text-[#596171] leading-5 tracking-[-0.15px] pl-1">+{previewDetails.cannotDo.length - 5} more</li>
+                            <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px] pl-1">+{previewDetails.cannotDo.length - 5} more</li>
                           )}
                         </ul>
                       </div>
@@ -2599,7 +2599,7 @@ function CreateRoleModal({
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search"
-                        className="flex-1 text-[13px] text-[#353A44] leading-5 tracking-[-0.15px] bg-transparent outline-none placeholder:text-[#818DA0]"
+                        className="flex-1 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] bg-transparent outline-none placeholder:text-[#818DA0]"
                       />
                       {searchQuery && (
                         <button
@@ -2670,7 +2670,7 @@ function CreateRoleModal({
                         ))
                       )}
                       {filteredAll.length === 0 && (
-                        <div className="text-center py-8 text-[#596171] text-[13px] leading-5 tracking-[-0.15px]">
+                        <div className="text-center py-8 text-[#596171] text-[13px] leading-[19px] tracking-[-0.15px]">
                           No permissions match your search
                         </div>
                       )}
@@ -2708,14 +2708,14 @@ function CreateRoleModal({
                 selectedBaseRole,
               });
             }}
-            className="flex items-center gap-2 px-3 py-1.5 text-[13px] font-medium text-[#353A44] leading-5 tracking-[-0.15px] hover:bg-[#F5F6F8] border border-[#D8DEE4] rounded-md transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
+            className="flex items-center gap-2 px-3 py-1.5 text-[13px] font-medium text-[#353A44] leading-[19px] tracking-[-0.15px] hover:bg-[#F5F6F8] border border-[#D8DEE4] rounded-md transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
           >
             <SandboxIcon />
             Test in sandbox
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-1.5 bg-[#675DFF] text-white text-[13px] font-semibold leading-5 tracking-[-0.15px] rounded-md hover:bg-[#5851DB] transition-colors shadow-[0px_1px_1px_0px_rgba(47,14,99,0.32)]"
+            className="px-4 py-1.5 bg-[#675DFF] text-white text-[13px] font-semibold leading-[19px] tracking-[-0.15px] rounded-md hover:bg-[#5851DB] transition-colors shadow-[0px_1px_1px_0px_rgba(47,14,99,0.32)]"
           >
             Save
           </button>
@@ -2869,11 +2869,11 @@ function SandboxView({
     <div className="min-h-screen bg-[#0e3359] flex flex-col">
       {/* Sandbox Header Banner */}
       <div className="h-[56px] flex items-center px-5 py-3">
-        <span className="text-white text-[13px] font-semibold leading-5 tracking-[-0.15px]">
+        <span className="text-white text-[13px] font-semibold leading-[19px] tracking-[-0.15px]">
           Sandbox
         </span>
         <div className="flex-1 flex justify-center">
-          <span className="text-white text-[13px] leading-5 tracking-[-0.15px]">
+          <span className="text-white text-[13px] leading-[19px] tracking-[-0.15px]">
             You're testing{" "}
             <span className="font-semibold">{role.name}</span>
             {" "}role in a sandbox. Changes you make here won't affect your live account.
@@ -2968,7 +2968,7 @@ function SandboxView({
         <div className="fixed bottom-8 right-8 w-[288px] bg-white border border-[rgba(0,39,77,0.08)] rounded-[12px] shadow-[0px_15px_35px_rgba(48,49,61,0.08),0px_5px_15px_rgba(0,0,0,0.12)] z-50">
           {/* Header */}
           <div className="px-3 py-2">
-            <span className="text-[13px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">
+            <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
               Test roles and permissions
             </span>
           </div>
@@ -2979,7 +2979,7 @@ function SandboxView({
             <div className="relative">
               <button
                 onClick={() => setIsRoleSelectorOpen(!isRoleSelectorOpen)}
-                className="w-full flex items-center justify-between px-2 py-1.5 text-[13px] text-[#353A44] leading-5 tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white hover:bg-[#F5F6F8] transition-colors shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
+                className="w-full flex items-center justify-between px-2 py-1.5 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white hover:bg-[#F5F6F8] transition-colors shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
               >
                 <span>{role.name}</span>
                 <ArrowUpDownIcon size={12} />
@@ -3002,7 +3002,7 @@ function SandboxView({
                           value={roleSearchQuery}
                           onChange={(e) => setRoleSearchQuery(e.target.value)}
                           placeholder="Search roles..."
-                          className="flex-1 text-[13px] text-[#353A44] leading-5 tracking-[-0.15px] outline-none placeholder:text-[#818DA0] bg-transparent"
+                          className="flex-1 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] outline-none placeholder:text-[#818DA0] bg-transparent"
                         />
                       </div>
                     </div>
@@ -3023,7 +3023,7 @@ function SandboxView({
                               onRoleChange(unsavedRole);
                               setIsRoleSelectorOpen(false);
                             }}
-                            className={`w-full flex items-center justify-between gap-3 px-2.5 py-1.5 text-[13px] leading-5 tracking-[-0.15px] text-[#353A44] rounded-[6px] transition-colors ${
+                            className={`w-full flex items-center justify-between gap-3 px-2.5 py-1.5 text-[13px] leading-[19px] tracking-[-0.15px] text-[#353A44] rounded-[6px] transition-colors ${
                               role.id === unsavedRole.id ? "bg-[#F5F6F8]" : "hover:bg-[#F5F6F8]"
                             }`}
                           >
@@ -3049,7 +3049,7 @@ function SandboxView({
                                 onRoleChange(r);
                                 setIsRoleSelectorOpen(false);
                               }}
-                              className={`w-full flex items-center justify-between gap-3 px-2.5 py-1.5 text-[13px] leading-5 tracking-[-0.15px] text-[#353A44] rounded-[6px] transition-colors ${
+                              className={`w-full flex items-center justify-between gap-3 px-2.5 py-1.5 text-[13px] leading-[19px] tracking-[-0.15px] text-[#353A44] rounded-[6px] transition-colors ${
                                 role.id === r.id ? "bg-[#F5F6F8]" : "hover:bg-[#F5F6F8]"
                               }`}
                             >
@@ -3076,7 +3076,7 @@ function SandboxView({
                                 onRoleChange(r);
                                 setIsRoleSelectorOpen(false);
                               }}
-                              className={`w-full flex items-center justify-between gap-3 px-2.5 py-1.5 text-[13px] leading-5 tracking-[-0.15px] text-[#353A44] rounded-[6px] transition-colors ${
+                              className={`w-full flex items-center justify-between gap-3 px-2.5 py-1.5 text-[13px] leading-[19px] tracking-[-0.15px] text-[#353A44] rounded-[6px] transition-colors ${
                                 role.id === r.id ? "bg-[#F5F6F8]" : "hover:bg-[#F5F6F8]"
                               }`}
                             >
@@ -3102,7 +3102,7 @@ function SandboxView({
             {/* Return to live account button */}
             <button
               onClick={onExit}
-              className="w-full py-1.5 px-3 text-[13px] font-medium text-white leading-5 tracking-[-0.15px] bg-[#635BFF] hover:bg-[#5851DB] rounded-md transition-colors shadow-[0px_1px_1px_0px_rgba(47,14,99,0.32)]"
+              className="w-full py-1.5 px-3 text-[13px] font-medium text-white leading-[19px] tracking-[-0.15px] bg-[#635BFF] hover:bg-[#5851DB] rounded-md transition-colors shadow-[0px_1px_1px_0px_rgba(47,14,99,0.32)]"
             >
               Return to live account
             </button>
@@ -3188,7 +3188,7 @@ function GroupCard({
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-[13px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] truncate">
+            <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px] truncate">
               {groupName}
             </span>
             <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-white text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
@@ -3198,7 +3198,7 @@ function GroupCard({
             </span>
           </div>
           {description && (
-            <p className="text-[13px] text-[#596171] leading-5 line-clamp-2">
+            <p className="text-[13px] text-[#596171] leading-[19px] line-clamp-2">
               {description}
             </p>
           )}
@@ -3473,7 +3473,7 @@ export default function RolesPermissionsPage() {
                     onClick={() => toggleCategory(category.name)}
                     className="w-full flex items-center gap-2 px-2 py-1 rounded-md hover:bg-[#F5F6F8] transition-colors"
                   >
-                    <span className="flex-1 text-left text-[13px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">
+                    <span className="flex-1 text-left text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                       {category.name}
                     </span>
                     <span className="text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 text-center">
@@ -3506,7 +3506,7 @@ export default function RolesPermissionsPage() {
                               setSearchQuery(""); // Clear search when switching roles
                               roleDetailsRef.current?.scrollTo(0, 0); // Reset scroll position
                             }}
-                            className={`w-full text-left px-2 py-1 text-[13px] leading-5 tracking-[-0.15px] rounded-md transition-[background-color] duration-150 ${
+                            className={`w-full text-left px-2 py-1 text-[13px] leading-[19px] tracking-[-0.15px] rounded-md transition-[background-color] duration-150 ${
                               selectedRole.id === role.id
                                 ? "bg-[#F7F5FD] text-[#533AFD]"
                                 : "text-[#353A44] hover:bg-[#F5F6F8]"
@@ -3570,7 +3570,7 @@ export default function RolesPermissionsPage() {
               </div>
               {/* Description */}
               {selectedRole.details?.description && (
-                <p className="text-[13px] text-[#596171] leading-5 tracking-[-0.15px]">
+                <p className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px]">
                   {selectedRole.details.description}
                 </p>
               )}
@@ -3582,12 +3582,12 @@ export default function RolesPermissionsPage() {
               <div className="pb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <CheckCircleIcon />
-                  <span className="text-[13px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">Can</span>
+                  <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Can</span>
                 </div>
                 {selectedRole.details?.canDo && selectedRole.details.canDo.length > 0 ? (
                   <ul className="list-disc pl-4 flex flex-col gap-1">
                     {selectedRole.details.canDo.map((item, index) => (
-                      <li key={index} className="text-[13px] text-[#353A44] leading-5 tracking-[-0.15px] pl-1">{item}</li>
+                      <li key={index} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] pl-1">{item}</li>
                     ))}
                   </ul>
                 ) : (
@@ -3604,12 +3604,12 @@ export default function RolesPermissionsPage() {
               <div className="py-4">
                 <div className="flex items-center gap-2 mb-2">
                   <CancelCircleIcon />
-                  <span className="text-[13px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">Cannot</span>
+                  <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Cannot</span>
                 </div>
                 {selectedRole.details?.cannotDo && selectedRole.details.cannotDo.length > 0 ? (
                   <ul className="list-disc pl-4 flex flex-col gap-1">
                     {selectedRole.details.cannotDo.map((item, index) => (
-                      <li key={index} className="text-[13px] text-[#353A44] leading-5 tracking-[-0.15px] pl-1">{item}</li>
+                      <li key={index} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] pl-1">{item}</li>
                     ))}
                   </ul>
                 ) : (
@@ -3678,7 +3678,7 @@ export default function RolesPermissionsPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search"
-                  className="flex-1 text-[13px] text-[#353A44] leading-5 tracking-[-0.15px] bg-transparent outline-none placeholder:text-[#818DA0]"
+                  className="flex-1 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] bg-transparent outline-none placeholder:text-[#818DA0]"
                 />
                 {searchQuery && (
                   <button
