@@ -1231,7 +1231,7 @@ function CustomizeGroupCard({
       >
         <div className="overflow-hidden">
           <div className="mx-4"><div className="border-t border-[#D8DEE4]" /></div>
-          <div className="flex flex-col divide-y divide-[#D8DEE4] ml-5 mr-4 py-2">
+          <div className="flex flex-col divide-y divide-[#D8DEE4] ml-5 mr-4 pb-2">
             {perms.map((permission) => {
               const isChecked = permission.apiName in permissionAccess;
               const isRequired = permission.apiName === REQUIRED_PERMISSION;
@@ -1243,7 +1243,7 @@ function CustomizeGroupCard({
                 <div
                   key={permission.apiName}
                   onClick={() => !isRequired && onTogglePermission(permission.apiName)}
-                  className={`flex items-start gap-4 p-2 transition-all duration-150 ${
+                  className={`flex items-start gap-4 px-2 py-3 transition-all duration-150 ${
                     isRequired ? 'cursor-default' : 'hover:bg-[#EBEEF1] cursor-pointer'
                   }`}
                 >
@@ -3214,7 +3214,7 @@ function GroupCard({
       >
         <div className="overflow-hidden">
           <div className="mx-4"><div className="border-t border-[#D8DEE4]" /></div>
-          <div className="flex flex-col divide-y divide-[#D8DEE4] ml-5 mr-2 py-2">
+          <div className="flex flex-col divide-y divide-[#D8DEE4] ml-5 mr-2 pb-2">
             {perms.map((permission) => (
               <PermissionItem
                 key={permission.apiName}
