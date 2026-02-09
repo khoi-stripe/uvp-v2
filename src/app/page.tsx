@@ -966,7 +966,7 @@ function PermissionsFilterMenu({
         onClick={() => popover.toggle()}
         className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#EBEEF1] transition-colors"
       >
-        <ControlIcon className="w-4 h-4 text-[#474E5A]" />
+        <ControlIcon className="w-3 h-3 text-[#474E5A]" />
       </button>
 
       {popover.isVisible && (
