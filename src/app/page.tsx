@@ -535,10 +535,10 @@ function PermissionCard({
 
   // Static version for main view
   return (
-    <div className={`flex items-start gap-4 transition-colors ${
+    <div className={`flex items-start transition-colors ${
       insideGroup
-        ? "py-3 hover:bg-[#EBEEF1]/50"
-        : "p-4 bg-[#F5F6F8] rounded"
+        ? "gap-2 py-3 px-2"
+        : "gap-4 p-4 bg-[#F5F6F8] rounded"
     }`}>
       {cardContent}
     </div>
@@ -1118,9 +1118,9 @@ function CustomizeGroupCard({
     : "";
 
   return (
-    <div className={`bg-[#F5F6F8] ${radiusClass} py-4 px-2 shrink-0 flex flex-col`}>
-      {/* Header */}
-      <div className="flex items-center gap-4 px-2">
+    <div className={`bg-[#F5F6F8] ${radiusClass} shrink-0 flex flex-col`}>
+      {/* Title & Description */}
+      <div className="flex items-center gap-4 py-4 pl-4 pr-6 rounded hover:bg-[#EBEEF1] transition-colors">
         <Checkbox
           checked={checkState === "all"}
           indeterminate={checkState === "some"}
@@ -1153,14 +1153,14 @@ function CustomizeGroupCard({
         </button>
       </div>
 
-      {/* Expandable permission cards */}
+      {/* Permissions */}
       <div
         className="grid transition-[grid-template-rows] duration-200 ease-in-out"
         style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
       >
         <div className="overflow-hidden">
-          <div className="pt-4 mx-2"><div className="border-t border-[#D8DEE4]" /></div>
-          <div className="flex flex-col divide-y divide-[#D8DEE4] ml-6 mr-2">
+          <div className="mx-4"><div className="border-t border-[#D8DEE4]" /></div>
+          <div className="flex flex-col divide-y divide-[#D8DEE4] ml-5 mr-4 py-2">
             {perms.map((permission) => {
               const isChecked = permission.apiName in permissionAccess;
               const isRequired = permission.apiName === REQUIRED_PERMISSION;
@@ -1172,8 +1172,8 @@ function CustomizeGroupCard({
                 <div
                   key={permission.apiName}
                   onClick={() => !isRequired && onTogglePermission(permission.apiName)}
-                  className={`flex items-start gap-4 py-3 transition-all duration-150 ${
-                    isRequired ? 'cursor-default' : 'hover:bg-[#EBEEF1]/50 cursor-pointer'
+                  className={`flex items-start gap-4 p-2 transition-all duration-150 ${
+                    isRequired ? 'cursor-default' : 'hover:bg-[#EBEEF1] cursor-pointer'
                   }`}
                 >
                   <div className="self-center">
@@ -3106,11 +3106,11 @@ function GroupCard({
     : "";
 
   return (
-    <div className={`bg-[#F5F6F8] ${radiusClass} py-4 px-2 shrink-0 flex flex-col`}>
-      {/* Header */}
+    <div className={`bg-[#F5F6F8] ${radiusClass} shrink-0 flex flex-col`}>
+      {/* Title & Description */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center gap-4 px-2 text-left group"
+        className="w-full flex items-center gap-4 py-4 px-4 text-left group rounded hover:bg-[#EBEEF1] transition-colors"
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -3137,14 +3137,14 @@ function GroupCard({
         />
       </button>
 
-      {/* Expandable permission cards */}
+      {/* Permissions */}
       <div
         className="grid transition-[grid-template-rows] duration-200 ease-in-out"
         style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
       >
         <div className="overflow-hidden">
-          <div className="pt-4 mx-2"><div className="border-t border-[#D8DEE4]" /></div>
-          <div className="flex flex-col divide-y divide-[#D8DEE4] ml-6 mr-2">
+          <div className="mx-4"><div className="border-t border-[#D8DEE4]" /></div>
+          <div className="flex flex-col divide-y divide-[#D8DEE4] ml-5 mr-2 py-2">
             {perms.map((permission) => (
               <PermissionItem
                 key={permission.apiName}
