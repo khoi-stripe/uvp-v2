@@ -929,12 +929,11 @@ function RoleMenu({
   );
 }
 
-function FilterIcon({ className }: { className?: string }) {
+function ControlIcon({ className }: { className?: string }) {
   return (
     <svg className={className} width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path fillRule="evenodd" clipRule="evenodd" d="M0.5 3.125C0.5 2.64175 0.891751 2.25 1.375 2.25H14.625C15.1082 2.25 15.5 2.64175 15.5 3.125C15.5 3.60825 15.1082 4 14.625 4H1.375C0.891751 4 0.5 3.60825 0.5 3.125Z" fill="currentColor"/>
-      <path fillRule="evenodd" clipRule="evenodd" d="M3 8.00098C3 7.51773 3.39175 7.12598 3.875 7.12598H12.125C12.6082 7.12598 13 7.51773 13 8.00098C13 8.48423 12.6082 8.87598 12.125 8.87598H3.875C3.39175 8.87598 3 8.48423 3 8.00098Z" fill="currentColor"/>
-      <path fillRule="evenodd" clipRule="evenodd" d="M5 12.875C5 12.3918 5.39175 12 5.875 12H10.125C10.6082 12 11 12.3918 11 12.875C11 13.3582 10.6082 13.75 10.125 13.75H5.875C5.39175 13.75 5 13.3582 5 12.875Z" fill="currentColor"/>
+      <path fillRule="evenodd" clipRule="evenodd" d="M11.5 8C13.433 8 15 9.567 15 11.5C15 13.433 13.433 15 11.5 15C9.82456 15 8.42548 13.8224 8.08203 12.25H2.625C2.21079 12.25 1.875 11.9142 1.875 11.5C1.875 11.0858 2.21079 10.75 2.625 10.75H8.08203C8.42548 9.17757 9.82456 8.00001 11.5 8ZM11.5 9.5C10.3954 9.50001 9.5 10.3954 9.5 11.5C9.5 12.6046 10.3954 13.5 11.5 13.5C12.6046 13.5 13.5 12.6046 13.5 11.5C13.5 10.3954 12.6046 9.5 11.5 9.5Z" fill="currentColor"/>
+      <path fillRule="evenodd" clipRule="evenodd" d="M4.5 1C6.17545 1 7.57452 2.17756 7.91797 3.75H13.375C13.7892 3.75 14.125 4.08579 14.125 4.5C14.125 4.91421 13.7892 5.25 13.375 5.25H7.91797C7.57452 6.82244 6.17545 8 4.5 8C2.567 8 1 6.433 1 4.5C1 2.567 2.567 1 4.5 1ZM4.5 2.5C3.39543 2.5 2.5 3.39543 2.5 4.5C2.5 5.60457 3.39543 6.5 4.5 6.5C5.60457 6.5 6.5 5.60457 6.5 4.5C6.5 3.39543 5.60457 2.5 4.5 2.5Z" fill="currentColor"/>
     </svg>
   );
 }
@@ -962,12 +961,12 @@ function PermissionsFilterMenu({
 
   return (
     <div className="relative flex items-center gap-1">
-      <span className="text-[12px] text-[#596171] leading-4">{currentLabel}</span>
+      <span className="text-[12px] text-[#596171] leading-4">Group by: {currentLabel}</span>
       <button
         onClick={() => popover.toggle()}
         className="p-1 rounded-md hover:bg-[#EBEEF1] transition-colors"
       >
-        <FilterIcon className="w-3 h-3 text-[#474E5A]" />
+        <ControlIcon className="w-3 h-3 text-[#474E5A]" />
       </button>
 
       {popover.isVisible && (
