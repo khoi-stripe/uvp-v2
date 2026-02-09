@@ -3441,11 +3441,6 @@ export default function RolesPermissionsPage() {
                 Add role
               </button>
             </div>
-            {/* Wireframe description placeholder */}
-            <div className="flex flex-col gap-2.5 py-1.5 w-[640px]">
-              <div className="h-2 bg-[#EBEEF1] rounded-lg w-full"></div>
-              <div className="h-2 bg-[#EBEEF1] rounded-lg w-full"></div>
-            </div>
           </div>
         </header>
 
