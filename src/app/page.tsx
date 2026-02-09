@@ -961,12 +961,12 @@ function PermissionsFilterMenu({
 
   return (
     <div className="relative flex items-center gap-1">
-      <span className="text-[12px] text-[#596171] leading-4">Group by: {currentLabel}</span>
+      <span className="text-[14px] text-[#596171] leading-4">Group by: {currentLabel}</span>
       <button
         onClick={() => popover.toggle()}
-        className="p-1 rounded-md hover:bg-[#EBEEF1] transition-colors"
+        className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#EBEEF1] transition-colors"
       >
-        <ControlIcon className="w-3 h-3 text-[#474E5A]" />
+        <ControlIcon className="w-4 h-4 text-[#474E5A]" />
       </button>
 
       {popover.isVisible && (
