@@ -998,7 +998,7 @@ function PermissionsFilterMenu({
               ))}
               <div className="h-px bg-[#EBEEF1] my-1" />
               <div className="flex items-center justify-between gap-6 px-2 py-1.5">
-                <span className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">Bundle permissions</span>
+                <span className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">Bundle groups</span>
                 <ToggleSwitch checked={isGrouped} onChange={onGroupedChange} />
               </div>
               {showAll !== undefined && onShowAllChange && (
