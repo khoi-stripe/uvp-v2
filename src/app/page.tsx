@@ -300,7 +300,7 @@ function PermissionCardContent({
   return (
     <div className={`flex-1 min-w-0 flex flex-col ${insideGroup ? "gap-0.5" : "gap-2"}`}>
       {/* Top section: title and description */}
-      <div className="flex flex-col gap-0">
+      <div className="flex flex-col">
         <h4 className="font-semibold text-[#353A44] text-[13px] leading-[19px] tracking-[-0.15px]">
           {permission.displayName}
         </h4>
@@ -1159,6 +1159,101 @@ function AIAssistantDrawer({
   );
 }
 
+// Shared base for collapsible group cards (used by GroupCard and CustomizeGroupCard)
+function BaseGroupCard({
+  groupName,
+  description,
+  countLabel,
+  isFirst = false,
+  isLast = false,
+  defaultExpanded = false,
+  headerLeft,
+  children,
+}: {
+  groupName: string;
+  description?: string;
+  countLabel: string;
+  isFirst?: boolean;
+  isLast?: boolean;
+  defaultExpanded?: boolean;
+  headerLeft?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+
+  const radiusClass = isFirst && isLast
+    ? "rounded-[4px]"
+    : isFirst
+    ? "rounded-t-[4px]"
+    : isLast
+    ? "rounded-b-[4px]"
+    : "";
+
+  const titleContent = (
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-2">
+        <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px] truncate">
+          {groupName}
+        </span>
+        <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-white text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
+          {countLabel}
+        </span>
+      </div>
+      {description && (
+        <p className="text-[13px] text-[#596171] leading-[19px] line-clamp-2">
+          {description}
+        </p>
+      )}
+    </div>
+  );
+
+  const chevron = (
+    <ChevronDown
+      className={`w-4 h-4 text-[#474E5A] flex-shrink-0 transition-transform duration-200 ${
+        isExpanded ? "rotate-180" : ""
+      }`}
+    />
+  );
+
+  return (
+    <div className={`bg-[#F5F6F8] ${radiusClass} shrink-0 flex flex-col`}>
+      {/* Header */}
+      {headerLeft ? (
+        <div className="flex items-center gap-4 py-4 px-4 rounded hover:bg-[#EBEEF1] transition-colors">
+          {headerLeft}
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex-1 flex items-center gap-4 text-left group min-w-0"
+          >
+            {titleContent}
+            {chevron}
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full flex items-center gap-4 py-4 px-4 text-left group rounded hover:bg-[#EBEEF1] transition-colors"
+        >
+          {titleContent}
+          {chevron}
+        </button>
+      )}
+
+      {/* Collapsible permissions */}
+      <div
+        className="grid transition-[grid-template-rows] duration-200 ease-in-out"
+        style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
+      >
+        <div className="overflow-hidden">
+          <div className="flex flex-col divide-y divide-[#D8DEE4] mx-5 pb-2 border-t border-[#D8DEE4]">
+            {children}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Group card for the customize modal - includes group-level checkbox
 function CustomizeGroupCard({
   groupName,
@@ -1185,120 +1280,259 @@ function CustomizeGroupCard({
   isFirst?: boolean;
   isLast?: boolean;
 }) {
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const REQUIRED_PERMISSION = "dashboard_baseline";
 
-  const radiusClass = isFirst && isLast
-    ? "rounded-[4px]"
-    : isFirst
-    ? "rounded-t-[4px]"
-    : isLast
-    ? "rounded-b-[4px]"
-    : "";
-
   return (
-    <div className={`bg-[#F5F6F8] ${radiusClass} shrink-0 flex flex-col`}>
-      {/* Title & Description */}
-      <div className="flex items-center gap-4 py-4 pl-4 pr-6 rounded hover:bg-[#EBEEF1] transition-colors">
+    <BaseGroupCard
+      groupName={groupName}
+      description={description}
+      countLabel={`${perms.filter(p => p.apiName in permissionAccess).length} of ${perms.length}`}
+      isFirst={isFirst}
+      isLast={isLast}
+      defaultExpanded={defaultExpanded}
+      headerLeft={
         <Checkbox
           checked={checkState === "all"}
           indeterminate={checkState === "some"}
           onChange={onToggleGroup}
         />
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex-1 flex items-center gap-4 text-left group min-w-0"
-        >
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px] truncate">
-                {groupName}
-              </span>
-              <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-white text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
-                {perms.filter(p => p.apiName in permissionAccess).length} of {perms.length}
-              </span>
+      }
+    >
+      {perms.map((permission) => {
+        const isChecked = permission.apiName in permissionAccess;
+        const isRequired = permission.apiName === REQUIRED_PERMISSION;
+        const currentAccess = permissionAccess[permission.apiName];
+        const supportsMultipleAccess = permission.actions.toLowerCase().includes("read") && 
+                                        permission.actions.toLowerCase().includes("write");
+
+        return (
+          <div
+            key={permission.apiName}
+            onClick={() => !isRequired && onTogglePermission(permission.apiName)}
+            className={`flex items-start gap-4 px-2 py-3 transition-all duration-150 ${
+              isRequired ? 'cursor-default' : 'hover:bg-[#EBEEF1] cursor-pointer'
+            }`}
+          >
+            <div className="self-center">
+              {isRequired ? (
+                <Tooltip content="Required permission" position="above">
+                  <Checkbox
+                    checked={isChecked}
+                    onChange={() => {}}
+                    disabled={true}
+                  />
+                </Tooltip>
+              ) : (
+                <Checkbox
+                  checked={isChecked}
+                  onChange={() => onTogglePermission(permission.apiName)}
+                />
+              )}
             </div>
-            {description && (
-              <p className="text-[13px] text-[#596171] leading-[19px] line-clamp-2">
-                {description}
-              </p>
+            <PermissionCardContent
+              permission={permission}
+              showTaskCategories={false}
+              currentGroup={groupName}
+              groupBy="productCategory"
+              insideGroup
+            />
+            {/* Access badge */}
+            {isChecked && supportsMultipleAccess && currentAccess ? (
+              <AccessSelector
+                value={currentAccess}
+                onChange={(access) => onAccessChange(permission.apiName, access)}
+              />
+            ) : (
+              <span
+                className={`text-[12px] font-medium px-2 py-0.5 rounded flex-shrink-0 ${
+                  permission.actions.includes("write")
+                    ? "bg-[#D3F8DF] text-[#1D7C4D]"
+                    : "bg-[#D4E5FF] text-[#0055BC]"
+                }`}
+              >
+                {currentAccess ? getAccessLabel(currentAccess).label : getAccessLabel(permission.actions).label}
+              </span>
             )}
           </div>
-          <ChevronDown
-            className={`w-4 h-4 text-[#474E5A] flex-shrink-0 transition-transform duration-200 ${
-              isExpanded ? "rotate-180" : ""
-            }`}
-          />
+        );
+      })}
+    </BaseGroupCard>
+  );
+}
+
+// Shared permissions panel for modal dialogs (CustomizeRoleModal & CreateRoleModal)
+function ModalPermissionsPanel({
+  isAssistantOpen,
+  onOpenAssistant,
+  isGrouped,
+  onGroupedChange,
+  groupBy,
+  onGroupByChange,
+  searchQuery,
+  onSearchChange,
+  selectedCount,
+  totalCount,
+  isAlphabetical,
+  sortedGroupEntries,
+  sortPermsInGroup,
+  getGroupCheckState,
+  toggleGroup,
+  permissionAccess,
+  togglePermission,
+  updatePermissionAccess,
+  pendingAccess,
+  updatePendingAccess,
+  hasResults,
+}: {
+  isAssistantOpen: boolean;
+  onOpenAssistant: () => void;
+  isGrouped: boolean;
+  onGroupedChange: (on: boolean) => void;
+  groupBy: GroupByOption;
+  onGroupByChange: (v: GroupByOption) => void;
+  searchQuery: string;
+  onSearchChange: (q: string) => void;
+  selectedCount: number;
+  totalCount: number;
+  isAlphabetical: boolean;
+  sortedGroupEntries: [string, Permission[]][];
+  sortPermsInGroup: (perms: Permission[]) => Permission[];
+  getGroupCheckState: (perms: Permission[]) => "all" | "none" | "some";
+  toggleGroup: (perms: Permission[]) => void;
+  permissionAccess: Record<string, string>;
+  togglePermission: (apiName: string) => void;
+  updatePermissionAccess: (apiName: string, access: string) => void;
+  pendingAccess: Record<string, string>;
+  updatePendingAccess: (apiName: string, access: string) => void;
+  hasResults: boolean;
+}) {
+  const REQUIRED_PERMISSION = "dashboard_baseline";
+
+  return (
+    <div
+      className={`${isAssistantOpen ? 'flex-1' : 'flex-[2]'} bg-white rounded-lg shadow-[0_7px_14px_0_rgba(48,49,61,0.08),0_3px_6px_0_rgba(0,0,0,0.12)] p-4 flex flex-col gap-4 overflow-hidden min-w-0`}
+      style={{ transition: 'flex 400ms cubic-bezier(0.4, 0, 0.2, 1)' }}
+    >
+      {/* Permissions header */}
+      <div className="flex items-center gap-2">
+        <span className="text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
+          Permissions
+        </span>
+        {/* AI Assistant toggle button - invisible (not removed) when assistant is open to prevent layout shift */}
+        <button
+          onClick={onOpenAssistant}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] font-medium transition-all duration-200 text-[#353A44] hover:bg-[#F5F6F8] border border-[#D8DEE4] bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)] ${
+            isAssistantOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}
+        >
+          <SparkleIcon />
+          <span className="leading-5 tracking-[-0.15px]">Assistant</span>
         </button>
+        <div className="ml-auto">
+          <PermissionsFilterMenu
+            isGrouped={isGrouped}
+            onGroupedChange={onGroupedChange}
+            groupBy={groupBy}
+            onGroupByChange={onGroupByChange}
+          />
+        </div>
       </div>
 
-      {/* Permissions */}
-      <div
-        className="grid transition-[grid-template-rows] duration-200 ease-in-out"
-        style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
-      >
-        <div className="overflow-hidden">
-          <div className="mx-4"><div className="border-t border-[#D8DEE4]" /></div>
-          <div className="flex flex-col divide-y divide-[#D8DEE4] ml-6 mr-4 pb-2">
-            {perms.map((permission) => {
-              const isChecked = permission.apiName in permissionAccess;
-              const isRequired = permission.apiName === REQUIRED_PERMISSION;
-              const currentAccess = permissionAccess[permission.apiName];
-              const supportsMultipleAccess = permission.actions.toLowerCase().includes("read") && 
-                                              permission.actions.toLowerCase().includes("write");
+      {/* Controls row - full width */}
+      <div className="flex items-center gap-2">
+        {/* Search field - spans full width */}
+        <div className="flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white focus-within:border-[#635BFF] transition-colors">
+          <SearchIcon className="text-[#818DA0]" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search"
+            className="flex-1 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] bg-transparent outline-none placeholder:text-[#818DA0]"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => onSearchChange("")}
+              className="text-[#818DA0] hover:text-[#353A44] transition-colors"
+            >
+              ×
+            </button>
+          )}
+        </div>
+      </div>
 
-              return (
-                <div
-                  key={permission.apiName}
-                  onClick={() => !isRequired && onTogglePermission(permission.apiName)}
-                  className={`flex items-start gap-4 px-2 py-3 transition-all duration-150 ${
-                    isRequired ? 'cursor-default' : 'hover:bg-[#EBEEF1] cursor-pointer'
-                  }`}
-                >
-                  <div className="self-center">
-                    {isRequired ? (
-                      <Tooltip content="Required permission" position="above">
-                        <Checkbox
-                          checked={isChecked}
-                          onChange={() => {}}
-                          disabled={true}
-                        />
-                      </Tooltip>
-                    ) : (
-                      <Checkbox
-                        checked={isChecked}
-                        onChange={() => onTogglePermission(permission.apiName)}
-                      />
-                    )}
-                  </div>
-                  <PermissionCardContent
-                    permission={permission}
-                    showTaskCategories={false}
-                    currentGroup={groupName}
-                    groupBy="productCategory"
-                    insideGroup
-                  />
-                  {/* Access badge */}
-                  {isChecked && supportsMultipleAccess && currentAccess ? (
-                    <AccessSelector
-                      value={currentAccess}
-                      onChange={(access) => onAccessChange(permission.apiName, access)}
+      {/* Unified permission list */}
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="flex items-center gap-2.5 py-4">
+          <span className="flex-1 text-[12px] font-semibold text-[#353A44] leading-4 tracking-[-0.024px]">
+            {selectedCount} of {totalCount} selected
+          </span>
+        </div>
+        <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isGrouped ? "gap-1" : "gap-2"}`}>
+          {isGrouped ? (
+            /* Grouped view: CustomizeGroupCard for each group */
+            sortedGroupEntries.map(([group, perms], idx) => (
+              <CustomizeGroupCard
+                key={group}
+                groupName={group}
+                description={GROUP_DESCRIPTIONS[groupBy]?.[group]}
+                permissions={sortPermsInGroup(perms)}
+                checkState={getGroupCheckState(perms)}
+                onToggleGroup={() => toggleGroup(perms)}
+                permissionAccess={permissionAccess}
+                onTogglePermission={(apiName) => togglePermission(apiName)}
+                onAccessChange={updatePermissionAccess}
+                isFirst={idx === 0}
+                isLast={idx === sortedGroupEntries.length - 1}
+              />
+            ))
+          ) : (
+            /* Ungrouped view: flat list with optional section headers */
+            sortedGroupEntries.map(([group, perms]) => (
+              <div key={group || "all"} className={isAlphabetical ? "" : "mb-3"}>
+                {!isAlphabetical && group && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <Checkbox
+                      checked={getGroupCheckState(perms) === "all"}
+                      indeterminate={getGroupCheckState(perms) === "some"}
+                      onChange={() => toggleGroup(perms)}
                     />
-                  ) : (
-                    <span
-                      className={`text-[12px] font-medium px-2 py-0.5 rounded flex-shrink-0 ${
-                        permission.actions.includes("write")
-                          ? "bg-[#D3F8DF] text-[#1D7C4D]"
-                          : "bg-[#D4E5FF] text-[#0055BC]"
-                      }`}
-                    >
-                      {currentAccess ? getAccessLabel(currentAccess).label : getAccessLabel(permission.actions).label}
+                    <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
+                      {group}
                     </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                    <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
+                      {perms.filter(p => p.apiName in permissionAccess).length} of {perms.length}
+                    </span>
+                  </div>
+                )}
+                {sortPermsInGroup(perms).map(perm => {
+                  const isChecked = perm.apiName in permissionAccess;
+                  return (
+                    <div key={perm.apiName} className="mb-2">
+                      <PermissionCard
+                        permission={perm}
+                        showCheckbox
+                        isChecked={isChecked}
+                        onToggle={() => togglePermission(perm.apiName)}
+                        currentGroup={group}
+                        groupBy={groupBy}
+                        disabled={perm.apiName === REQUIRED_PERMISSION}
+                        currentAccess={isChecked ? permissionAccess[perm.apiName] : undefined}
+                        onAccessChange={isChecked ? (access) => updatePermissionAccess(perm.apiName, access) : undefined}
+                        pendingAccess={!isChecked ? pendingAccess[perm.apiName] : undefined}
+                        onPendingAccessChange={!isChecked ? (access) => updatePendingAccess(perm.apiName, access) : undefined}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            ))
+          )}
+          {!hasResults && (
+            <div className="text-center py-8 text-[#596171] text-[13px] leading-[19px] tracking-[-0.15px]">
+              No permissions match your search
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -1887,134 +2121,29 @@ function CustomizeRoleModal({
                 </div>
               </div>
 
-              {/* Permissions panel - 2/3 when assistant closed, 1/2 when open */}
-              <div 
-                className={`${isAssistantOpen ? 'flex-1' : 'flex-[2]'} bg-white rounded-lg shadow-[0_7px_14px_0_rgba(48,49,61,0.08),0_3px_6px_0_rgba(0,0,0,0.12)] p-4 flex flex-col gap-4 overflow-hidden min-w-0`}
-                style={{ transition: 'flex 400ms cubic-bezier(0.4, 0, 0.2, 1)' }}
-              >
-                  {/* Permissions header */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
-                      Permissions
-                    </span>
-                    {/* AI Assistant toggle button - invisible (not removed) when assistant is open to prevent layout shift */}
-                    <button
-                      onClick={() => setIsAssistantOpen(true)}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] font-medium transition-all duration-200 text-[#353A44] hover:bg-[#F5F6F8] border border-[#D8DEE4] bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)] ${
-                        isAssistantOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'
-                      }`}
-                    >
-                      <SparkleIcon />
-                      <span className="leading-5 tracking-[-0.15px]">Assistant</span>
-                    </button>
-                    <div className="ml-auto">
-                      <PermissionsFilterMenu
-                        isGrouped={isGrouped}
-                        onGroupedChange={handleGroupToggle}
-                        groupBy={groupBy}
-                        onGroupByChange={setGroupBy}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Controls row - full width */}
-                  <div className="flex items-center gap-2">
-                    {/* Search field - spans full width */}
-                    <div className="flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white focus-within:border-[#635BFF] transition-colors">
-                      <SearchIcon className="text-[#818DA0]" />
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search"
-                        className="flex-1 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] bg-transparent outline-none placeholder:text-[#818DA0]"
-                      />
-                      {searchQuery && (
-                        <button
-                          onClick={() => setSearchQuery("")}
-                          className="text-[#818DA0] hover:text-[#353A44] transition-colors"
-                        >
-                          ×
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Unified permission list */}
-                  <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                    <div className="flex items-center gap-2.5 py-4">
-                      <span className="flex-1 text-[12px] font-semibold text-[#353A44] leading-4 tracking-[-0.024px]">
-                        {selectedPermissions.length} of {allPermissions.length} selected
-                      </span>
-                    </div>
-                    <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isGrouped ? "gap-1" : "gap-2"}`}>
-                      {isGrouped ? (
-                        /* Grouped view: CustomizeGroupCard for each group */
-                        sortedGroupEntries.map(([group, perms], idx) => (
-                          <CustomizeGroupCard
-                            key={group}
-                            groupName={group}
-                            description={GROUP_DESCRIPTIONS[groupBy]?.[group]}
-                            permissions={sortPermsInGroup(perms)}
-                            checkState={getGroupCheckState(perms)}
-                            onToggleGroup={() => toggleGroup(perms)}
-                            permissionAccess={permissionAccess}
-                            onTogglePermission={(apiName) => togglePermission(apiName)}
-                            onAccessChange={updatePermissionAccess}
-                            isFirst={idx === 0}
-                            isLast={idx === sortedGroupEntries.length - 1}
-                          />
-                        ))
-                      ) : (
-                        /* Ungrouped view: flat list with optional section headers */
-                        sortedGroupEntries.map(([group, perms]) => (
-                          <div key={group || "all"} className={isAlphabetical ? "" : "mb-3"}>
-                            {!isAlphabetical && group && (
-                              <div className="flex items-center gap-2 mb-2">
-                                <Checkbox
-                                  checked={getGroupCheckState(perms) === "all"}
-                                  indeterminate={getGroupCheckState(perms) === "some"}
-                                  onChange={() => toggleGroup(perms)}
-                                />
-                                <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
-                                  {group}
-                                </span>
-                                <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
-                                  {perms.filter(p => p.apiName in permissionAccess).length} of {perms.length}
-                                </span>
-                              </div>
-                            )}
-                            {sortPermsInGroup(perms).map(perm => {
-                              const isChecked = perm.apiName in permissionAccess;
-                              return (
-                                <div key={perm.apiName} className="mb-2">
-                                  <PermissionCard
-                                    permission={perm}
-                                    showCheckbox
-                                    isChecked={isChecked}
-                                    onToggle={() => togglePermission(perm.apiName)}
-                                    currentGroup={group}
-                                    groupBy={groupBy}
-                                    disabled={perm.apiName === REQUIRED_PERMISSION}
-                                    currentAccess={isChecked ? permissionAccess[perm.apiName] : undefined}
-                                    onAccessChange={isChecked ? (access) => updatePermissionAccess(perm.apiName, access) : undefined}
-                                    pendingAccess={!isChecked ? pendingAccess[perm.apiName] : undefined}
-                                    onPendingAccessChange={!isChecked ? (access) => updatePendingAccess(perm.apiName, access) : undefined}
-                                  />
-                                </div>
-                              );
-                            })}
-                          </div>
-                        ))
-                      )}
-                      {filteredAll.length === 0 && (
-                        <div className="text-center py-8 text-[#596171] text-[13px] leading-[19px] tracking-[-0.15px]">
-                          No permissions match your search
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+              <ModalPermissionsPanel
+                isAssistantOpen={isAssistantOpen}
+                onOpenAssistant={() => setIsAssistantOpen(true)}
+                isGrouped={isGrouped}
+                onGroupedChange={handleGroupToggle}
+                groupBy={groupBy}
+                onGroupByChange={setGroupBy}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                selectedCount={selectedPermissions.length}
+                totalCount={allPermissions.length}
+                isAlphabetical={isAlphabetical}
+                sortedGroupEntries={sortedGroupEntries}
+                sortPermsInGroup={sortPermsInGroup}
+                getGroupCheckState={getGroupCheckState}
+                toggleGroup={toggleGroup}
+                permissionAccess={permissionAccess}
+                togglePermission={togglePermission}
+                updatePermissionAccess={updatePermissionAccess}
+                pendingAccess={pendingAccess}
+                updatePendingAccess={updatePendingAccess}
+                hasResults={filteredAll.length > 0}
+              />
 
               </div>
             
@@ -2573,134 +2702,29 @@ function CreateRoleModal({
                 </div>
               </div>
 
-              {/* Permissions panel - 2/3 when assistant closed, 1/2 when open */}
-              <div 
-                className={`${isAssistantOpen ? 'flex-1' : 'flex-[2]'} bg-white rounded-lg shadow-[0px_7px_14px_0px_rgba(48,49,61,0.08),0px_3px_6px_0px_rgba(0,0,0,0.12)] p-4 flex flex-col gap-4 overflow-hidden min-w-0`}
-                style={{ transition: 'flex 400ms cubic-bezier(0.4, 0, 0.2, 1)' }}
-              >
-                  {/* Permissions header */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
-                      Permissions
-                    </span>
-                    {/* AI Assistant toggle button - invisible (not removed) when assistant is open to prevent layout shift */}
-                    <button
-                      onClick={() => setIsAssistantOpen(true)}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] font-medium transition-all duration-200 text-[#353A44] hover:bg-[#F5F6F8] border border-[#D8DEE4] bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)] ${
-                        isAssistantOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'
-                      }`}
-                    >
-                      <SparkleIcon />
-                      <span className="leading-5 tracking-[-0.15px]">Assistant</span>
-                    </button>
-                    <div className="ml-auto">
-                      <PermissionsFilterMenu
-                        isGrouped={isGrouped}
-                        onGroupedChange={handleGroupToggle}
-                        groupBy={groupBy}
-                        onGroupByChange={setGroupBy}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Controls row - full width */}
-                  <div className="flex items-center gap-2">
-                    {/* Search field - spans full width */}
-                    <div className="flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white focus-within:border-[#635BFF] transition-colors">
-                      <SearchIcon className="text-[#818DA0]" />
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search"
-                        className="flex-1 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] bg-transparent outline-none placeholder:text-[#818DA0]"
-                      />
-                      {searchQuery && (
-                        <button
-                          onClick={() => setSearchQuery("")}
-                          className="text-[#818DA0] hover:text-[#353A44] transition-colors"
-                        >
-                          ×
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Unified permission list */}
-                  <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                    <div className="flex items-center gap-2.5 py-4">
-                      <span className="flex-1 text-[12px] font-semibold text-[#353A44] leading-4 tracking-[-0.024px]">
-                        {selectedPermissions.length} of {allPermissions.length} selected
-                      </span>
-                    </div>
-                    <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isGrouped ? "gap-1" : "gap-2"}`}>
-                      {isGrouped ? (
-                        /* Grouped view */
-                        sortedGroupEntries.map(([group, perms], idx) => (
-                          <CustomizeGroupCard
-                            key={group}
-                            groupName={group}
-                            description={GROUP_DESCRIPTIONS[groupBy]?.[group]}
-                            permissions={sortPermsInGroup(perms)}
-                            checkState={getGroupCheckState(perms)}
-                            onToggleGroup={() => toggleGroup(perms)}
-                            permissionAccess={permissionAccess}
-                            onTogglePermission={(apiName) => togglePermission(apiName)}
-                            onAccessChange={updatePermissionAccess}
-                            isFirst={idx === 0}
-                            isLast={idx === sortedGroupEntries.length - 1}
-                          />
-                        ))
-                      ) : (
-                        /* Ungrouped view */
-                        sortedGroupEntries.map(([group, perms]) => (
-                          <div key={group || "all"} className={isAlphabetical ? "" : "mb-3"}>
-                            {!isAlphabetical && group && (
-                              <div className="flex items-center gap-2 mb-2">
-                                <Checkbox
-                                  checked={getGroupCheckState(perms) === "all"}
-                                  indeterminate={getGroupCheckState(perms) === "some"}
-                                  onChange={() => toggleGroup(perms)}
-                                />
-                                <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
-                                  {group}
-                                </span>
-                                <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
-                                  {perms.filter(p => p.apiName in permissionAccess).length} of {perms.length}
-                                </span>
-                              </div>
-                            )}
-                            {sortPermsInGroup(perms).map(perm => {
-                              const isChecked = perm.apiName in permissionAccess;
-                              return (
-                                <div key={perm.apiName} className="mb-2">
-                                  <PermissionCard
-                                    permission={perm}
-                                    showCheckbox
-                                    isChecked={isChecked}
-                                    onToggle={() => togglePermission(perm.apiName)}
-                                    currentGroup={group}
-                                    groupBy={groupBy}
-                                    disabled={perm.apiName === REQUIRED_PERMISSION}
-                                    currentAccess={isChecked ? permissionAccess[perm.apiName] : undefined}
-                                    onAccessChange={isChecked ? (access) => updatePermissionAccess(perm.apiName, access) : undefined}
-                                    pendingAccess={!isChecked ? pendingAccess[perm.apiName] : undefined}
-                                    onPendingAccessChange={!isChecked ? (access) => updatePendingAccess(perm.apiName, access) : undefined}
-                                  />
-                                </div>
-                              );
-                            })}
-                          </div>
-                        ))
-                      )}
-                      {filteredAll.length === 0 && (
-                        <div className="text-center py-8 text-[#596171] text-[13px] leading-[19px] tracking-[-0.15px]">
-                          No permissions match your search
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+              <ModalPermissionsPanel
+                isAssistantOpen={isAssistantOpen}
+                onOpenAssistant={() => setIsAssistantOpen(true)}
+                isGrouped={isGrouped}
+                onGroupedChange={handleGroupToggle}
+                groupBy={groupBy}
+                onGroupByChange={setGroupBy}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                selectedCount={selectedPermissions.length}
+                totalCount={allPermissions.length}
+                isAlphabetical={isAlphabetical}
+                sortedGroupEntries={sortedGroupEntries}
+                sortPermsInGroup={sortPermsInGroup}
+                getGroupCheckState={getGroupCheckState}
+                toggleGroup={toggleGroup}
+                permissionAccess={permissionAccess}
+                togglePermission={togglePermission}
+                updatePermissionAccess={updatePermissionAccess}
+                pendingAccess={pendingAccess}
+                updatePendingAccess={updatePendingAccess}
+                hasResults={filteredAll.length > 0}
+              />
 
               </div>
             
@@ -3193,73 +3217,33 @@ function GroupCard({
   activeApiNames?: Set<string>;
   showAll?: boolean;
 }) {
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
-
-  const radiusClass = isFirst && isLast
-    ? "rounded-[4px]"
-    : isFirst
-    ? "rounded-t-[4px]"
-    : isLast
-    ? "rounded-b-[4px]"
-    : "";
-
   return (
-    <div className={`bg-[#F5F6F8] ${radiusClass} shrink-0 flex flex-col`}>
-      {/* Title & Description */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center gap-4 py-4 px-4 text-left group rounded hover:bg-[#EBEEF1] transition-colors"
-      >
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px] truncate">
-              {groupName}
-            </span>
-            <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-white text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
-              {showAll && activeApiNames
-                ? `${perms.filter(p => activeApiNames.has(p.apiName)).length} of ${perms.length}`
-                : perms.length}
-            </span>
-          </div>
-          {description && (
-            <p className="text-[13px] text-[#596171] leading-[19px] line-clamp-2">
-              {description}
-            </p>
-          )}
-        </div>
-        {/* Chevron */}
-        <ChevronDown
-          className={`w-4 h-4 text-[#474E5A] flex-shrink-0 transition-transform duration-200 ${
-            isExpanded ? "rotate-180" : ""
-          }`}
+    <BaseGroupCard
+      groupName={groupName}
+      description={description}
+      countLabel={
+        showAll && activeApiNames
+          ? `${perms.filter(p => activeApiNames.has(p.apiName)).length} of ${perms.length}`
+          : `${perms.length}`
+      }
+      isFirst={isFirst}
+      isLast={isLast}
+      defaultExpanded={defaultExpanded}
+    >
+      {perms.map((permission) => (
+        <PermissionItem
+          key={permission.apiName}
+          permission={permission}
+          roleId={roleId}
+          showTaskCategories={false}
+          currentGroup={groupName}
+          groupBy={groupBy}
+          customAccess={customAccess?.[permission.apiName]}
+          insideGroup
+          isInactive={showAll && activeApiNames ? !activeApiNames.has(permission.apiName) : false}
         />
-      </button>
-
-      {/* Permissions */}
-      <div
-        className="grid transition-[grid-template-rows] duration-200 ease-in-out"
-        style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
-      >
-        <div className="overflow-hidden">
-          <div className="mx-4"><div className="border-t border-[#D8DEE4]" /></div>
-          <div className="flex flex-col divide-y divide-[#D8DEE4] ml-5 mr-2 pb-2">
-            {perms.map((permission) => (
-              <PermissionItem
-                key={permission.apiName}
-                permission={permission}
-                roleId={roleId}
-                showTaskCategories={false}
-                currentGroup={groupName}
-                groupBy={groupBy}
-                customAccess={customAccess?.[permission.apiName]}
-                insideGroup
-                isInactive={showAll && activeApiNames ? !activeApiNames.has(permission.apiName) : false}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+      ))}
+    </BaseGroupCard>
   );
 }
 
