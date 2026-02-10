@@ -965,7 +965,7 @@ function PermissionsFilterMenu({
         onClick={() => popover.toggle()}
         className="flex items-center gap-1 cursor-pointer"
       >
-        <span className="text-[13px] text-[#596171] leading-[19px]">Group by: <span className="text-[#635BFF]">{currentLabel}</span></span>
+        <span className="text-[13px] text-[#596171] leading-[19px]">View by: <span className="text-[#635BFF]">{currentLabel}</span></span>
         <span className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#EBEEF1] transition-colors">
           <ControlIcon className="w-3 h-3 text-[#474E5A]" />
         </span>
@@ -980,7 +980,7 @@ function PermissionsFilterMenu({
           <div className={`absolute top-full right-0 mt-1 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_5px_15px_rgba(0,0,0,0.12),0_15px_35px_rgba(48,49,61,0.08)] z-20 whitespace-nowrap overflow-hidden ${popover.animationClass}`}>
             <div className="p-2 flex flex-col">
               <div className="px-2 py-1.5">
-                <span className="text-[12px] font-semibold text-[#818DA0] leading-4 tracking-[-0.024px] uppercase">Group by</span>
+                <span className="text-[12px] font-semibold text-[#818DA0] leading-4 tracking-[-0.024px] uppercase">View by</span>
               </div>
               {options.map((option) => (
                 <button
@@ -1000,7 +1000,7 @@ function PermissionsFilterMenu({
               ))}
               <div className="h-px bg-[#EBEEF1] my-1" />
               <div className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => onGroupedChange(!isGrouped)}>
-                <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Bundle groups</span>
+                <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Bundle permissions</span>
                 <div onClick={(e) => e.stopPropagation()}>
                   <ToggleSwitch checked={isGrouped} onChange={onGroupedChange} />
                 </div>
