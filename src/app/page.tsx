@@ -1966,8 +1966,18 @@ function CustomizeRoleModal({
                         sortedGroupEntries.map(([group, perms]) => (
                           <div key={group || "all"} className={isAlphabetical ? "" : "mb-3"}>
                             {!isAlphabetical && group && (
-                              <div className="text-[12px] font-semibold text-[#353A44] leading-4 tracking-[-0.024px] mb-2">
-                                {group}
+                              <div className="flex items-center gap-2 mb-2">
+                                <Checkbox
+                                  checked={getGroupCheckState(perms) === "all"}
+                                  indeterminate={getGroupCheckState(perms) === "some"}
+                                  onChange={() => toggleGroup(perms)}
+                                />
+                                <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
+                                  {group}
+                                </span>
+                                <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
+                                  {perms.filter(p => p.apiName in permissionAccess).length} of {perms.length}
+                                </span>
                               </div>
                             )}
                             {sortPermsInGroup(perms).map(perm => {
@@ -2642,8 +2652,18 @@ function CreateRoleModal({
                         sortedGroupEntries.map(([group, perms]) => (
                           <div key={group || "all"} className={isAlphabetical ? "" : "mb-3"}>
                             {!isAlphabetical && group && (
-                              <div className="text-[12px] font-semibold text-[#353A44] leading-4 tracking-[-0.024px] mb-2">
-                                {group}
+                              <div className="flex items-center gap-2 mb-2">
+                                <Checkbox
+                                  checked={getGroupCheckState(perms) === "all"}
+                                  indeterminate={getGroupCheckState(perms) === "some"}
+                                  onChange={() => toggleGroup(perms)}
+                                />
+                                <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
+                                  {group}
+                                </span>
+                                <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
+                                  {perms.filter(p => p.apiName in permissionAccess).length} of {perms.length}
+                                </span>
                               </div>
                             )}
                             {sortPermsInGroup(perms).map(perm => {
