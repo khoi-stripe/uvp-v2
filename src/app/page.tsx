@@ -1005,8 +1005,8 @@ function PermissionsFilterMenu({
               </div>
               {showAll !== undefined && onShowAllChange && (
                 <div className="flex items-center justify-between gap-6 px-2 py-1.5">
-                  <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Show all permissions</span>
-                  <ToggleSwitch checked={showAll} onChange={onShowAllChange} />
+                  <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Hide inactive permissions</span>
+                  <ToggleSwitch checked={!showAll} onChange={(v) => onShowAllChange(!v)} />
                 </div>
               )}
             </div>
