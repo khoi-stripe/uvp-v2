@@ -3781,7 +3781,9 @@ export default function RolesPermissionsPage() {
                         {groupName}
                       </h3>
                       <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
-                        {perms.filter(p => activeApiNames.has(p.apiName)).length} of {perms.length}
+                        {showAll
+                          ? `${perms.filter(p => activeApiNames.has(p.apiName)).length} of ${perms.length}`
+                          : perms.filter(p => activeApiNames.has(p.apiName)).length}
                       </span>
                     </div>
                     <div className="flex flex-col gap-2">
