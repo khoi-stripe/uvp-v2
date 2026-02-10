@@ -837,12 +837,12 @@ function Dropdown<T extends string>({
 type GroupByOption = "alphabetical" | "productCategory" | "taskCategory" | "operationType" | "riskLevel" | "sensitivity";
 
 const groupByOptions: { value: GroupByOption; label: string }[] = [
-  { value: "alphabetical", label: "None" },
   { value: "productCategory", label: "Product" },
   { value: "taskCategory", label: "Task" },
   { value: "operationType", label: "Operation" },
   { value: "riskLevel", label: "Risk" },
   { value: "sensitivity", label: "Sensitivity" },
+  { value: "alphabetical", label: "Alphabetical" },
 ];
 
 // When grouped, alphabetical doesn't make sense (no groups to collapse)
@@ -3755,6 +3755,16 @@ export default function RolesPermissionsPage() {
               {/* Ungrouped: Alphabetical (flat list) - show task categories as tags */}
               {!isGrouped && alphabeticalPermissions && (
                 <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
+                      All permissions
+                    </h3>
+                    <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
+                      {showAll
+                        ? `${alphabeticalPermissions.filter(p => activeApiNames.has(p.apiName)).length} of ${alphabeticalPermissions.length}`
+                        : alphabeticalPermissions.length}
+                    </span>
+                  </div>
                   {alphabeticalPermissions.map((permission) => (
                     <PermissionItem
                       key={permission.apiName}
