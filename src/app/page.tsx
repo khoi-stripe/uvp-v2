@@ -999,14 +999,18 @@ function PermissionsFilterMenu({
                 </button>
               ))}
               <div className="h-px bg-[#EBEEF1] my-1" />
-              <div className="flex items-center justify-between gap-6 px-2 py-1.5">
+              <div className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => onGroupedChange(!isGrouped)}>
                 <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Bundle groups</span>
-                <ToggleSwitch checked={isGrouped} onChange={onGroupedChange} />
+                <div onClick={(e) => e.stopPropagation()}>
+                  <ToggleSwitch checked={isGrouped} onChange={onGroupedChange} />
+                </div>
               </div>
               {showAll !== undefined && onShowAllChange && (
-                <div className="flex items-center justify-between gap-6 px-2 py-1.5">
+                <div className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => onShowAllChange(!showAll)}>
                   <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Hide inactive permissions</span>
-                  <ToggleSwitch checked={!showAll} onChange={(v) => onShowAllChange(!v)} />
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <ToggleSwitch checked={!showAll} onChange={(v) => onShowAllChange(!v)} />
+                  </div>
                 </div>
               )}
             </div>
