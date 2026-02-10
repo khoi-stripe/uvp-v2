@@ -3776,9 +3776,14 @@ export default function RolesPermissionsPage() {
                 })
                 .map(([groupName, perms]) => (
                   <div key={groupName} className="flex flex-col gap-2">
-                    <h3 className="text-[12px] font-semibold text-[#353A44] leading-4 tracking-[-0.024px]">
-                      {groupName}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
+                        {groupName}
+                      </h3>
+                      <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
+                        {perms.filter(p => activeApiNames.has(p.apiName)).length} of {perms.length}
+                      </span>
+                    </div>
                     <div className="flex flex-col gap-2">
                       {perms.map((permission) => (
                         <PermissionItem
