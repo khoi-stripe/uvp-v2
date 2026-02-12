@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { ChevronDown, MoreHorizontal, X } from "lucide-react";
+import { ChevronDown, MoreHorizontal, Search, X } from "lucide-react";
 import { DrawerPermissionsPanel as SharedDrawerPermissionsPanel, ToggleSwitch as SharedToggleSwitch } from "@/components/shared";
 
 // Hook for animated popover open/close
@@ -4084,21 +4084,41 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode }: {
 }
 
 // ===== Add Member Modal (from Team & Security flow) =====
+const MOCK_ACCOUNTS = [
+  { id: "del-ca", name: "Acme Deliveries CA", group: "Deliveries" },
+  { id: "del-uk", name: "Acme Deliveries UK", group: "Deliveries" },
+  { id: "del-us", name: "Acme Deliveries US", group: "Deliveries" },
+  { id: "eats-ca", name: "Acme Eats CA", group: "Eats" },
+  { id: "eats-uk", name: "Acme Eats UK", group: "Eats" },
+  { id: "eats-us", name: "Acme Eats US", group: "Eats" },
+  { id: "rides-ca", name: "Acme Rides CA", group: "Rides" },
+  { id: "rides-uk", name: "Acme Rides UK", group: "Rides" },
+  { id: "rides-us", name: "Acme Rides US", group: "Rides" },
+];
+const ACCOUNT_GROUPS = ["All", ...Array.from(new Set(MOCK_ACCOUNTS.map(a => a.group)))];
+const ALL_ACCOUNT_IDS = new Set(MOCK_ACCOUNTS.map(a => a.id));
+
 function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [step, setStep] = useState(1);
   const [emails, setEmails] = useState<string[]>([]);
   const [currentInput, setCurrentInput] = useState("");
   const [selectedAccount, setSelectedAccount] = useState<"all" | "selected">("all");
+  const [selectedAccounts, setSelectedAccounts] = useState<Set<string>>(new Set(ALL_ACCOUNT_IDS));
+  const [showAccountPicker, setShowAccountPicker] = useState(false);
+  const [accountGroupFilter, setAccountGroupFilter] = useState("All");
+  const [accountSearch, setAccountSearch] = useState("");
   const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set());
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [showPermissions, setShowPermissions] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [isOpening, setIsOpening] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
+  const accountSearchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
       setStep(1); setEmails([]); setCurrentInput(""); setSelectedAccount("all");
+      setSelectedAccounts(new Set(ALL_ACCOUNT_IDS)); setShowAccountPicker(false); setAccountGroupFilter("All"); setAccountSearch("");
       setSelectedRoles(new Set()); setExpandedCategories(new Set()); setShowPermissions(false); setIsClosing(false);
       setIsOpening(true);
       requestAnimationFrame(() => {
@@ -4150,6 +4170,36 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
     "Specialists": "Connect", "View only": "View only", "Sandbox": "Sandbox",
   };
 
+  // Account picker derived data
+  const filteredAccounts = useMemo(() => {
+    let accts = accountGroupFilter === "All" ? MOCK_ACCOUNTS : MOCK_ACCOUNTS.filter(a => a.group === accountGroupFilter);
+    if (accountSearch.trim()) {
+      const q = accountSearch.trim().toLowerCase();
+      accts = accts.filter(a => a.name.toLowerCase().includes(q));
+    }
+    return accts;
+  }, [accountGroupFilter, accountSearch]);
+
+  const groupCounts = useMemo(() => {
+    const counts: Record<string, number> = { All: MOCK_ACCOUNTS.length };
+    for (const a of MOCK_ACCOUNTS) counts[a.group] = (counts[a.group] || 0) + 1;
+    return counts;
+  }, []);
+
+  const toggleAccount = (id: string) => {
+    setSelectedAccounts(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+  };
+
+  const toggleAllVisible = () => {
+    const allSelected = filteredAccounts.every(a => selectedAccounts.has(a.id));
+    setSelectedAccounts(prev => {
+      const next = new Set(prev);
+      if (allSelected) { filteredAccounts.forEach(a => next.delete(a.id)); }
+      else { filteredAccounts.forEach(a => next.add(a.id)); }
+      return next;
+    });
+  };
+
   const stepLabels: Record<number, string> = { 1: "Add team members", 2: "Which accounts should be accessible?", 3: "Select roles", 4: "Review" };
 
   if (!isOpen && !isClosing) return null;
@@ -4173,7 +4223,7 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
         </div>
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
           {step === 1 && (
-            <div className="flex-1 overflow-y-auto flex flex-col gap-8 px-8 pb-8">
+            <div className="flex-1 overflow-y-auto flex flex-col gap-8 px-8 pb-0">
               <div className="flex flex-col gap-1">
                 <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{stepLabels[step]}</h2>
                 <p className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">Enter team member email addresses. Invited members will share the same roles.</p>
@@ -4194,31 +4244,157 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
               </div>
             </div>
           )}
-          {step === 2 && (
-            <div className="flex-1 overflow-y-auto flex flex-col gap-8 px-8 pb-8">
+          {step === 2 && !showAccountPicker && (
+            <div className="flex-1 overflow-y-auto flex flex-col gap-8 px-8 pb-0">
               <div className="flex flex-col gap-1">
                 <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{stepLabels[step]}</h2>
               </div>
-              <div className="flex gap-4">
+              <div className="flex gap-4 flex-1 min-h-0">
                 <button onClick={() => setSelectedAccount("all")}
-                  className={`flex-1 flex flex-col rounded-[6px] text-left transition-colors overflow-hidden ${selectedAccount === "all" ? 'border-2 border-[#675DFF]' : 'border border-[#D8DEE4] hover:border-[#A3ACB9]'}`}>
-                  <div className={`h-[120px] w-full ${selectedAccount === "all" ? 'bg-[#F7F5FD]' : 'bg-[#F5F6F8]'}`} />
-                  <div className="p-4">
+                  className={`flex-1 flex flex-col rounded-[6px] text-left transition-colors ${selectedAccount === "all" ? 'border-2 border-[#675DFF]' : 'border border-[#D8DEE4] hover:border-[#A3ACB9]'}`}>
+                  <div className={`flex-1 w-full rounded-t-[5px] ${selectedAccount === "all" ? 'bg-[#F7F5FD]' : 'bg-[#F5F6F8]'}`} />
+                  <div className="p-4 shrink-0">
                     <p className={`text-[16px] font-semibold leading-6 tracking-[-0.31px] ${selectedAccount === "all" ? 'text-[#533AFD]' : 'text-[#596171]'}`} style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Your whole organization</p>
-                    <div className="flex flex-col gap-[10px] py-1.5"><div className="h-2 bg-[#EBEEF1] rounded-lg w-full" /><div className="h-2 bg-[#EBEEF1] rounded-lg w-full" /></div>
+                    <p className="text-[14px] text-[#596171] leading-5 tracking-[-0.15px] mt-0.5">Grant access to all accounts organization-wide, including accounts added in the future.</p>
                   </div>
                 </button>
                 <button onClick={() => setSelectedAccount("selected")}
-                  className={`flex-1 flex flex-col rounded-[6px] text-left transition-colors overflow-hidden ${selectedAccount === "selected" ? 'border-2 border-[#675DFF]' : 'border border-[#D8DEE4] hover:border-[#A3ACB9]'}`}>
-                  <div className={`h-[120px] w-full ${selectedAccount === "selected" ? 'bg-[#F7F5FD]' : 'bg-[#F5F6F8]'}`} />
-                  <div className="p-4">
+                  className={`flex-1 flex flex-col rounded-[6px] text-left transition-colors ${selectedAccount === "selected" ? 'border-2 border-[#675DFF]' : 'border border-[#D8DEE4] hover:border-[#A3ACB9]'}`}>
+                  <div className={`flex-1 w-full rounded-t-[5px] ${selectedAccount === "selected" ? 'bg-[#F7F5FD]' : 'bg-[#F5F6F8]'}`} />
+                  <div className="p-4 shrink-0">
                     <p className={`text-[16px] font-semibold leading-6 tracking-[-0.31px] ${selectedAccount === "selected" ? 'text-[#533AFD]' : 'text-[#596171]'}`} style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Only select accounts</p>
-                    <div className="flex flex-col gap-[10px] py-1.5"><div className="h-2 bg-[#EBEEF1] rounded-lg w-full" /><div className="h-2 bg-[#EBEEF1] rounded-lg w-full" /></div>
+                    <p className="text-[14px] text-[#596171] leading-5 tracking-[-0.15px] mt-0.5">Grant access to specific accounts only. Future accounts won't automatically receive this role.</p>
                   </div>
                 </button>
               </div>
             </div>
           )}
+          {step === 2 && showAccountPicker && (() => {
+            const visibleSelectedCount = filteredAccounts.filter(a => selectedAccounts.has(a.id)).length;
+            const allVisibleSelected = filteredAccounts.length > 0 && visibleSelectedCount === filteredAccounts.length;
+            const someVisibleSelected = visibleSelectedCount > 0 && !allVisibleSelected;
+            return (
+              <div className="flex-1 min-h-0 flex flex-col">
+                <div className="px-8">
+                  <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Choose accounts from your organization</h2>
+                </div>
+                <div className="flex-1 min-h-0 flex pt-4">
+                  {/* Group filter sidebar */}
+                  <div className="w-[240px] shrink-0 pl-6 pt-4 relative">
+                    <div
+                      className="h-full overflow-y-auto flex flex-col gap-px rounded-[6px]"
+                      ref={(el) => {
+                        if (!el) return;
+                        const update = () => {
+                          const shadow = el.nextElementSibling as HTMLElement | null;
+                          if (shadow) {
+                            const canScroll = el.scrollHeight > el.clientHeight;
+                            const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+                            shadow.style.opacity = canScroll && !atBottom ? '1' : '0';
+                          }
+                        };
+                        el.addEventListener('scroll', update);
+                        requestAnimationFrame(update);
+                      }}
+                    >
+                      {ACCOUNT_GROUPS.map(group => {
+                        const isActive = accountGroupFilter === group;
+                        return (
+                          <button
+                            key={group}
+                            onClick={() => {
+                              setAccountGroupFilter(group);
+                              setAccountSearch("");
+                              const ids = group === "All" ? MOCK_ACCOUNTS.map(a => a.id) : MOCK_ACCOUNTS.filter(a => a.group === group).map(a => a.id);
+                              setSelectedAccounts(new Set(ids));
+                            }}
+                            className={`flex items-center gap-2 px-2 py-1 rounded-[6px] text-left transition-colors ${isActive ? 'bg-[#F7F5FD]' : 'hover:bg-[#F5F6F8]'}`}
+                          >
+                            <span className={`flex-1 text-[14px] leading-5 tracking-[-0.15px] ${isActive ? 'text-[#533AFD]' : 'text-[#353A44]'}`}>{group}</span>
+                            <span className={`text-[12px] leading-4 min-w-[16px] px-1 text-center ${isActive ? 'text-[#533AFD]' : 'text-[#596171]'}`}>{groupCounts[group]}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {/* Overflow shadow */}
+                    <div className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none transition-opacity duration-200" style={{ background: 'radial-gradient(ellipse 100% 100% at 50% 100%, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 70%)' }} />
+                  </div>
+                  {/* Account list */}
+                  <div className="flex-1 min-w-0 flex flex-col pt-4 px-4 overflow-hidden">
+                    {/* Search */}
+                    <div className="pb-2 px-2 flex-shrink-0">
+                      <div className="flex items-center gap-2 px-2 py-1 border border-[#D8DEE4] rounded-[6px] focus-within:ring-2 focus-within:ring-[#635BFF] focus-within:border-transparent">
+                        <Search size={14} className="text-[#6C7688] flex-shrink-0" />
+                        <input
+                          ref={accountSearchRef}
+                          type="text"
+                          value={accountSearch}
+                          onChange={(e) => setAccountSearch(e.target.value)}
+                          placeholder="Search"
+                          className="flex-1 text-[14px] text-[#353A44] leading-5 tracking-[-0.15px] placeholder:text-[#818DA0] bg-transparent border-none outline-none"
+                        />
+                      </div>
+                    </div>
+                    {/* Account rows */}
+                    <div className="flex-1 min-h-0 relative">
+                      <div
+                        className="h-full overflow-y-auto rounded-[6px]"
+                        ref={(el) => {
+                          if (!el) return;
+                          const update = () => {
+                            const shadow = el.nextElementSibling as HTMLElement | null;
+                            if (shadow) {
+                              const canScroll = el.scrollHeight > el.clientHeight;
+                              const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+                              shadow.style.opacity = canScroll && !atBottom ? '1' : '0';
+                            }
+                          };
+                          el.addEventListener('scroll', update);
+                          requestAnimationFrame(update);
+                        }}
+                      >
+                        {/* Select all row */}
+                        <button onClick={toggleAllVisible} className="w-full flex items-center gap-1 p-2 rounded-[4px] hover:bg-[#F5F6F8] transition-colors">
+                          <div className={`w-[14px] h-[14px] rounded-[4px] border flex-shrink-0 flex items-center justify-center transition-colors ${
+                            allVisibleSelected ? 'bg-[#675DFF] border-[#675DFF] shadow-[0_1px_1px_rgba(10,33,86,0.16)]'
+                              : someVisibleSelected ? 'bg-[#675DFF] border-[#675DFF] shadow-[0_1px_1px_rgba(10,33,86,0.16)]'
+                              : 'border-[#D8DEE4] bg-white shadow-[0_1px_1px_rgba(33,37,44,0.16)]'
+                          }`}>
+                            {allVisibleSelected && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M8.5 2.5L3.75 7.5L1.5 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                            {someVisibleSelected && !allVisibleSelected && <svg width="8" height="2" viewBox="0 0 8 2" fill="none"><rect width="8" height="2" rx="1" fill="white"/></svg>}
+                          </div>
+                          <span className="px-2 text-[12px] text-[#353A44] leading-4">{visibleSelectedCount} selected</span>
+                        </button>
+                        {/* Individual accounts */}
+                        {filteredAccounts.map(account => {
+                          const isChecked = selectedAccounts.has(account.id);
+                          return (
+                            <button
+                              key={account.id}
+                              onClick={() => toggleAccount(account.id)}
+                              className="w-full flex items-center gap-1 p-2 rounded-[4px] hover:bg-[#F5F6F8] transition-colors"
+                            >
+                              <div className={`w-[14px] h-[14px] rounded-[4px] border flex-shrink-0 flex items-center justify-center transition-colors ${isChecked ? 'bg-[#675DFF] border-[#675DFF] shadow-[0_1px_1px_rgba(10,33,86,0.16)]' : 'border-[#D8DEE4] bg-white shadow-[0_1px_1px_rgba(33,37,44,0.16)]'}`}>
+                                {isChecked && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M8.5 2.5L3.75 7.5L1.5 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                              </div>
+                              <div className="flex items-center gap-1.5 px-2">
+                                <div className="w-5 h-5 rounded-[4px] bg-[#088EF9] flex items-center justify-center flex-shrink-0">
+                                  <span className="text-[9px] font-bold text-white leading-none">A</span>
+                                </div>
+                                <span className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">{account.name}</span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {/* Overflow shadow */}
+                      <div className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none transition-opacity duration-200" style={{ background: 'radial-gradient(ellipse 100% 100% at 50% 100%, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 70%)' }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
           {step === 3 && (
             <div className="flex-1 min-h-0 flex flex-col gap-4 px-8 overflow-hidden">
               <div className="flex-shrink-0">
@@ -4290,7 +4466,7 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
             </div>
           )}
           {step === 4 && (
-            <div className="flex-1 overflow-y-auto flex flex-col gap-4 px-8 pb-8">
+            <div className="flex-1 overflow-y-auto flex flex-col gap-4 px-8 pb-0">
               <div className="flex flex-col">
                 <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{stepLabels[step]}</h2>
               </div>
@@ -4309,9 +4485,14 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
                 <div className="flex items-center gap-8 bg-[#F5F6F8] p-4">
                   <div className="flex-1 min-w-0 flex flex-col gap-1">
                     <p className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">Access</p>
-                    <p className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{selectedAccount === "all" ? "Acme, Inc." : "Selected accounts"}</p>
+                    <p className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{selectedAccount === "all" ? "Acme, Inc." : (() => {
+                      const names = MOCK_ACCOUNTS.filter(a => selectedAccounts.has(a.id)).map(a => a.name);
+                      if (names.length === 0) return "No accounts selected";
+                      if (names.length <= 3) return names.join(", ");
+                      return `${names.slice(0, 3).join(", ")} + ${names.length - 3} more`;
+                    })()}</p>
                   </div>
-                  <button onClick={() => setStep(2)} className="w-7 h-7 flex items-center justify-center flex-shrink-0 rounded-md hover:bg-[#EBEEF1] transition-colors">
+                  <button onClick={() => { setStep(2); if (selectedAccount === "selected") setShowAccountPicker(true); }} className="w-7 h-7 flex items-center justify-center flex-shrink-0 rounded-md hover:bg-[#EBEEF1] transition-colors">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M0.975001 7.87468C0.991113 7.63299 1.0944 7.40537 1.26568 7.23409L7.43933 1.06043C8.02512 0.474647 8.97487 0.474647 9.56065 1.06043L10.9393 2.43911C11.5251 3.0249 11.5251 3.97465 10.9393 4.56043L4.76568 10.7341C4.5944 10.9054 4.36678 11.0087 4.12509 11.0248L1.03508 11.2308C0.884155 11.2408 0.758938 11.1156 0.769 10.9647L0.975001 7.87468ZM2.3607 9.63906L2.45918 8.16191L6.53031 4.09078L7.90899 5.46946L3.83786 9.54059L2.3607 9.63906ZM8.96965 4.4088L9.87867 3.49977L8.49999 2.12109L7.59097 3.03012L8.96965 4.4088Z" fill="#596171"/></svg>
                   </button>
                 </div>
@@ -4329,9 +4510,18 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
           )}
         </div>
         <div className="flex items-center justify-end gap-[10px] py-6 px-8 flex-shrink-0">
-          {step > 1 && <button onClick={() => setStep(step - 1)} className="px-4 py-2 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] bg-white border border-[#D8DEE4] rounded-[6px] hover:bg-[#F5F6F8] transition-colors">Back</button>}
+          {(step > 1 || showAccountPicker) && (
+            <button onClick={() => {
+              if (step === 2 && showAccountPicker) { setShowAccountPicker(false); }
+              else if (step === 3 && selectedAccount === "selected") { setStep(2); setShowAccountPicker(true); }
+              else { setStep(step - 1); }
+            }} className="px-4 py-2 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] bg-white border border-[#D8DEE4] rounded-[6px] hover:bg-[#F5F6F8] transition-colors">Back</button>
+          )}
           {step < 4
-            ? <button onClick={() => setStep(step + 1)} className="px-4 py-2 text-[14px] font-semibold text-white leading-5 tracking-[-0.15px] bg-[#635BFF] rounded-[6px] hover:bg-[#5851DF] transition-colors shadow-[0_1px_1px_rgba(47,14,99,0.32)]">Next</button>
+            ? <button onClick={() => {
+                if (step === 2 && !showAccountPicker && selectedAccount === "selected") { setShowAccountPicker(true); }
+                else { setStep(step + 1); if (step === 2) setShowAccountPicker(false); }
+              }} className="px-4 py-2 text-[14px] font-semibold text-white leading-5 tracking-[-0.15px] bg-[#635BFF] rounded-[6px] hover:bg-[#5851DF] transition-colors shadow-[0_1px_1px_rgba(47,14,99,0.32)]">Next</button>
             : <button onClick={handleClose} className="px-4 py-2 text-[14px] font-semibold text-white leading-5 tracking-[-0.15px] bg-[#635BFF] rounded-[6px] hover:bg-[#5851DF] transition-colors shadow-[0_1px_1px_rgba(47,14,99,0.32)]">Send invites</button>
           }
         </div>
