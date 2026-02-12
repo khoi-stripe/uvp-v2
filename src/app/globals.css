@@ -121,7 +121,11 @@ body {
 }
 
 .animate-modal-in {
-  animation: modal-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: modal-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-modal-out {
+  animation: modal-out 0.2s ease-out forwards;
 }
 
 /* Popover / menu animations */
@@ -155,6 +159,13 @@ body {
 .animate-popover-out {
   animation: popover-out 0.1s ease-out forwards;
   transform-origin: var(--popover-origin, top right);
+}
+
+/* Form focus ring — uses outline so it's never clipped by overflow parents */
+.form-focus-ring:focus-within {
+  border-color: transparent;
+  outline: 4px solid rgba(8, 142, 249, 0.36);
+  outline-offset: -1px;
 }
 
 /* Prototype control: toggle 13px content text back to 14px */

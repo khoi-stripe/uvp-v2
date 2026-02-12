@@ -4111,7 +4111,6 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [showPermissions, setShowPermissions] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  const [isOpening, setIsOpening] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const accountSearchRef = useRef<HTMLInputElement>(null);
 
@@ -4120,12 +4119,8 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
       setStep(1); setEmails([]); setCurrentInput(""); setSelectedAccount("all");
       setSelectedAccounts(new Set(ALL_ACCOUNT_IDS)); setShowAccountPicker(false); setAccountGroupFilter("All"); setAccountSearch("");
       setSelectedRoles(new Set()); setExpandedCategories(new Set()); setShowPermissions(false); setIsClosing(false);
-      setIsOpening(true);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsOpening(false);
-        });
-      });
+      // Focus the email input after the modal animation settles
+      requestAnimationFrame(() => { inputRef.current?.focus(); });
     }
   }, [isOpen]);
 
@@ -4143,6 +4138,12 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
   const removeEmail = (email: string) => setEmails(prev => prev.filter(e => e !== email));
 
   const handleEmailKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      if (currentInput.trim()) addEmail(currentInput);
+      setStep(2);
+      return;
+    }
     if (e.key === "Enter" || e.key === "," || e.key === " " || e.key === "Tab") {
       e.preventDefault();
       if (currentInput.trim()) addEmail(currentInput);
@@ -4206,9 +4207,9 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
-      <div className={`absolute inset-0 bg-[rgba(182,192,205,0.7)] transition-opacity duration-300 ${isClosing || isOpening ? 'opacity-0' : 'opacity-100'}`} onClick={handleClose} />
+      <div className={`absolute inset-0 bg-[rgba(182,192,205,0.7)] ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`} onClick={handleClose} />
       <div
-        className={`relative bg-white rounded-[12px] shadow-[0px_15px_35px_0px_rgba(48,49,61,0.08),0px_5px_15px_0px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden ${step === 3 ? 'transition-[width,max-width,opacity,transform] duration-500' : 'transition-[opacity,transform] duration-300 ease-out'} ${isClosing || isOpening ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
+        className={`relative bg-white rounded-[12px] shadow-[0px_15px_35px_0px_rgba(48,49,61,0.08),0px_5px_15px_0px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden ${step === 3 ? 'transition-[width,max-width] duration-500' : ''} ${isClosing ? 'animate-modal-out' : 'animate-modal-in'}`}
         style={{
           ...(step === 3 ? { transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' } : {}),
           ...(step === 3
@@ -4223,12 +4224,12 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
         </div>
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
           {step === 1 && (
-            <div className="flex-1 overflow-y-auto flex flex-col gap-8 px-8 pb-0">
+            <div className="flex-1 overflow-y-auto flex flex-col gap-8 p-8 pt-0">
               <div className="flex flex-col gap-1">
                 <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{stepLabels[step]}</h2>
                 <p className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">Enter team member email addresses. Invited members will share the same roles.</p>
               </div>
-              <div className="flex-1 flex flex-wrap content-start items-start gap-1.5 px-3 py-2 border border-[#D8DEE4] rounded-[6px] focus-within:ring-2 focus-within:ring-[#635BFF] focus-within:border-transparent cursor-text" onClick={() => inputRef.current?.focus()}>
+              <div className="flex-1 flex flex-wrap content-start items-start gap-1.5 px-3 py-2 border border-[#D8DEE4] rounded-[6px] form-focus-ring cursor-text" onClick={() => inputRef.current?.focus()}>
                 {emails.map((email) => (
                   <span key={email} className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#F5F6F8] text-[16px] text-[#353A44] rounded-md leading-6 tracking-[-0.31px]">
                     {email}
@@ -4239,6 +4240,7 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
                   onKeyDown={handleEmailKeyDown} onPaste={handleEmailPaste} onBlur={() => { if (currentInput.trim()) addEmail(currentInput); }}
                   placeholder={emails.length === 0 ? "ada@example.com, ben@example.com, etc." : ""}
                   className="flex-1 min-w-[120px] text-[16px] text-[#353A44] leading-6 tracking-[-0.31px] placeholder:text-[#6C7688] bg-transparent border-none outline-none py-0.5"
+                  autoFocus
                   style={{ fontFeatureSettings: "'lnum', 'pnum'" }}
                 />
               </div>
@@ -4323,7 +4325,7 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
                   <div className="flex-1 min-w-0 flex flex-col pt-4 px-4 overflow-hidden">
                     {/* Search */}
                     <div className="pb-2 px-2 flex-shrink-0">
-                      <div className="flex items-center gap-2 px-2 py-1 border border-[#D8DEE4] rounded-[6px] focus-within:ring-2 focus-within:ring-[#635BFF] focus-within:border-transparent">
+                      <div className="flex items-center gap-2 px-2 py-1 border border-[#D8DEE4] rounded-[6px] form-focus-ring">
                         <Search size={14} className="text-[#6C7688] flex-shrink-0" />
                         <input
                           ref={accountSearchRef}
