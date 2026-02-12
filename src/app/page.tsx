@@ -1961,7 +1961,7 @@ function CustomizeRoleModal({
   const previewRiskAssessment = generateRiskAssessment(selectedPermissions);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/50"
@@ -1972,10 +1972,8 @@ function CustomizeRoleModal({
       
       {/* Modal - full screen with 32px margin */}
       <div 
-        className="relative bg-white rounded-[12px] shadow-[0px_15px_35px_0px_rgba(48,49,61,0.08),0px_5px_15px_0px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden m-[32px]" 
+        className="relative bg-white rounded-[12px] shadow-[0px_15px_35px_0px_rgba(48,49,61,0.08),0px_5px_15px_0px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden w-full h-full" 
         style={{ 
-          width: 'calc(100vw - 64px)', 
-          height: 'calc(100vh - 64px)',
           animation: isClosing ? 'modal-out 150ms ease-out forwards' : 'modal-in 200ms cubic-bezier(0.4, 0, 0.2, 1)'
         }}
       >
@@ -2551,7 +2549,7 @@ function CreateRoleModal({
   const previewDetails = generateRoleDetails(selectedPermissions);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
       {/* Backdrop */}
       <div 
         className={`absolute inset-0 bg-black/50 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
@@ -2560,10 +2558,8 @@ function CreateRoleModal({
       
       {/* Modal */}
       <div 
-        className="relative bg-white rounded-[12px] shadow-[0px_15px_35px_0px_rgba(48,49,61,0.08),0px_5px_15px_0px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden m-[32px]" 
+        className="relative bg-white rounded-[12px] shadow-[0px_15px_35px_0px_rgba(48,49,61,0.08),0px_5px_15px_0px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden w-full h-full" 
         style={{ 
-          width: 'calc(100vw - 64px)', 
-          height: 'calc(100vh - 64px)',
           animation: isClosing ? 'modal-out 150ms ease-out forwards' : 'modal-in 200ms cubic-bezier(0.4, 0, 0.2, 1)'
         }}
       >
@@ -3653,7 +3649,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode }: {
         {/* Main content - 3 panels */}
         <div className="flex flex-1 min-h-0 gap-6 overflow-hidden max-w-[1600px]">
         {/* Left Panel - Roles List */}
-        <aside className="w-[240px] overflow-y-auto flex-shrink-0 pt-6 relative">
+        <aside className="w-[240px] max-w-[240px] overflow-y-auto flex-shrink-0 pt-6 relative">
           {/* Header */}
           <div className="flex items-center gap-2.5 pb-4 border-b border-[#EBEEF1]">
             <h2 className="flex-1 text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Roles</h2>
@@ -4155,15 +4151,15 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
   if (!isOpen && !isClosing) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
       <div className={`absolute inset-0 bg-[rgba(182,192,205,0.7)] transition-opacity duration-300 ${isClosing || isOpening ? 'opacity-0' : 'opacity-100'}`} onClick={handleClose} />
       <div
         className={`relative bg-white rounded-[12px] shadow-[0px_15px_35px_0px_rgba(48,49,61,0.08),0px_5px_15px_0px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden ${step === 3 ? 'transition-[width,max-width,opacity,transform] duration-500' : 'transition-[opacity,transform] duration-300 ease-out'} ${isClosing || isOpening ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
         style={{
           ...(step === 3 ? { transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' } : {}),
           ...(step === 3
-            ? { width: showPermissions ? 'calc(100vw - 64px)' : 640, maxWidth: showPermissions ? 1280 : 640, height: 'calc(100vh - 64px)' }
-            : { width: 640, ...(step === 4 ? { maxHeight: 'calc(100vh - 64px)' } : { height: 420 }) })
+            ? { width: showPermissions ? '100%' : 640, maxWidth: showPermissions ? 1280 : 640, height: '100%' }
+            : { width: 640, ...(step === 4 ? { maxHeight: '100%' } : { height: 420 }) }),
         }}
       >
         <div className="flex items-end justify-end pt-6 px-6 flex-shrink-0">
@@ -4224,7 +4220,7 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
               <div className="flex-shrink-0">
                 <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{stepLabels[step]}</h2>
               </div>
-              <div className={`flex-1 min-h-0 flex ${showPermissions ? 'gap-6' : ''} overflow-hidden`}>
+              <div className="flex-1 min-h-0 flex gap-6 overflow-hidden">
                 <div className="flex-1 min-w-0 flex flex-col gap-2 overflow-hidden pt-4">
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <span className="flex-1 text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Roles</span>
@@ -4279,15 +4275,13 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
                     </div>
                   </div>
                 </div>
-                {showPermissions && (
-                  <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
-                    <SharedDrawerPermissionsPanel
-                      roleIds={Array.from(selectedRoles)}
-                      invertColors={true}
-                      className="min-h-0 flex flex-col gap-4 p-4 bg-[#F5F6F8] rounded-[8px] overflow-hidden h-full"
-                    />
-                  </div>
-                )}
+                <div className={`flex flex-col overflow-hidden transition-[flex,opacity] duration-500 ${showPermissions ? 'flex-1 min-w-0 opacity-100' : 'flex-[0] w-0 opacity-0 pointer-events-none'}`} style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}>
+                  <SharedDrawerPermissionsPanel
+                    roleIds={Array.from(selectedRoles)}
+                    invertColors={true}
+                    className="min-h-0 flex flex-col gap-4 p-4 bg-[#F5F6F8] rounded-[8px] overflow-hidden h-full"
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -4347,7 +4341,7 @@ const DATA_ROWS = 10;
 
 function TeamContent({ teamSecurityEnabled, onAddMember }: { teamSecurityEnabled: boolean; onAddMember: () => void }) {
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-8 overflow-auto">
+    <div className="flex-1 min-h-0 flex flex-col gap-8 overflow-auto max-w-[1600px]">
       {/* Filter cards */}
       <div className="flex gap-2 shrink-0">
         {[0, 1, 2, 3].map((i) => (
