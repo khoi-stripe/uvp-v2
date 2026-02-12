@@ -560,11 +560,11 @@ function PermissionCard({
     return (
       <div
         onClick={() => !checkboxDisabled && onToggle()}
-        className={`flex items-start gap-4 p-4 bg-[#F5F6F8] rounded transition-all duration-150 ${
-          checkboxDisabled ? 'cursor-default' : 'hover:bg-[#EBEEF1] cursor-pointer'
+        className={`relative flex items-start gap-4 p-4 bg-[#F5F6F8] transition-all duration-150 before:absolute before:inset-0 before:rounded before:transition-colors ${
+          checkboxDisabled ? 'cursor-default' : 'hover:before:bg-[#EBEEF1] cursor-pointer'
         } ${isExiting ? 'animate-scale-out' : ''}`}
       >
-        {cardContent}
+        <div className="relative z-10 flex items-start gap-4 w-full">{cardContent}</div>
       </div>
     );
   }
@@ -1233,11 +1233,11 @@ function BaseGroupCard({
     <div className={`bg-[#F5F6F8] ${radiusClass} shrink-0 flex flex-col`}>
       {/* Header */}
       {headerLeft ? (
-        <div className="flex items-center gap-4 py-4 px-4 rounded hover:bg-[#EBEEF1] transition-colors">
-          {headerLeft}
+        <div className="relative flex items-center gap-4 py-4 px-4 before:absolute before:inset-0 before:rounded before:transition-colors hover:before:bg-[#EBEEF1]">
+          <div className="relative z-10">{headerLeft}</div>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex-1 flex items-center gap-4 text-left group min-w-0"
+            className="relative z-10 flex-1 flex items-center gap-4 text-left group min-w-0"
           >
             {titleContent}
             {chevron}
@@ -1246,10 +1246,10 @@ function BaseGroupCard({
       ) : (
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full flex items-center gap-4 py-4 px-4 text-left group rounded hover:bg-[#EBEEF1] transition-colors"
+          className="relative w-full flex items-center gap-4 py-4 px-4 text-left group before:absolute before:inset-0 before:rounded before:transition-colors hover:before:bg-[#EBEEF1]"
         >
-          {titleContent}
-          {chevron}
+          <span className="relative z-10 flex items-center gap-4 flex-1 min-w-0">{titleContent}</span>
+          <span className="relative z-10">{chevron}</span>
         </button>
       )}
 
@@ -1323,11 +1323,11 @@ function CustomizeGroupCard({
           <div
             key={permission.apiName}
             onClick={() => !isRequired && onTogglePermission(permission.apiName)}
-            className={`flex items-start gap-4 px-2 py-3 transition-all duration-150 ${
-              isRequired ? 'cursor-default' : 'hover:bg-[#EBEEF1] cursor-pointer'
+            className={`relative flex items-start gap-4 px-2 py-3 transition-all duration-150 before:absolute before:inset-0 before:rounded before:transition-colors ${
+              isRequired ? 'cursor-default' : 'hover:before:bg-[#EBEEF1] cursor-pointer'
             }`}
           >
-            <div className="self-center">
+            <div className="relative z-10 self-center">
               {isRequired ? (
                 <Tooltip content="Required permission" position="above">
                   <Checkbox
@@ -1343,14 +1343,17 @@ function CustomizeGroupCard({
                 />
               )}
             </div>
-            <PermissionCardContent
-              permission={permission}
-              showTaskCategories={false}
-              currentGroup={groupName}
-              groupBy="productCategory"
-              insideGroup
-            />
+            <div className="relative z-10 flex-1 min-w-0">
+              <PermissionCardContent
+                permission={permission}
+                showTaskCategories={false}
+                currentGroup={groupName}
+                groupBy="productCategory"
+                insideGroup
+              />
+            </div>
             {/* Access badge */}
+            <div className="relative z-10 flex-shrink-0">
             {isChecked && supportsMultipleAccess && currentAccess ? (
               <AccessSelector
                 value={currentAccess}
@@ -1367,6 +1370,7 @@ function CustomizeGroupCard({
                 {currentAccess ? getAccessLabel(currentAccess).label : getAccessLabel(permission.actions).label}
               </span>
             )}
+            </div>
           </div>
         );
       })}
@@ -4239,7 +4243,7 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
                         const displayName = categoryDisplayNames[cat.name] || cat.name;
                         return (
                           <div key={cat.name}>
-                            <button onClick={() => toggleCategory(cat.name)} className="w-full flex items-center gap-2 px-2 py-3 border-b border-[#D8DEE4] text-left">
+                            <button onClick={() => toggleCategory(cat.name)} className="w-full flex items-center gap-2 px-2 py-3 border-b border-[#EBEEF1] text-left">
                               <span className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">{displayName}</span>
                               <div className="flex-1 flex items-center">
                                 <span className="bg-[#F5F6F8] rounded-full min-w-[16px] px-1 text-[10px] font-semibold text-[#596171] leading-4 text-center">{selectedCount} of {cat.roles.length}</span>
@@ -4248,16 +4252,16 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
                             </button>
                             <div className="grid transition-[grid-template-rows] duration-200 ease-in-out" style={{ gridTemplateRows: isCatExpanded ? '1fr' : '0fr' }}>
                               <div className="overflow-hidden">
-                                <div className="flex flex-col pl-4 pb-2">
+                                <div className="flex flex-col pb-2">
                                   {cat.roles.map((role, roleIdx) => {
                                     const isSelected = selectedRoles.has(role.id);
                                     return (
-                                      <div key={role.id} className={`flex items-start gap-2 py-3 ${roleIdx > 0 ? 'border-t border-[#D8DEE4]' : ''}`}>
-                                        <button onClick={() => toggleRole(role.id)}
-                                          className={`mt-[3px] w-[14px] h-[14px] rounded-[4px] border flex-shrink-0 flex items-center justify-center transition-colors ${isSelected ? 'bg-[#675DFF] border-[#675DFF] shadow-[0_1px_1px_rgba(10,33,86,0.16)]' : 'border-[#D8DEE4] bg-white shadow-[0_1px_1px_rgba(33,37,44,0.16)] hover:border-[#A3ACB9]'}`}>
+                                      <div key={role.id} onClick={() => toggleRole(role.id)} className={`relative flex items-start gap-2 py-3 pl-6 pr-2 cursor-pointer ${roleIdx > 0 ? 'border-t border-[#EBEEF1]' : ''} before:absolute before:inset-0 before:transition-colors hover:before:bg-[#F5F6F8]`}>
+                                        <div
+                                          className={`relative z-10 mt-[3px] w-[14px] h-[14px] rounded-[4px] border flex-shrink-0 flex items-center justify-center transition-colors ${isSelected ? 'bg-[#675DFF] border-[#675DFF] shadow-[0_1px_1px_rgba(10,33,86,0.16)]' : 'border-[#D8DEE4] bg-white shadow-[0_1px_1px_rgba(33,37,44,0.16)]'}`}>
                                           {isSelected && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M8.5 2.5L3.75 7.5L1.5 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                                        </button>
-                                        <div className="flex-1 min-w-0">
+                                        </div>
+                                        <div className="relative z-10 flex-1 min-w-0">
                                           <p className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">{role.name}</p>
                                           {role.details?.description && (
                                             <p className="text-[13px] text-[#596171] leading-5 tracking-[-0.15px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{role.details.description}</p>

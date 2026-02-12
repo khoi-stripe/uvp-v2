@@ -398,9 +398,9 @@ export function PermissionCard({
     return (
       <div
         onClick={() => !checkboxDisabled && onToggle()}
-        className={`flex items-start gap-4 p-4 bg-[#F5F6F8] rounded transition-all duration-150 ${checkboxDisabled ? 'cursor-default' : 'hover:bg-[#EBEEF1] cursor-pointer'} ${isExiting ? 'animate-scale-out' : ''}`}
+        className={`relative flex items-start gap-4 p-4 bg-[#F5F6F8] transition-all duration-150 before:absolute before:inset-0 before:rounded before:transition-colors ${checkboxDisabled ? 'cursor-default' : 'hover:before:bg-[#EBEEF1] cursor-pointer'} ${isExiting ? 'animate-scale-out' : ''}`}
       >
-        {cardContent}
+        <div className="relative z-10 flex items-start gap-4 w-full">{cardContent}</div>
       </div>
     );
   }
@@ -489,12 +489,15 @@ export function BaseGroupCard({
   return (
     <div className={`${cardBg} ${radiusClass} shrink-0 flex flex-col`}>
       {headerLeft ? (
-        <div className="flex items-center gap-4 py-4 px-4 rounded hover:bg-[#EBEEF1] transition-colors">
-          {headerLeft}
-          <button onClick={() => setIsExpanded(!isExpanded)} className="flex-1 flex items-center gap-4 text-left group min-w-0">{titleContent}{chevron}</button>
+        <div className="relative flex items-center gap-4 py-4 px-4 before:absolute before:inset-0 before:rounded before:transition-colors hover:before:bg-[#EBEEF1]">
+          <div className="relative z-10">{headerLeft}</div>
+          <button onClick={() => setIsExpanded(!isExpanded)} className="relative z-10 flex-1 flex items-center gap-4 text-left group min-w-0">{titleContent}{chevron}</button>
         </div>
       ) : (
-        <button onClick={() => setIsExpanded(!isExpanded)} className="w-full flex items-center gap-4 py-4 px-4 text-left group rounded hover:bg-[#EBEEF1] transition-colors">{titleContent}{chevron}</button>
+        <button onClick={() => setIsExpanded(!isExpanded)} className="relative w-full flex items-center gap-4 py-4 px-4 text-left group before:absolute before:inset-0 before:rounded before:transition-colors hover:before:bg-[#EBEEF1]">
+          <span className="relative z-10 flex items-center gap-4 flex-1 min-w-0">{titleContent}</span>
+          <span className="relative z-10">{chevron}</span>
+        </button>
       )}
       <div className="grid transition-[grid-template-rows] duration-200 ease-in-out" style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}>
         <div className="overflow-hidden">
