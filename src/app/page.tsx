@@ -1973,7 +1973,7 @@ function CustomizeRoleModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-[rgba(182,192,205,0.7)]"
         style={{ 
           animation: isClosing ? 'fade-out 150ms ease-out forwards' : 'fade-in 150ms ease-out' 
         }}
@@ -2561,7 +2561,7 @@ function CreateRoleModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
       {/* Backdrop */}
       <div 
-        className={`absolute inset-0 bg-black/50 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
+        className={`absolute inset-0 bg-[rgba(182,192,205,0.7)] ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}
         onClick={handleClose}
       />
       
