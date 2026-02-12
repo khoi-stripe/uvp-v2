@@ -4450,7 +4450,7 @@ export default function TeamAndSecurityPage() {
 
         <div className={`flex-1 min-h-0 flex flex-col gap-8 pt-5 ${activeTab === "roles" ? 'overflow-hidden' : 'overflow-auto'}`}>
           {/* Header: breadcrumb + title + tabs */}
-          <div className="flex flex-col gap-4 shrink-0">
+          <div className="flex flex-col gap-4 shrink-0 max-w-[1600px]">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <span className="text-[12px] font-semibold text-[#533AFD] leading-4 tracking-[-0.02px]">Organization settings</span>
