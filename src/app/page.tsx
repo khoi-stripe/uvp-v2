@@ -4279,7 +4279,7 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
           ...(step === 3 ? { transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' } : {}),
           ...(step === 3
             ? { width: showPermissions ? '100%' : 640, maxWidth: showPermissions ? 1280 : 640, height: '100%' }
-            : { width: 640, ...(step === 4 ? { maxHeight: '100%' } : { height: 420 }) }),
+            : { width: 640, ...(step === 4 ? { maxHeight: '100%' } : { height: 480 }) }),
         }}
       >
         <div className="flex items-end justify-end pt-6 px-6 flex-shrink-0">
