@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { ChevronDown, MoreHorizontal, X } from "lucide-react";
-import Link from "next/link";
+import { DrawerPermissionsPanel as SharedDrawerPermissionsPanel, ToggleSwitch as SharedToggleSwitch } from "@/components/shared";
 
 // Hook for animated popover open/close
 function usePopover() {
@@ -727,6 +727,19 @@ import {
   type RiskAssessment,
   type RiskLevel,
 } from "@/lib/data";
+
+type SandboxModeState = {
+  active: boolean;
+  role: Role | null;
+  unsavedRole?: Role | null;
+  sourceModal?: "customize" | "create" | "menu";
+  modalState?: {
+    roleName: string;
+    customDescription: string;
+    permissionAccess: Record<string, string>;
+    selectedBaseRole?: Role | null;
+  };
+};
 
 // Tooltip component
 function Tooltip({ children, content, position: pos = "below" }: { children: React.ReactNode; content: string; position?: "above" | "below" }) {
@@ -2791,7 +2804,7 @@ function NavItem({ hasIcon = true }: { hasIcon?: boolean }) {
 }
 
 // Global Top Bar Component
-function Topbar({ onTeamSecurityClick }: { onTeamSecurityClick?: () => void }) {
+function Topbar() {
   return (
     <header className="bg-white flex items-center justify-between py-3 flex-shrink-0">
       {/* Search field placeholder */}
@@ -2801,23 +2814,17 @@ function Topbar({ onTeamSecurityClick }: { onTeamSecurityClick?: () => void }) {
       
       {/* Right icons */}
       <div className="flex items-center gap-4">
-        <Link 
-          href="/team-security"
-          className="w-4 h-4 rounded-full bg-[#EBEEF1] hover:bg-[#D8DEE4] transition-colors cursor-pointer block" 
-          title="Team & Security" 
-        />
-        <button 
-          onClick={onTeamSecurityClick} 
-          className="w-4 h-4 rounded-full bg-[#EBEEF1] hover:bg-[#D8DEE4] transition-colors cursor-pointer" 
-          title="Team & Security (Drawer)" 
-        />
+        <div className="w-4 h-4 rounded-full bg-[#EBEEF1]" />
+        <div className="w-4 h-4 rounded-full bg-[#EBEEF1]" />
       </div>
     </header>
   );
 }
 
 // Side Navigation Component
-function SideNav() {
+function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void } }) {
+  const popover = usePopover();
+
   return (
     <aside className="w-[240px] h-full flex flex-col justify-between px-5 py-4 bg-white border-r border-[rgba(0,39,77,0.08)] flex-shrink-0">
       {/* Top section */}
@@ -2864,8 +2871,35 @@ function SideNav() {
         </div>
       </div>
 
-      {/* Bottom nav item */}
-      <NavItem />
+      {/* Bottom: proto controls or plain nav item */}
+      {protoControls ? (
+        <div className="relative">
+          <button onClick={() => popover.toggle()} className="w-5 h-5 rounded-full bg-[#EBEEF1] hover:bg-[#D8DEE4] transition-colors cursor-pointer flex items-center justify-center" title="Prototype controls">
+            <ControlIcon className="w-3 h-3 text-[#596171]" />
+          </button>
+          {popover.isVisible && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => popover.close()} />
+              <div className={`absolute bottom-full left-0 mb-2 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_5px_15px_rgba(0,0,0,0.12),0_15px_35px_rgba(48,49,61,0.08)] z-20 whitespace-nowrap overflow-hidden ${popover.animationClass}`}>
+                <div className="p-2 flex flex-col min-w-[220px]">
+                  <div className="px-2 py-1.5">
+                    <span className="text-[12px] font-semibold text-[#818DA0] leading-4 tracking-[-0.024px] uppercase">Prototype controls</span>
+                  </div>
+                  <div className="h-px bg-[#EBEEF1] my-1" />
+                  <div className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => protoControls.onTeamSecurityToggle(!protoControls.teamSecurityEnabled)}>
+                    <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Enable add member</span>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <ToggleSwitch checked={protoControls.teamSecurityEnabled} onChange={protoControls.onTeamSecurityToggle} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      ) : (
+        <NavItem />
+      )}
     </aside>
   );
 }
@@ -3479,437 +3513,11 @@ function DrawerPermissionsPanel({ roleIds }: { roleIds: string[] }) {
   );
 }
 
-function AddMemberDrawer({ 
-  isOpen, 
-  onClose 
-}: { 
-  isOpen: boolean; 
-  onClose: () => void;
+
+function RolesPermissionsContent({ sandboxMode, setSandboxMode }: {
+  sandboxMode: SandboxModeState;
+  setSandboxMode: React.Dispatch<React.SetStateAction<SandboxModeState>>;
 }) {
-  const [step, setStep] = useState(1);
-  const [email, setEmail] = useState("");
-  const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set());
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(["Admin"]));
-  const [selectedAccount, setSelectedAccount] = useState<"all" | "selected">("all");
-  const [isClosing, setIsClosing] = useState(false);
-
-  // Reset state when drawer opens
-  useEffect(() => {
-    if (isOpen) {
-      setStep(1);
-      setEmail("");
-      setSelectedRoles(new Set());
-      setExpandedCategories(new Set(["Admin"]));
-      setSelectedAccount("all");
-      setIsClosing(false);
-    }
-  }, [isOpen]);
-
-  const isExpanded = step === 2;
-
-  const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(() => {
-      onClose();
-      setIsClosing(false);
-    }, 200);
-  };
-
-  const toggleRole = (roleId: string) => {
-    setSelectedRoles(prev => {
-      const next = new Set(prev);
-      if (next.has(roleId)) next.delete(roleId);
-      else next.add(roleId);
-      return next;
-    });
-  };
-
-  const toggleCategory = (catName: string) => {
-    setExpandedCategories(prev => {
-      const next = new Set(prev);
-      if (next.has(catName)) next.delete(catName);
-      else next.add(catName);
-      return next;
-    });
-  };
-
-  const selectedRoleNames = roleCategories
-    .flatMap(cat => cat.roles)
-    .filter(r => selectedRoles.has(r.id))
-    .map(r => r.name);
-
-  const stepTitles: Record<number, string> = {
-    1: "Member emails",
-    2: "Select roles",
-    3: "Select accounts",
-    4: "Review",
-  };
-
-  const getFooter = () => {
-    switch (step) {
-      case 1:
-        return (
-          <>
-            <button onClick={handleClose} className="px-4 py-2 text-[14px] font-medium text-[#353A44] bg-white border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors">Cancel</button>
-            <button onClick={() => setStep(2)} className="px-4 py-2 text-[14px] font-medium text-white bg-[#635BFF] rounded-md hover:bg-[#5851DF] transition-colors">Select roles</button>
-          </>
-        );
-      case 2:
-        return (
-          <>
-            <button onClick={() => setStep(1)} className="px-4 py-2 text-[14px] font-medium text-[#353A44] bg-white border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors">Back</button>
-            <button onClick={() => setStep(3)} className="px-4 py-2 text-[14px] font-medium text-white bg-[#635BFF] rounded-md hover:bg-[#5851DF] transition-colors">Select accounts</button>
-          </>
-        );
-      case 3:
-        return (
-          <>
-            <button onClick={() => setStep(2)} className="px-4 py-2 text-[14px] font-medium text-[#353A44] bg-white border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors">Back</button>
-            <button onClick={() => setStep(4)} className="px-4 py-2 text-[14px] font-medium text-white bg-[#635BFF] rounded-md hover:bg-[#5851DF] transition-colors">Review</button>
-          </>
-        );
-      case 4:
-        return (
-          <>
-            <button onClick={handleClose} className="px-4 py-2 text-[14px] font-medium text-[#353A44] bg-white border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors">Cancel</button>
-            <button onClick={handleClose} className="px-4 py-2 text-[14px] font-medium text-white bg-[#635BFF] rounded-md hover:bg-[#5851DF] transition-colors">Send invites</button>
-          </>
-        );
-    }
-  };
-
-  // Category display name mapping for the drawer (matches Stripe UI)
-  const categoryDisplayNames: Record<string, string> = {
-    "Admin": "Admin roles",
-    "Developer": "Developer roles",
-    "Payments": "Payment roles",
-    "Support": "Support roles",
-    "Specialists": "Connect roles",
-    "View only": "View only roles",
-    "Sandbox": "Sandbox roles",
-  };
-
-  if (!isOpen && !isClosing) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      {/* Backdrop */}
-      <div 
-        className={`absolute inset-0 bg-black/20 transition-opacity duration-200 ${isClosing ? 'opacity-0' : 'opacity-100'}`} 
-        onClick={handleClose} 
-      />
-      
-      {/* Drawer Panel */}
-      <div className={`relative bg-white shadow-[0px_15px_35px_0px_rgba(48,49,61,0.08),0px_5px_15px_0px_rgba(0,0,0,0.12)] flex flex-col transition-all duration-300 ease-out ${isClosing ? 'translate-x-full' : 'translate-x-0'}`} style={{ width: isExpanded ? 700 : 400 }}>
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#EBEEF1]">
-          <div>
-            <p className="text-[12px] text-[#596171] leading-4">
-              <span>Add member &middot; Step {step} of 4</span>
-            </p>
-            <h2 className="text-[16px] font-semibold text-[#353A44] leading-6 mt-0.5">{stepTitles[step]}</h2>
-          </div>
-          <button onClick={handleClose} className="w-6 h-6 flex items-center justify-center text-[#596171] hover:text-[#353A44] transition-colors">
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-hidden flex gap-4 px-6 py-4">
-          {/* Left column: step content */}
-          <div className="flex-1 min-w-0 overflow-y-auto">
-          {/* Step 1: Member Emails */}
-          {step === 1 && (
-            <div className="flex flex-col gap-3">
-              <div>
-                <p className="text-[14px] font-medium text-[#353A44] leading-5">Enter team member email addresses</p>
-                <p className="text-[13px] text-[#596171] leading-5 mt-1">Invited members will share the same roles.</p>
-              </div>
-              <textarea 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="ada@example.com, ben@example.com, etc."
-                className="w-full h-24 px-3 py-2 text-[14px] text-[#353A44] border border-[#D8DEE4] rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-[#635BFF] focus:border-transparent placeholder:text-[#9DA4AE]"
-              />
-            </div>
-          )}
-
-          {/* Step 2: Select Roles */}
-          {step === 2 && (
-            <div className="flex flex-col gap-3">
-              <p className="text-[14px] font-medium text-[#353A44] leading-5">Select team member roles</p>
-              
-              {/* Search placeholder */}
-              <div className="flex items-center gap-2 px-3 py-2 border border-[#D8DEE4] rounded-md">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9DA4AE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                <input type="text" placeholder="Search by role..." className="flex-1 text-[14px] text-[#353A44] placeholder:text-[#9DA4AE] bg-transparent border-none outline-none" />
-              </div>
-
-              {/* Info banner */}
-              <div className="bg-[#F5F6F8] rounded-md px-3 py-2.5">
-                <p className="text-[12px] text-[#596171] leading-4">To protect your account, users who are recently invited or have recently updated roles may be prevented from performing certain sensitive operations for two to three days.</p>
-              </div>
-
-              {/* Role categories */}
-              <div className="flex flex-col">
-                {roleCategories.map((cat) => {
-                  const isCatExpanded = expandedCategories.has(cat.name);
-                  const selectedCount = cat.roles.filter(r => selectedRoles.has(r.id)).length;
-                  const displayName = categoryDisplayNames[cat.name] || `${cat.name} roles`;
-                  
-                  return (
-                    <div key={cat.name} className="border-b border-[#EBEEF1] last:border-b-0">
-                      {/* Category header */}
-                      <button 
-                        onClick={() => toggleCategory(cat.name)}
-                        className="w-full flex items-center justify-between py-3 text-left hover:bg-[#F5F6F8] transition-colors -mx-1 px-1 rounded"
-                      >
-                        <div className="flex items-center gap-2">
-                          <ChevronDown size={16} className={`text-[#596171] transition-transform duration-200 ${isCatExpanded ? '' : '-rotate-90'}`} />
-                          <span className="text-[14px] font-semibold text-[#353A44] leading-5">{displayName}</span>
-                        </div>
-                        <span className="text-[12px] text-[#596171] leading-4">{selectedCount} roles selected</span>
-                      </button>
-
-                      {/* Roles list */}
-                      <div 
-                        className="grid transition-[grid-template-rows] duration-200 ease-in-out"
-                        style={{ gridTemplateRows: isCatExpanded ? '1fr' : '0fr' }}
-                      >
-                        <div className="overflow-hidden">
-                          <div className="flex flex-col pb-2">
-                            {cat.roles.map((role) => {
-                              const isSelected = selectedRoles.has(role.id);
-                              return (
-                                <div key={role.id} className="flex items-start gap-3 py-2.5 pl-6 pr-1">
-                                  <button
-                                    onClick={() => toggleRole(role.id)}
-                                    className={`mt-0.5 w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-colors ${
-                                      isSelected 
-                                        ? 'bg-[#635BFF] border-[#635BFF]' 
-                                        : 'border-[#D8DEE4] bg-white hover:border-[#A3ACB9]'
-                                    }`}
-                                  >
-                                    {isSelected && (
-                                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M8.5 2.5L3.75 7.5L1.5 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                                    )}
-                                  </button>
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-[14px] font-medium text-[#353A44] leading-5">{role.name}</p>
-                                    {role.details?.description && (
-                                      <p className="text-[13px] text-[#596171] leading-[18px] mt-0.5 line-clamp-2">{role.details.description}</p>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Select Accounts */}
-          {step === 3 && (
-            <div className="flex flex-col gap-4">
-              {/* Show selected roles */}
-              {selectedRoleNames.length > 0 && (
-                <div className="bg-[#F5F6F8] rounded-md px-3 py-2.5">
-                  <p className="text-[12px] text-[#596171] leading-4 font-medium">Roles</p>
-                  <p className="text-[14px] text-[#353A44] leading-5 mt-0.5">{selectedRoleNames.join(", ")}</p>
-                </div>
-              )}
-
-              {/* Account options */}
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={() => setSelectedAccount("all")}
-                  className={`flex items-start gap-3 p-4 rounded-lg border-2 text-left transition-colors ${
-                    selectedAccount === "all" 
-                      ? 'border-[#635BFF] bg-white' 
-                      : 'border-[#EBEEF1] bg-white hover:border-[#D8DEE4]'
-                  }`}
-                >
-                  <div className="w-8 h-8 rounded-md bg-[#F5F6F8] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="#596171" strokeWidth="1.5"/><path d="M5 8h6M8 5v6" stroke="#596171" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                  </div>
-                  <div>
-                    <p className="text-[14px] font-medium text-[#353A44] leading-5">Acme, Inc.</p>
-                    <p className="text-[13px] text-[#596171] leading-[18px] mt-0.5">Team members will have access to the organization and all business accounts, including future accounts that are added.</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setSelectedAccount("selected")}
-                  className={`flex items-start gap-3 p-4 rounded-lg border-2 text-left transition-colors ${
-                    selectedAccount === "selected" 
-                      ? 'border-[#635BFF] bg-white' 
-                      : 'border-[#EBEEF1] bg-white hover:border-[#D8DEE4]'
-                  }`}
-                >
-                  <div className="w-8 h-8 rounded-md bg-[#F5F6F8] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="#596171" strokeWidth="1.5"/><path d="M5 8h6" stroke="#596171" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                  </div>
-                  <div>
-                    <p className="text-[14px] font-medium text-[#353A44] leading-5">Only selected accounts</p>
-                    <p className="text-[13px] text-[#596171] leading-[18px] mt-0.5">Team members will have access to the accounts you select.</p>
-                  </div>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 4: Review */}
-          {step === 4 && (
-            <div className="flex flex-col gap-3">
-              {/* Members card */}
-              <div className="border border-[#EBEEF1] rounded-lg px-4 py-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-[12px] text-[#596171] leading-4 font-medium">Members</p>
-                  <button onClick={() => setStep(1)} className="w-5 h-5 flex items-center justify-center text-[#596171] hover:text-[#353A44]">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8.5 1.5l2 2m-2-2L2 8l-.5 2.5L4 10l6.5-6.5-2-2z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  </button>
-                </div>
-                <p className="text-[14px] text-[#353A44] leading-5 mt-1">{email || "No emails entered"}</p>
-              </div>
-
-              {/* Roles card */}
-              <div className="border border-[#EBEEF1] rounded-lg px-4 py-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-[12px] text-[#596171] leading-4 font-medium">Roles</p>
-                  <button onClick={() => setStep(2)} className="w-5 h-5 flex items-center justify-center text-[#596171] hover:text-[#353A44]">
-                    <MoreHorizontal size={14} />
-                  </button>
-                </div>
-                <p className="text-[14px] text-[#353A44] leading-5 mt-1">{selectedRoleNames.length > 0 ? selectedRoleNames.join(", ") : "No roles selected"}</p>
-                
-                {/* Access info */}
-                <div className="mt-2 pt-2 border-t border-[#EBEEF1]">
-                  <p className="text-[12px] text-[#596171] leading-4 font-medium">Access</p>
-                  <p className="text-[14px] text-[#353A44] leading-5 mt-1">{selectedAccount === "all" ? "Acme, Inc." : "Selected accounts"}</p>
-                </div>
-              </div>
-
-              {/* Assign additional roles */}
-              <button className="flex items-center gap-2 py-2 text-[14px] text-[#635BFF] font-medium hover:underline">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                Assign additional roles
-              </button>
-            </div>
-          )}
-          </div>
-
-          {/* Right column: Permissions panel (step 2 only) */}
-          {step === 2 && (
-            <DrawerPermissionsPanel roleIds={Array.from(selectedRoles)} />
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-[#EBEEF1]">
-          {getFooter()}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
-function TeamSecurityView({ onBack }: { onBack: () => void }) {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-  return (
-    <div className="h-screen flex bg-white">
-      {/* Side Navigation */}
-      <SideNav />
-
-      {/* Right side: Topbar + Content */}
-      <div className="flex-1 flex flex-col px-8 pb-8 overflow-hidden">
-        {/* Top Bar */}
-        <Topbar />
-
-        {/* Main Content */}
-        <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-auto">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-1 pt-2">
-            <button onClick={onBack} className="text-[14px] text-[#635BFF] hover:underline leading-5">Organization settings</button>
-            <span className="text-[14px] text-[#596171] leading-5">&gt;</span>
-          </div>
-
-          {/* Page title */}
-          <h1 className="text-[24px] font-semibold text-[#353A44] leading-8 tracking-[-0.3px]">Team and security</h1>
-
-          {/* Tab bar */}
-          <div className="flex items-center gap-6 border-b border-[#EBEEF1]">
-            <button className="text-[14px] font-medium text-[#635BFF] leading-5 pb-3 border-b-2 border-[#635BFF]">Team</button>
-            <button className="text-[14px] text-[#596171] leading-5 pb-3 border-b-2 border-transparent hover:text-[#353A44] transition-colors">Single sign-on (SSO)</button>
-            <button className="text-[14px] text-[#596171] leading-5 pb-3 border-b-2 border-transparent hover:text-[#353A44] transition-colors">SCIM provisioning</button>
-            <button className="text-[14px] text-[#596171] leading-5 pb-3 border-b-2 border-transparent hover:text-[#353A44] transition-colors">Two-step authentication</button>
-            <button className="text-[14px] text-[#596171] leading-5 pb-3 border-b-2 border-transparent hover:text-[#353A44] transition-colors">Security history</button>
-            <button className="text-[14px] text-[#596171] leading-5 pb-3 border-b-2 border-transparent hover:text-[#353A44] transition-colors">Access requests</button>
-          </div>
-
-          {/* Filter tabs */}
-          <div className="flex items-center gap-0">
-            <div className="flex-1 flex items-center justify-center py-2.5 border-2 border-[#635BFF] rounded-l-md bg-white">
-              <span className="text-[14px] font-medium text-[#635BFF] leading-5">All members</span>
-              <span className="ml-2 text-[12px] text-[#635BFF] font-semibold bg-[#F0EEFF] px-1.5 py-0.5 rounded-full leading-3">5</span>
-            </div>
-            <div className="flex-1 flex items-center justify-center py-2.5 border border-[#EBEEF1] bg-white">
-              <span className="text-[14px] text-[#596171] leading-5">Active members</span>
-              <span className="ml-2 text-[12px] text-[#596171] font-medium leading-3">4</span>
-            </div>
-            <div className="flex-1 flex items-center justify-center py-2.5 border border-[#EBEEF1] bg-white">
-              <span className="text-[14px] text-[#596171] leading-5">Pending invites</span>
-              <span className="ml-2 text-[12px] text-[#596171] font-medium leading-3">0</span>
-            </div>
-            <div className="flex-1 flex items-center justify-center py-2.5 border border-[#EBEEF1] rounded-r-md bg-white">
-              <span className="text-[14px] text-[#596171] leading-5">Inactive members</span>
-              <span className="ml-2 text-[12px] text-[#596171] font-medium leading-3">1</span>
-            </div>
-          </div>
-
-          {/* Toolbar */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {["Account", "Roles", "Status", "Name", "Email"].map((filter) => (
-                <button key={filter} className="flex items-center gap-1 px-2.5 py-1 text-[13px] text-[#596171] border border-[#EBEEF1] rounded-md hover:bg-[#F5F6F8] transition-colors">
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="3.5" stroke="currentColor" strokeWidth="1"/></svg>
-                  {filter}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-2">
-              <button className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] text-[#596171] border border-[#EBEEF1] rounded-md hover:bg-[#F5F6F8] transition-colors">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M5 3.5h4M1 10.5h12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
-                Download
-              </button>
-              <button 
-                onClick={() => setIsDrawerOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-white bg-[#635BFF] rounded-md hover:bg-[#5851DF] transition-colors"
-              >
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                Add member
-              </button>
-            </div>
-          </div>
-
-          {/* Table placeholder - grey box */}
-          <div className="flex-1 bg-[#F5F6F8] rounded-[12px] min-h-[200px]" />
-        </div>
-      </div>
-
-      {/* Add Member Drawer */}
-      <AddMemberDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
-    </div>
-  );
-}
-
-export default function RolesPermissionsPage() {
   const [selectedRole, setSelectedRole] = useState<Role>(allRoles[0]);
   // Only one category can be expanded at a time (accordion behavior)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(roleCategories[0]?.name || null);
@@ -3919,34 +3527,12 @@ export default function RolesPermissionsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const roleDetailsRef = useRef<HTMLElement>(null);
   const [isRiskExpanded, setIsRiskExpanded] = useState(false);
-  const [showTeamSecurity, setShowTeamSecurity] = useState(false);
   
   // Custom roles state with localStorage persistence
   const [customRoles, setCustomRoles] = useState<Role[]>([]);
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
-  
-  // Sandbox mode state - tracks source modal to return to and original unsaved role
-  const [sandboxMode, setSandboxMode] = useState<{ 
-    active: boolean; 
-    role: Role | null;
-    unsavedRole?: Role | null; // Original unsaved role for comparison
-    sourceModal?: "customize" | "create" | "menu";
-    // Preserve modal state when going to sandbox so changes aren't lost
-    modalState?: {
-      roleName: string;
-      customDescription: string;
-      permissionAccess: Record<string, string>;
-      selectedBaseRole?: Role | null; // For create modal
-    };
-  }>({
-    active: false,
-    role: null,
-    unsavedRole: null,
-    sourceModal: undefined,
-    modalState: undefined
-  });
 
   // Load custom roles from localStorage on mount
   useEffect(() => {
@@ -4054,77 +3640,9 @@ export default function RolesPermissionsPage() {
       })
     : null;
 
-  // Render Team & Security view if active
-  if (showTeamSecurity) {
-    return (
-      <TeamSecurityView
-        onBack={() => setShowTeamSecurity(false)}
-      />
-    );
-  }
-
-  // Render sandbox view if active
-  if (sandboxMode.active && sandboxMode.role) {
-    return (
-      <SandboxView
-        role={sandboxMode.role}
-        allRoles={combinedAllRoles}
-        unsavedRole={sandboxMode.unsavedRole}
-        onRoleChange={(role) => setSandboxMode({ ...sandboxMode, role })}
-        onExit={() => {
-          const sourceModal = sandboxMode.sourceModal;
-          const modalState = sandboxMode.modalState;
-          
-          // Keep sourceModal and modalState so the modal can restore its state
-          setSandboxMode({ 
-            active: false, 
-            role: null, 
-            unsavedRole: null, 
-            sourceModal: sourceModal, // Keep this so modal knows to use initialState
-            modalState: modalState // Preserve modal state for restoration
-          });
-          
-          // Return to the modal they came from
-          if (sourceModal === "customize") {
-            setIsCustomizeModalOpen(true);
-          } else if (sourceModal === "create") {
-            setIsCreateModalOpen(true);
-          }
-          // If sourceModal is "menu" or undefined, just return to the main view
-        }}
-      />
-    );
-  }
-
   return (
-    <div className="h-screen flex bg-white">
-      {/* Side Navigation - full height */}
-      <SideNav />
-
-      {/* Right side: Topbar + Content */}
-      <div className="flex-1 flex flex-col gap-5 px-8 pb-8 overflow-hidden">
-        {/* Global Top Bar */}
-        <Topbar onTeamSecurityClick={() => setShowTeamSecurity(true)} />
-
-        {/* Main Content Area */}
-        <div className="flex-1 min-h-0 flex flex-col gap-8 overflow-hidden">
-        {/* Header */}
-        <header className="flex-shrink-0 max-w-[1600px]">
-          <div className="flex flex-col gap-2">
-            {/* Title row */}
-            <div className="flex items-center gap-2">
-              <h1 className="flex-1 text-[28px] font-bold text-[#353A44] leading-9 tracking-[0.38px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
-                Roles and permissions
-              </h1>
-              <button 
-                onClick={() => setIsCreateModalOpen(true)}
-                className="px-3 py-1.5 bg-[#635BFF] text-white text-sm font-semibold rounded-md hover:bg-[#5851DB] transition-colors shadow-[0_1px_1px_rgba(47,14,99,0.32)]"
-              >
-                Add role
-              </button>
-            </div>
-          </div>
-        </header>
+    <>
+      <div className="flex-1 min-h-0 flex flex-col gap-6 overflow-hidden">
 
         {/* Main content - 3 panels */}
         <div className="flex flex-1 min-h-0 gap-6 overflow-hidden max-w-[1600px]">
@@ -4491,7 +4009,6 @@ export default function RolesPermissionsPage() {
           </main>
         </div>
         </div>
-        </div>
       </div>
 
       {/* Customize Role Modal */}
@@ -4556,6 +4073,411 @@ export default function RolesPermissionsPage() {
         }}
         initialState={sandboxMode.sourceModal === "create" ? sandboxMode.modalState : undefined}
       />
+    </>
+  );
+}
+
+// ===== Add Member Modal (from Team & Security flow) =====
+function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const [step, setStep] = useState(1);
+  const [emails, setEmails] = useState<string[]>([]);
+  const [currentInput, setCurrentInput] = useState("");
+  const [selectedAccount, setSelectedAccount] = useState<"all" | "selected">("all");
+  const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set());
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [showPermissions, setShowPermissions] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const [isOpening, setIsOpening] = useState(true);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setStep(1); setEmails([]); setCurrentInput(""); setSelectedAccount("all");
+      setSelectedRoles(new Set()); setExpandedCategories(new Set()); setShowPermissions(false); setIsClosing(false);
+      setIsOpening(true);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsOpening(false);
+        });
+      });
+    }
+  }, [isOpen]);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => { onClose(); setIsClosing(false); }, 300);
+  };
+
+  const addEmail = (raw: string) => {
+    const trimmed = raw.trim().replace(/,$/,'').trim();
+    if (trimmed && trimmed.includes("@") && !emails.includes(trimmed)) setEmails(prev => [...prev, trimmed]);
+    setCurrentInput("");
+  };
+
+  const removeEmail = (email: string) => setEmails(prev => prev.filter(e => e !== email));
+
+  const handleEmailKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === "," || e.key === " " || e.key === "Tab") {
+      e.preventDefault();
+      if (currentInput.trim()) addEmail(currentInput);
+    }
+    if (e.key === "Backspace" && !currentInput && emails.length > 0) removeEmail(emails[emails.length - 1]);
+  };
+
+  const handleEmailPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    e.clipboardData.getData("text").split(/[,;\s]+/).filter(Boolean).forEach(addEmail);
+  };
+
+  const toggleRole = (roleId: string) => {
+    setSelectedRoles(prev => { const next = new Set(prev); if (next.has(roleId)) next.delete(roleId); else next.add(roleId); return next; });
+  };
+
+  const toggleCategory = (catName: string) => {
+    setExpandedCategories(prev => { const next = new Set(prev); if (next.has(catName)) next.delete(catName); else next.add(catName); return next; });
+  };
+
+  const selectedRoleNames = roleCategories.flatMap(cat => cat.roles).filter(r => selectedRoles.has(r.id)).map(r => r.name);
+
+  const categoryDisplayNames: Record<string, string> = {
+    "Admin": "Admin", "Developer": "Developer", "Payments": "Payments", "Support": "Support",
+    "Specialists": "Connect", "View only": "View only", "Sandbox": "Sandbox",
+  };
+
+  const stepLabels: Record<number, string> = { 1: "Add team members", 2: "Which accounts should be accessible?", 3: "Select roles", 4: "Review" };
+
+  if (!isOpen && !isClosing) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className={`absolute inset-0 bg-[rgba(182,192,205,0.7)] transition-opacity duration-300 ${isClosing || isOpening ? 'opacity-0' : 'opacity-100'}`} onClick={handleClose} />
+      <div
+        className={`relative bg-white rounded-[12px] shadow-[0px_15px_35px_0px_rgba(48,49,61,0.08),0px_5px_15px_0px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden ${step === 3 ? 'transition-[width,max-width,opacity,transform] duration-500' : 'transition-[opacity,transform] duration-300 ease-out'} ${isClosing || isOpening ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
+        style={{
+          ...(step === 3 ? { transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' } : {}),
+          ...(step === 3
+            ? { width: showPermissions ? 'calc(100vw - 64px)' : 640, maxWidth: showPermissions ? 1280 : 640, height: 'calc(100vh - 64px)' }
+            : { width: 640, ...(step === 4 ? { maxHeight: 'calc(100vh - 64px)' } : { height: 420 }) })
+        }}
+      >
+        <div className="flex items-end justify-end pt-6 px-6 flex-shrink-0">
+          <button onClick={handleClose} className="text-[#6C7688] hover:text-[#353A44] transition-colors">
+            <X size={16} />
+          </button>
+        </div>
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+          {step === 1 && (
+            <div className="flex-1 overflow-y-auto flex flex-col gap-8 px-8 pb-8">
+              <div className="flex flex-col gap-1">
+                <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{stepLabels[step]}</h2>
+                <p className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">Enter team member email addresses. Invited members will share the same roles.</p>
+              </div>
+              <div className="flex-1 flex flex-wrap content-start items-start gap-1.5 px-3 py-2 border border-[#D8DEE4] rounded-[6px] focus-within:ring-2 focus-within:ring-[#635BFF] focus-within:border-transparent cursor-text" onClick={() => inputRef.current?.focus()}>
+                {emails.map((email) => (
+                  <span key={email} className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#F5F6F8] text-[16px] text-[#353A44] rounded-md leading-6 tracking-[-0.31px]">
+                    {email}
+                    <button onClick={(e) => { e.stopPropagation(); removeEmail(email); }} className="text-[#596171] hover:text-[#353A44] ml-0.5"><X size={12} /></button>
+                  </span>
+                ))}
+                <input ref={inputRef} type="text" value={currentInput} onChange={(e) => setCurrentInput(e.target.value)}
+                  onKeyDown={handleEmailKeyDown} onPaste={handleEmailPaste} onBlur={() => { if (currentInput.trim()) addEmail(currentInput); }}
+                  placeholder={emails.length === 0 ? "ada@example.com, ben@example.com, etc." : ""}
+                  className="flex-1 min-w-[120px] text-[16px] text-[#353A44] leading-6 tracking-[-0.31px] placeholder:text-[#6C7688] bg-transparent border-none outline-none py-0.5"
+                  style={{ fontFeatureSettings: "'lnum', 'pnum'" }}
+                />
+              </div>
+            </div>
+          )}
+          {step === 2 && (
+            <div className="flex-1 overflow-y-auto flex flex-col gap-8 px-8 pb-8">
+              <div className="flex flex-col gap-1">
+                <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{stepLabels[step]}</h2>
+              </div>
+              <div className="flex gap-4">
+                <button onClick={() => setSelectedAccount("all")}
+                  className={`flex-1 flex flex-col rounded-[6px] text-left transition-colors overflow-hidden ${selectedAccount === "all" ? 'border-2 border-[#675DFF]' : 'border border-[#D8DEE4] hover:border-[#A3ACB9]'}`}>
+                  <div className={`h-[120px] w-full ${selectedAccount === "all" ? 'bg-[#F7F5FD]' : 'bg-[#F5F6F8]'}`} />
+                  <div className="p-4">
+                    <p className={`text-[16px] font-semibold leading-6 tracking-[-0.31px] ${selectedAccount === "all" ? 'text-[#533AFD]' : 'text-[#596171]'}`} style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Your whole organization</p>
+                    <div className="flex flex-col gap-[10px] py-1.5"><div className="h-2 bg-[#EBEEF1] rounded-lg w-full" /><div className="h-2 bg-[#EBEEF1] rounded-lg w-full" /></div>
+                  </div>
+                </button>
+                <button onClick={() => setSelectedAccount("selected")}
+                  className={`flex-1 flex flex-col rounded-[6px] text-left transition-colors overflow-hidden ${selectedAccount === "selected" ? 'border-2 border-[#675DFF]' : 'border border-[#D8DEE4] hover:border-[#A3ACB9]'}`}>
+                  <div className={`h-[120px] w-full ${selectedAccount === "selected" ? 'bg-[#F7F5FD]' : 'bg-[#F5F6F8]'}`} />
+                  <div className="p-4">
+                    <p className={`text-[16px] font-semibold leading-6 tracking-[-0.31px] ${selectedAccount === "selected" ? 'text-[#533AFD]' : 'text-[#596171]'}`} style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Only select accounts</p>
+                    <div className="flex flex-col gap-[10px] py-1.5"><div className="h-2 bg-[#EBEEF1] rounded-lg w-full" /><div className="h-2 bg-[#EBEEF1] rounded-lg w-full" /></div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+          {step === 3 && (
+            <div className="flex-1 min-h-0 flex flex-col gap-4 px-8 overflow-hidden">
+              <div className="flex-shrink-0">
+                <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{stepLabels[step]}</h2>
+              </div>
+              <div className={`flex-1 min-h-0 flex ${showPermissions ? 'gap-6' : ''} overflow-hidden`}>
+                <div className="flex-1 min-w-0 flex flex-col gap-2 overflow-hidden pt-4">
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <span className="flex-1 text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Roles</span>
+                    <SharedToggleSwitch checked={showPermissions} onChange={setShowPermissions} label="Show permissions" />
+                  </div>
+                  <div className="bg-[#F5F6F8] rounded-[4px] p-4 flex-shrink-0">
+                    <p className="text-[13px] text-[#596171] leading-5 tracking-[-0.15px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
+                      To protect your account, users who are recently invited or have recently updated roles may be prevented from performing certain sensitive operations for two to three days.
+                    </p>
+                  </div>
+                  <div className="flex-1 min-h-0 overflow-y-auto">
+                    <div className="flex flex-col">
+                      {roleCategories.map((cat) => {
+                        const isCatExpanded = expandedCategories.has(cat.name);
+                        const selectedCount = cat.roles.filter(r => selectedRoles.has(r.id)).length;
+                        const displayName = categoryDisplayNames[cat.name] || cat.name;
+                        return (
+                          <div key={cat.name}>
+                            <button onClick={() => toggleCategory(cat.name)} className="w-full flex items-center gap-2 px-2 py-3 border-b border-[#D8DEE4] text-left">
+                              <span className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">{displayName}</span>
+                              <div className="flex-1 flex items-center">
+                                <span className="bg-[#F5F6F8] rounded-full min-w-[16px] px-1 text-[10px] font-semibold text-[#596171] leading-4 text-center">{selectedCount} of {cat.roles.length}</span>
+                              </div>
+                              <ChevronDown size={14} className={`text-[#474E5A] transition-transform duration-200 flex-shrink-0 ${isCatExpanded ? '' : '-rotate-90'}`} />
+                            </button>
+                            <div className="grid transition-[grid-template-rows] duration-200 ease-in-out" style={{ gridTemplateRows: isCatExpanded ? '1fr' : '0fr' }}>
+                              <div className="overflow-hidden">
+                                <div className="flex flex-col pl-4 pb-2">
+                                  {cat.roles.map((role, roleIdx) => {
+                                    const isSelected = selectedRoles.has(role.id);
+                                    return (
+                                      <div key={role.id} className={`flex items-start gap-2 py-3 ${roleIdx > 0 ? 'border-t border-[#D8DEE4]' : ''}`}>
+                                        <button onClick={() => toggleRole(role.id)}
+                                          className={`mt-[3px] w-[14px] h-[14px] rounded-[4px] border flex-shrink-0 flex items-center justify-center transition-colors ${isSelected ? 'bg-[#675DFF] border-[#675DFF] shadow-[0_1px_1px_rgba(10,33,86,0.16)]' : 'border-[#D8DEE4] bg-white shadow-[0_1px_1px_rgba(33,37,44,0.16)] hover:border-[#A3ACB9]'}`}>
+                                          {isSelected && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M8.5 2.5L3.75 7.5L1.5 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                        </button>
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">{role.name}</p>
+                                          {role.details?.description && (
+                                            <p className="text-[13px] text-[#596171] leading-5 tracking-[-0.15px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{role.details.description}</p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+                {showPermissions && (
+                  <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+                    <SharedDrawerPermissionsPanel
+                      roleIds={Array.from(selectedRoles)}
+                      invertColors={true}
+                      className="min-h-0 flex flex-col gap-4 p-4 bg-[#F5F6F8] rounded-[8px] overflow-hidden h-full"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          {step === 4 && (
+            <div className="flex-1 overflow-y-auto flex flex-col gap-4 px-8 pb-8">
+              <div className="flex flex-col">
+                <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{stepLabels[step]}</h2>
+              </div>
+              <div className="flex flex-col gap-1 rounded-[4px] overflow-hidden">
+                <div className="flex items-center gap-8 bg-[#F5F6F8] p-4">
+                  <div className="flex-1 min-w-0 flex flex-col gap-1">
+                    <p className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">Members</p>
+                    <p className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
+                      {emails.length > 0 ? (emails.length <= 3 ? emails.join(", ") : `${emails.slice(0, 2).join(", ")}, + ${emails.length - 2} more`) : "No emails entered"}
+                    </p>
+                  </div>
+                  <button onClick={() => setStep(1)} className="w-7 h-7 flex items-center justify-center flex-shrink-0 rounded-md hover:bg-[#EBEEF1] transition-colors">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M0.975001 7.87468C0.991113 7.63299 1.0944 7.40537 1.26568 7.23409L7.43933 1.06043C8.02512 0.474647 8.97487 0.474647 9.56065 1.06043L10.9393 2.43911C11.5251 3.0249 11.5251 3.97465 10.9393 4.56043L4.76568 10.7341C4.5944 10.9054 4.36678 11.0087 4.12509 11.0248L1.03508 11.2308C0.884155 11.2408 0.758938 11.1156 0.769 10.9647L0.975001 7.87468ZM2.3607 9.63906L2.45918 8.16191L6.53031 4.09078L7.90899 5.46946L3.83786 9.54059L2.3607 9.63906ZM8.96965 4.4088L9.87867 3.49977L8.49999 2.12109L7.59097 3.03012L8.96965 4.4088Z" fill="#596171"/></svg>
+                  </button>
+                </div>
+                <div className="flex items-center gap-8 bg-[#F5F6F8] p-4">
+                  <div className="flex-1 min-w-0 flex flex-col gap-1">
+                    <p className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">Access</p>
+                    <p className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{selectedAccount === "all" ? "Acme, Inc." : "Selected accounts"}</p>
+                  </div>
+                  <button onClick={() => setStep(2)} className="w-7 h-7 flex items-center justify-center flex-shrink-0 rounded-md hover:bg-[#EBEEF1] transition-colors">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M0.975001 7.87468C0.991113 7.63299 1.0944 7.40537 1.26568 7.23409L7.43933 1.06043C8.02512 0.474647 8.97487 0.474647 9.56065 1.06043L10.9393 2.43911C11.5251 3.0249 11.5251 3.97465 10.9393 4.56043L4.76568 10.7341C4.5944 10.9054 4.36678 11.0087 4.12509 11.0248L1.03508 11.2308C0.884155 11.2408 0.758938 11.1156 0.769 10.9647L0.975001 7.87468ZM2.3607 9.63906L2.45918 8.16191L6.53031 4.09078L7.90899 5.46946L3.83786 9.54059L2.3607 9.63906ZM8.96965 4.4088L9.87867 3.49977L8.49999 2.12109L7.59097 3.03012L8.96965 4.4088Z" fill="#596171"/></svg>
+                  </button>
+                </div>
+                <div className="flex items-center gap-8 bg-[#F5F6F8] p-4">
+                  <div className="flex-1 min-w-0 flex flex-col gap-1">
+                    <p className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">Roles</p>
+                    <p className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{selectedRoleNames.length > 0 ? selectedRoleNames.join(", ") : "No roles selected"}</p>
+                  </div>
+                  <button onClick={() => setStep(3)} className="w-7 h-7 flex items-center justify-center flex-shrink-0 rounded-md hover:bg-[#EBEEF1] transition-colors">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M0.975001 7.87468C0.991113 7.63299 1.0944 7.40537 1.26568 7.23409L7.43933 1.06043C8.02512 0.474647 8.97487 0.474647 9.56065 1.06043L10.9393 2.43911C11.5251 3.0249 11.5251 3.97465 10.9393 4.56043L4.76568 10.7341C4.5944 10.9054 4.36678 11.0087 4.12509 11.0248L1.03508 11.2308C0.884155 11.2408 0.758938 11.1156 0.769 10.9647L0.975001 7.87468ZM2.3607 9.63906L2.45918 8.16191L6.53031 4.09078L7.90899 5.46946L3.83786 9.54059L2.3607 9.63906ZM8.96965 4.4088L9.87867 3.49977L8.49999 2.12109L7.59097 3.03012L8.96965 4.4088Z" fill="#596171"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="flex items-center justify-end gap-[10px] py-6 px-8 flex-shrink-0">
+          {step > 1 && <button onClick={() => setStep(step - 1)} className="px-4 py-2 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] bg-white border border-[#D8DEE4] rounded-[6px] hover:bg-[#F5F6F8] transition-colors">Back</button>}
+          {step < 4
+            ? <button onClick={() => setStep(step + 1)} className="px-4 py-2 text-[14px] font-semibold text-white leading-5 tracking-[-0.15px] bg-[#635BFF] rounded-[6px] hover:bg-[#5851DF] transition-colors shadow-[0_1px_1px_rgba(47,14,99,0.32)]">Next</button>
+            : <button onClick={handleClose} className="px-4 py-2 text-[14px] font-semibold text-white leading-5 tracking-[-0.15px] bg-[#635BFF] rounded-[6px] hover:bg-[#5851DF] transition-colors shadow-[0_1px_1px_rgba(47,14,99,0.32)]">Send invites</button>
+          }
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== Team Content (Team tab) =====
+const DATA_ROWS = 10;
+
+function TeamContent({ teamSecurityEnabled, onAddMember }: { teamSecurityEnabled: boolean; onAddMember: () => void }) {
+  return (
+    <div className="flex-1 min-h-0 flex flex-col gap-8 overflow-auto">
+      {/* Filter cards */}
+      <div className="flex gap-2 shrink-0">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="flex-1 h-[60px] bg-[#F5F6F8] rounded-[6px]" />
+        ))}
+      </div>
+
+      {/* Toolbar + Table */}
+      <div className="flex flex-col gap-3 flex-1 min-h-0">
+        <div className="flex flex-wrap items-center gap-2 min-h-[28px] shrink-0">
+          <div className="flex-1 flex items-center gap-2">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div key={i} className="w-[96px] h-[24px] bg-[#F5F6F8] rounded-full" />
+            ))}
+          </div>
+          <div className="w-[96px] h-[28px] bg-[#F5F6F8] rounded-[6px]" />
+          <button
+            onClick={onAddMember}
+            disabled={!teamSecurityEnabled}
+            className={`flex items-center gap-1.5 h-[28px] px-3 text-[12px] font-semibold leading-4 tracking-[-0.02px] rounded-[6px] transition-colors ${
+              teamSecurityEnabled
+                ? 'text-white bg-[#635BFF] hover:bg-[#5851DF] shadow-[0_1px_1px_rgba(47,14,99,0.32)] cursor-pointer'
+                : 'text-white bg-[#A3ACB9] cursor-not-allowed'
+            }`}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+            Add member
+          </button>
+        </div>
+
+        <div className="flex border-t border-[#D8DEE4] overflow-x-auto flex-1 min-h-0">
+          {[0, 1, 2, 3, 4, 5, 6].map((col) => (
+            <div key={col} className="flex-1 flex flex-col min-w-0">
+              <div className="flex items-center h-[36px] px-3 border-b border-[#EBEEF1]">
+                <div className="flex-1 py-1.5"><div className="h-2 bg-[#EBEEF1] rounded-lg w-full" /></div>
+              </div>
+              {Array.from({ length: DATA_ROWS }, (_, row) => (
+                <div key={row} className="flex items-center h-[36px] px-3 border-b border-[#EBEEF1]">
+                  <div className="flex-1 py-1.5"><div className="h-2 bg-[#EBEEF1] rounded-lg w-full" /></div>
+                </div>
+              ))}
+            </div>
+          ))}
+          <div className="flex flex-col shrink-0">
+            <div className="h-[36px]" />
+            {Array.from({ length: DATA_ROWS }, (_, row) => (
+              <div key={row} className="flex items-center justify-center w-[36px] h-[36px] border-b border-[#EBEEF1]">
+                <MoreHorizontal size={16} className="text-[#6C7688]" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== Main Page: Team and Security with Tabs =====
+export default function TeamAndSecurityPage() {
+  const [activeTab, setActiveTab] = useState<"team" | "roles">("roles");
+  const [teamSecurityEnabled, setTeamSecurityEnabled] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Sandbox mode state - lifted to page level for full-screen takeover
+  const [sandboxMode, setSandboxMode] = useState<SandboxModeState>({
+    active: false,
+    role: null,
+    unsavedRole: null,
+    sourceModal: undefined,
+    modalState: undefined
+  });
+
+  // Sandbox full-screen takeover
+  if (sandboxMode.active && sandboxMode.role) {
+    return (
+      <SandboxView
+        role={sandboxMode.role}
+        allRoles={allRoles}
+        unsavedRole={sandboxMode.unsavedRole}
+        onRoleChange={(role) => setSandboxMode({ ...sandboxMode, role })}
+        onExit={() => {
+          const sourceModal = sandboxMode.sourceModal;
+          const modalState = sandboxMode.modalState;
+          setSandboxMode({ 
+            active: false, role: null, unsavedRole: null,
+            sourceModal, modalState
+          });
+        }}
+      />
+    );
+  }
+
+  return (
+    <div className="h-screen flex bg-white">
+      <SideNav protoControls={{ teamSecurityEnabled, onTeamSecurityToggle: setTeamSecurityEnabled }} />
+
+      <div className="flex-1 flex flex-col px-8 pb-6 overflow-hidden">
+        <Topbar />
+
+        <div className={`flex-1 min-h-0 flex flex-col gap-8 pt-5 ${activeTab === "roles" ? 'overflow-hidden' : 'overflow-auto'}`}>
+          {/* Header: breadcrumb + title + tabs */}
+          <div className="flex flex-col gap-4 shrink-0">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[12px] font-semibold text-[#533AFD] leading-4 tracking-[-0.02px]">Organization settings</span>
+                <svg width="8" height="8" viewBox="0 0 8 8" fill="none" className="text-[#6C7688]"><path d="M3 2L5 4L3 6" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+              <h1 className="text-[28px] font-bold text-[#353A44] leading-9 tracking-[0.38px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Team and security</h1>
+            </div>
+
+            {/* Tab bar */}
+            <div className="flex items-start gap-6 border-b border-[#D8DEE4]">
+              <button onClick={() => setActiveTab("team")} className={`flex items-center justify-center py-4 cursor-pointer ${activeTab === "team" ? 'border-b-2 border-[#533AFD]' : ''}`}>
+                <span className={`text-[14px] font-semibold leading-5 tracking-[-0.15px] ${activeTab === "team" ? 'text-[#533AFD]' : 'text-[#596171] hover:text-[#353A44]'}`}>Team</span>
+              </button>
+              <button onClick={() => setActiveTab("roles")} className={`flex items-center justify-center py-4 cursor-pointer ${activeTab === "roles" ? 'border-b-2 border-[#533AFD]' : ''}`}>
+                <span className={`text-[14px] font-semibold leading-5 tracking-[-0.15px] ${activeTab === "roles" ? 'text-[#533AFD]' : 'text-[#596171] hover:text-[#353A44]'}`}>Roles and permissions</span>
+              </button>
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="flex flex-col items-start py-4 w-[61px]">
+                  <div className="py-1.5 w-full"><div className="h-2 bg-[#EBEEF1] rounded-lg w-full" /></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Tab content */}
+          {activeTab === "roles" ? (
+            <RolesPermissionsContent sandboxMode={sandboxMode} setSandboxMode={setSandboxMode} />
+          ) : (
+            <TeamContent teamSecurityEnabled={teamSecurityEnabled} onAddMember={() => setIsModalOpen(true)} />
+          )}
+        </div>
+      </div>
+
+      <AddMemberModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }

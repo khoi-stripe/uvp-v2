@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { ChevronDown } from "lucide-react";
-import Link from "next/link";
 import {
   roleCategories,
   getPermissionsForRole,
@@ -749,7 +748,9 @@ function NavItem({ hasIcon = true }: { hasIcon?: boolean }) {
   );
 }
 
-export function SideNav() {
+export function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void } } = {}) {
+  const popover = usePopover();
+
   return (
     <aside className="w-[240px] h-full flex flex-col justify-between px-5 py-4 bg-white border-r border-[rgba(0,39,77,0.08)] flex-shrink-0">
       <div className="flex flex-col gap-[42px]">
@@ -771,28 +772,47 @@ export function SideNav() {
           </div>
         </div>
       </div>
-      <NavItem />
+      {protoControls ? (
+        <div className="relative">
+          <button onClick={() => popover.toggle()} className="w-5 h-5 rounded-full bg-[#EBEEF1] hover:bg-[#D8DEE4] transition-colors cursor-pointer flex items-center justify-center" title="Prototype controls">
+            <ControlIcon className="w-3 h-3 text-[#596171]" />
+          </button>
+          {popover.isVisible && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => popover.close()} />
+              <div className={`absolute bottom-full left-0 mb-2 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_5px_15px_rgba(0,0,0,0.12),0_15px_35px_rgba(48,49,61,0.08)] z-20 whitespace-nowrap overflow-hidden ${popover.animationClass}`}>
+                <div className="p-2 flex flex-col min-w-[220px]">
+                  <div className="px-2 py-1.5">
+                    <span className="text-[12px] font-semibold text-[#818DA0] leading-4 tracking-[-0.024px] uppercase">Prototype controls</span>
+                  </div>
+                  <div className="h-px bg-[#EBEEF1] my-1" />
+                  <div className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => protoControls.onTeamSecurityToggle(!protoControls.teamSecurityEnabled)}>
+                    <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Enable add member</span>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <ToggleSwitch checked={protoControls.teamSecurityEnabled} onChange={protoControls.onTeamSecurityToggle} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      ) : (
+        <NavItem />
+      )}
     </aside>
   );
 }
 
-export function Topbar({ teamSecurityHref, drawerOnClick }: { teamSecurityHref?: string; drawerOnClick?: () => void }) {
+export function Topbar() {
   return (
     <header className="bg-white flex items-center justify-between py-3 flex-shrink-0">
       <div className="flex items-center gap-6">
         <div className="bg-[#F5F6F8] h-9 w-[360px] rounded-lg opacity-80" />
       </div>
       <div className="flex items-center gap-4">
-        {teamSecurityHref ? (
-          <Link href={teamSecurityHref} className="w-4 h-4 rounded-full bg-[#EBEEF1] hover:bg-[#D8DEE4] transition-colors cursor-pointer block" title="Team & Security (Modal)" />
-        ) : (
-          <div className="w-4 h-4 rounded-full bg-[#EBEEF1]" />
-        )}
-        {drawerOnClick ? (
-          <button onClick={drawerOnClick} className="w-4 h-4 rounded-full bg-[#EBEEF1] hover:bg-[#D8DEE4] transition-colors cursor-pointer" title="Team & Security (Drawer)" />
-        ) : (
-          <div className="w-4 h-4 rounded-full bg-[#EBEEF1]" />
-        )}
+        <div className="w-4 h-4 rounded-full bg-[#EBEEF1]" />
+        <div className="w-4 h-4 rounded-full bg-[#EBEEF1]" />
       </div>
     </header>
   );
