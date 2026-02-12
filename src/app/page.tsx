@@ -3694,7 +3694,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
       <div className="flex-1 min-h-0 flex flex-col gap-6 overflow-hidden">
 
         {/* Main content - 3 panels */}
-        <div className="flex flex-1 min-h-0 gap-6 overflow-hidden max-w-[1600px]">
+        <div className="flex flex-1 min-h-0 gap-6 overflow-hidden max-w-[1600px] mx-auto">
         {/* Left Panel - Roles List */}
         {/* Baseline alignment: 16px title needs pt-[23px] to align with section's 20px title at pt-5/pt-3+8 */}
         <aside className="w-[240px] max-w-[240px] overflow-y-auto flex-shrink-0 pt-[23px] relative">
@@ -4619,7 +4619,7 @@ const DATA_ROWS = 10;
 
 function TeamContent({ teamSecurityEnabled, onAddMember }: { teamSecurityEnabled: boolean; onAddMember: () => void }) {
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-8 overflow-auto max-w-[1600px]">
+    <div className="flex-1 min-h-0 flex flex-col gap-8 overflow-auto max-w-[1600px] mx-auto">
       {/* Filter cards */}
       <div className="flex gap-2 shrink-0">
         {[0, 1, 2, 3].map((i) => (
@@ -4723,7 +4723,7 @@ export default function TeamAndSecurityPage() {
 
         <div className={`flex-1 min-h-0 flex flex-col gap-8 pt-5 ${activeTab === "roles" ? 'overflow-hidden' : 'overflow-auto'}`}>
           {/* Header: breadcrumb + title + tabs */}
-          <div className="flex flex-col gap-4 shrink-0 max-w-[1600px]">
+          <div className="flex flex-col gap-4 shrink-0 max-w-[1600px] mx-auto w-full">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <span className="text-[12px] font-semibold text-[#533AFD] leading-4 tracking-[-0.02px]">Organization settings</span>
