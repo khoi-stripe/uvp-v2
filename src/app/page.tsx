@@ -2883,8 +2883,7 @@ function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boo
             <ControlIcon className="w-3 h-3 text-[#596171]" />
           </button>
           {popover.isVisible && (
-            <>
-              <div className="fixed inset-0 z-10" onClick={() => popover.close()} />
+            <PopoverBackdrop onClose={() => popover.close()}>
               <div className={`absolute bottom-full left-0 mb-2 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_5px_15px_rgba(0,0,0,0.12),0_15px_35px_rgba(48,49,61,0.08)] z-20 whitespace-nowrap overflow-hidden ${popover.animationClass}`}>
                 <div className="p-2 flex flex-col min-w-[220px]">
                   <div className="px-2 py-1.5">
@@ -2924,7 +2923,7 @@ function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boo
                   </div>
                 </div>
               </div>
-            </>
+            </PopoverBackdrop>
           )}
         </div>
       ) : (
@@ -2932,6 +2931,21 @@ function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boo
       )}
     </aside>
   );
+}
+
+// Popover backdrop that uses event listener instead of full-page overlay
+function PopoverBackdrop({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [onClose]);
+  return <div ref={ref}>{children}</div>;
 }
 
 // Sandbox View Component
@@ -3682,7 +3696,8 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
         {/* Main content - 3 panels */}
         <div className="flex flex-1 min-h-0 gap-6 overflow-hidden max-w-[1600px]">
         {/* Left Panel - Roles List */}
-        <aside className="w-[240px] max-w-[240px] overflow-y-auto flex-shrink-0 pt-6 relative">
+        {/* Baseline alignment: 16px title needs pt-[23px] to align with section's 20px title at pt-5/pt-3+8 */}
+        <aside className="w-[240px] max-w-[240px] overflow-y-auto flex-shrink-0 pt-[23px] relative">
           {/* Header */}
           <div className="flex items-center gap-2.5 pb-4 border-b border-[#EBEEF1]">
             <h2 className="flex-1 text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Roles</h2>
@@ -3769,7 +3784,8 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
         {/* Shared Container for Role Details + Permissions */}
         <div className={`flex-1 min-h-0 flex gap-4 overflow-hidden ${isV2 ? '' : 'bg-[#F5F6F8] rounded-xl p-2'}`}>
           {/* Role Details Panel */}
-          <section ref={roleDetailsRef} className={`flex-1 flex flex-col gap-6 overflow-y-auto ${isV2 ? 'pt-[21px]' : 'px-4 pt-[11px] pb-[13px]'}`}>
+          {/* Baseline alignment: pt-5 (20px) for the 20px title; in v1 subtract container's p-2 (8px) → pt-3 */}
+          <section ref={roleDetailsRef} className={`flex-1 flex flex-col gap-6 overflow-y-auto ${isV2 ? 'pt-5 pl-4' : 'px-4 pt-3 pb-[13px]'}`}>
             {/* Header */}
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2">
@@ -3872,6 +3888,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
           </section>
 
           {/* Permissions Panel */}
+          {/* Baseline alignment: pt-6 (24px) for the 16px title; in v1 container's p-2 (8px) + p-4 (16px) = 24px */}
           <main className={`flex-1 min-h-0 flex flex-col gap-4 rounded-lg overflow-hidden ${isV2 ? 'bg-[#F5F6F8] pt-6 px-4 pb-4' : 'p-4 bg-white shadow-[0_2px_5px_0_rgba(48,49,61,0.08),0_1px_1px_0_rgba(0,0,0,0.12)]'}`}>
             {/* Header */}
             <div className="flex items-baseline gap-2">
