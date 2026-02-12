@@ -2822,7 +2822,7 @@ function Topbar() {
 }
 
 // Side Navigation Component
-function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void } }) {
+function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void; use14px: boolean; onUse14pxToggle: (v: boolean) => void } }) {
   const popover = usePopover();
 
   return (
@@ -2890,6 +2890,12 @@ function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boo
                     <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Enable add member</span>
                     <div onClick={(e) => e.stopPropagation()}>
                       <ToggleSwitch checked={protoControls.teamSecurityEnabled} onChange={protoControls.onTeamSecurityToggle} />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => protoControls.onUse14pxToggle(!protoControls.use14px)}>
+                    <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Use 14px type</span>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <ToggleSwitch checked={protoControls.use14px} onChange={protoControls.onUse14pxToggle} />
                     </div>
                   </div>
                 </div>
@@ -4403,6 +4409,7 @@ function TeamContent({ teamSecurityEnabled, onAddMember }: { teamSecurityEnabled
 export default function TeamAndSecurityPage() {
   const [activeTab, setActiveTab] = useState<"team" | "roles">("roles");
   const [teamSecurityEnabled, setTeamSecurityEnabled] = useState(true);
+  const [use14px, setUse14px] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Sandbox mode state - lifted to page level for full-screen takeover
@@ -4435,8 +4442,8 @@ export default function TeamAndSecurityPage() {
   }
 
   return (
-    <div className="h-screen flex bg-white">
-      <SideNav protoControls={{ teamSecurityEnabled, onTeamSecurityToggle: setTeamSecurityEnabled }} />
+    <div className={`h-screen flex bg-white ${use14px ? 'use-14px' : ''}`}>
+      <SideNav protoControls={{ teamSecurityEnabled, onTeamSecurityToggle: setTeamSecurityEnabled, use14px, onUse14pxToggle: setUse14px }} />
 
       <div className="flex-1 flex flex-col px-8 pb-6 overflow-hidden">
         <Topbar />

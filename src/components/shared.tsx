@@ -748,7 +748,7 @@ function NavItem({ hasIcon = true }: { hasIcon?: boolean }) {
   );
 }
 
-export function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void } } = {}) {
+export function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void; use14px: boolean; onUse14pxToggle: (v: boolean) => void } } = {}) {
   const popover = usePopover();
 
   return (
@@ -790,6 +790,12 @@ export function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabl
                     <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Enable add member</span>
                     <div onClick={(e) => e.stopPropagation()}>
                       <ToggleSwitch checked={protoControls.teamSecurityEnabled} onChange={protoControls.onTeamSecurityToggle} />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => protoControls.onUse14pxToggle(!protoControls.use14px)}>
+                    <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Use 14px type</span>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <ToggleSwitch checked={protoControls.use14px} onChange={protoControls.onUse14pxToggle} />
                     </div>
                   </div>
                 </div>
