@@ -4231,7 +4231,7 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
               </div>
               <div className="flex-1 flex flex-wrap content-start items-start gap-1.5 px-3 py-2 border border-[#D8DEE4] rounded-[6px] form-focus-ring cursor-text" onClick={() => inputRef.current?.focus()}>
                 {emails.map((email) => (
-                  <span key={email} className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#F5F6F8] text-[16px] text-[#353A44] rounded-md leading-6 tracking-[-0.31px]">
+                  <span key={email} className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#F5F6F8] text-[16px] text-[#353A44] rounded-full leading-6 tracking-[-0.31px]">
                     {email}
                     <button onClick={(e) => { e.stopPropagation(); removeEmail(email); }} className="text-[#596171] hover:text-[#353A44] ml-0.5"><X size={12} /></button>
                   </span>
