@@ -3832,7 +3832,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
             </div>
 
             {/* Can, Cannot - combined container */}
-            <div className={`${isV2 ? 'bg-[#F5F6F8]' : 'bg-white'} rounded-lg p-4 flex flex-col`}>
+            <div className={`${isV3 ? '' : isV2 ? 'bg-[#F5F6F8] rounded-lg p-4' : 'bg-white rounded-lg p-4'} flex flex-col`}>
               {/* Can section */}
               <div className="pb-4">
                 <div className="flex items-center gap-2 mb-2">
@@ -3884,7 +3884,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
             </div>
 
             {/* Risk Assessment - own container */}
-            <div className={`p-4 ${isV2 ? 'bg-[#F5F6F8]' : 'bg-white'} rounded-lg`}>
+            <div className={`${isV3 ? '' : isV2 ? 'p-4 bg-[#F5F6F8] rounded-lg' : 'p-4 bg-white rounded-lg'}`}>
               <RiskAssessmentCard 
                 assessment={riskAssessment} 
                 isExpanded={isRiskExpanded}
