@@ -4141,18 +4141,53 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [showPermissions, setShowPermissions] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [emailVisibleCount, setEmailVisibleCount] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const accountSearchRef = useRef<HTMLInputElement>(null);
+  const emailReviewRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     if (isOpen) {
       setStep(1); setEmails([]); setCurrentInput(""); setSelectedAccount("all");
       setSelectedAccounts(new Set(ALL_ACCOUNT_IDS)); setShowAccountPicker(false); setAccountGroupFilter("All"); setAccountSearch("");
       setSelectedRoles(new Set()); setExpandedCategories(new Set()); setShowPermissions(false); setIsClosing(false);
+      setEmailVisibleCount(0);
       // Focus the email input after the modal animation settles
       requestAnimationFrame(() => { inputRef.current?.focus(); });
     }
   }, [isOpen]);
+
+  // Measure how many emails fit in 2 lines on the review screen
+  useEffect(() => {
+    const el = emailReviewRef.current;
+    if (!el || emails.length === 0 || step !== 4) {
+      setEmailVisibleCount(emails.length);
+      return;
+    }
+    const lineHeight = 20; // leading-5
+    const maxHeight = lineHeight * 2 + 1; // 2 lines with tolerance
+
+    // Try showing all emails first
+    let count = emails.length;
+    el.textContent = emails.join(", ");
+    if (el.scrollHeight <= maxHeight) {
+      setEmailVisibleCount(emails.length);
+      return;
+    }
+
+    // Progressively reduce until it fits in 2 lines
+    for (count = emails.length - 1; count >= 1; count--) {
+      el.textContent = emails.slice(0, count).join(", ") + ` +${emails.length - count} more`;
+      if (el.scrollHeight <= maxHeight) break;
+    }
+    setEmailVisibleCount(count);
+  }, [emails, step]);
+
+  const emailDisplayText = useMemo(() => {
+    if (emails.length === 0) return "No emails entered";
+    if (emailVisibleCount >= emails.length) return emails.join(", ");
+    return emails.slice(0, emailVisibleCount).join(", ") + ` +${emails.length - emailVisibleCount} more`;
+  }, [emails, emailVisibleCount]);
 
   const handleClose = () => {
     setIsClosing(true);
@@ -4503,11 +4538,11 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
                 <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{stepLabels[step]}</h2>
               </div>
               <div className="flex flex-col gap-1 rounded-[4px] overflow-hidden">
-                <div className="flex items-center gap-8 bg-[#F5F6F8] p-4">
+                <div className="flex items-start gap-8 bg-[#F5F6F8] p-4">
                   <div className="flex-1 min-w-0 flex flex-col gap-1">
                     <p className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">Members</p>
-                    <p className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
-                      {emails.length > 0 ? (emails.length <= 3 ? emails.join(", ") : `${emails.slice(0, 2).join(", ")}, + ${emails.length - 2} more`) : "No emails entered"}
+                    <p ref={emailReviewRef} className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
+                      {emailDisplayText}
                     </p>
                   </div>
                   <button onClick={() => setStep(1)} className="w-7 h-7 flex items-center justify-center flex-shrink-0 rounded-md hover:bg-[#EBEEF1] transition-colors">
