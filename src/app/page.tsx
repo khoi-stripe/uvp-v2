@@ -1183,6 +1183,7 @@ function BaseGroupCard({
   defaultExpanded = false,
   headerLeft,
   children,
+  invertColors = false,
 }: {
   groupName: string;
   description?: string;
@@ -1192,6 +1193,7 @@ function BaseGroupCard({
   defaultExpanded?: boolean;
   headerLeft?: React.ReactNode;
   children: React.ReactNode;
+  invertColors?: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
@@ -1203,13 +1205,16 @@ function BaseGroupCard({
     ? "rounded-b-[4px]"
     : "";
 
+  const cardBg = invertColors ? "bg-white" : "bg-[#F5F6F8]";
+  const badgeBg = invertColors ? "bg-[#F5F6F8]" : "bg-white";
+
   const titleContent = (
     <div className="flex-1 min-w-0">
       <div className="flex items-center gap-2">
         <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px] truncate">
           {groupName}
         </span>
-        <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-white text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
+        <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${badgeBg} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
           {countLabel}
         </span>
       </div>
@@ -1230,7 +1235,7 @@ function BaseGroupCard({
   );
 
   return (
-    <div className={`bg-[#F5F6F8] ${radiusClass} shrink-0 flex flex-col`}>
+    <div className={`${cardBg} ${radiusClass} shrink-0 flex flex-col`}>
       {/* Header */}
       {headerLeft ? (
         <div className="relative flex items-center gap-4 py-4 px-4 before:absolute before:inset-0 before:rounded before:transition-colors hover:before:bg-[#EBEEF1]">
@@ -2822,7 +2827,7 @@ function Topbar() {
 }
 
 // Side Navigation Component
-function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void; use14px: boolean; onUse14pxToggle: (v: boolean) => void } }) {
+function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void; use14px: boolean; onUse14pxToggle: (v: boolean) => void; layoutVersion: "v1" | "v2"; onLayoutVersionChange: (v: "v1" | "v2") => void } }) {
   const popover = usePopover();
 
   return (
@@ -2896,6 +2901,25 @@ function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boo
                     <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Use 14px type</span>
                     <div onClick={(e) => e.stopPropagation()}>
                       <ToggleSwitch checked={protoControls.use14px} onChange={protoControls.onUse14pxToggle} />
+                    </div>
+                  </div>
+                  <div className="h-px bg-[#EBEEF1] my-1" />
+                  <div className="flex items-center justify-between gap-6 px-2 py-1.5">
+                    <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Layout</span>
+                    <div className="flex bg-[#F5F6F8] rounded-md p-0.5 gap-0.5">
+                      {(["v1", "v2"] as const).map((v) => (
+                        <button
+                          key={v}
+                          onClick={() => protoControls.onLayoutVersionChange(v)}
+                          className={`px-2 py-0.5 text-[12px] font-semibold leading-4 rounded-[4px] transition-colors ${
+                            protoControls.layoutVersion === v
+                              ? "bg-white text-[#353A44] shadow-[0_1px_2px_rgba(0,0,0,0.1)]"
+                              : "text-[#596171] hover:text-[#353A44]"
+                          }`}
+                        >
+                          {v}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -3253,6 +3277,7 @@ function GroupCard({
   isLast = false,
   activeApiNames,
   showAll = false,
+  invertColors = false,
 }: {
   groupName: string;
   description?: string;
@@ -3265,6 +3290,7 @@ function GroupCard({
   isLast?: boolean;
   activeApiNames?: Set<string>;
   showAll?: boolean;
+  invertColors?: boolean;
 }) {
   return (
     <BaseGroupCard
@@ -3278,6 +3304,7 @@ function GroupCard({
       isFirst={isFirst}
       isLast={isLast}
       defaultExpanded={defaultExpanded}
+      invertColors={invertColors}
     >
       {perms.map((permission) => (
         <PermissionItem
@@ -3520,10 +3547,12 @@ function DrawerPermissionsPanel({ roleIds }: { roleIds: string[] }) {
 }
 
 
-function RolesPermissionsContent({ sandboxMode, setSandboxMode }: {
+function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = "v2" }: {
   sandboxMode: SandboxModeState;
   setSandboxMode: React.Dispatch<React.SetStateAction<SandboxModeState>>;
+  layoutVersion?: "v1" | "v2";
 }) {
+  const isV2 = layoutVersion === "v2";
   const [selectedRole, setSelectedRole] = useState<Role>(allRoles[0]);
   // Only one category can be expanded at a time (accordion behavior)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(roleCategories[0]?.name || null);
@@ -3738,9 +3767,9 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode }: {
         </aside>
 
         {/* Shared Container for Role Details + Permissions */}
-        <div className="flex-1 min-h-0 flex gap-4 p-2 bg-[#F5F6F8] rounded-xl overflow-hidden">
+        <div className={`flex-1 min-h-0 flex gap-4 overflow-hidden ${isV2 ? '' : 'bg-[#F5F6F8] rounded-xl p-2'}`}>
           {/* Role Details Panel */}
-          <section ref={roleDetailsRef} className="flex-1 flex flex-col gap-6 px-4 pt-[11px] pb-[13px] overflow-y-auto">
+          <section ref={roleDetailsRef} className={`flex-1 flex flex-col gap-6 overflow-y-auto ${isV2 ? 'pt-[21px]' : 'px-4 pt-[11px] pb-[13px]'}`}>
             {/* Header */}
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2">
@@ -3748,7 +3777,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode }: {
                   {selectedRole.name}
                 </h2>
                 <Tooltip content={`There are ${selectedRole.userCount} users with the ${selectedRole.name} role`}>
-                  <span className="bg-white text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center cursor-default">
+                  <span className={`${isV2 ? 'bg-[#F5F6F8]' : 'bg-white'} text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center cursor-default`}>
                     {selectedRole.userCount}
                   </span>
                 </Tooltip>
@@ -3781,7 +3810,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode }: {
             </div>
 
             {/* Can, Cannot - combined container */}
-            <div className="bg-white rounded-lg p-4 flex flex-col">
+            <div className={`${isV2 ? 'bg-[#F5F6F8]' : 'bg-white'} rounded-lg p-4 flex flex-col`}>
               {/* Can section */}
               <div className="pb-4">
                 <div className="flex items-center gap-2 mb-2">
@@ -3833,7 +3862,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode }: {
             </div>
 
             {/* Risk Assessment - own container */}
-            <div className="p-4 bg-white rounded-lg">
+            <div className={`p-4 ${isV2 ? 'bg-[#F5F6F8]' : 'bg-white'} rounded-lg`}>
               <RiskAssessmentCard 
                 assessment={riskAssessment} 
                 isExpanded={isRiskExpanded}
@@ -3843,11 +3872,11 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode }: {
           </section>
 
           {/* Permissions Panel */}
-          <main className="flex-1 min-h-0 flex flex-col gap-4 p-4 bg-white rounded-lg shadow-[0_2px_5px_0_rgba(48,49,61,0.08),0_1px_1px_0_rgba(0,0,0,0.12)] overflow-hidden">
+          <main className={`flex-1 min-h-0 flex flex-col gap-4 rounded-lg overflow-hidden ${isV2 ? 'bg-[#F5F6F8] pt-6 px-4 pb-4' : 'p-4 bg-white shadow-[0_2px_5px_0_rgba(48,49,61,0.08),0_1px_1px_0_rgba(0,0,0,0.12)]'}`}>
             {/* Header */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-baseline gap-2">
               <h2 className="text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Permissions</h2>
-              <span className="bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center">
+              <span className={`${isV2 ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center`}>
                 {showAll
                   ? (searchQuery
                     ? `${filteredPermissions.filter(p => activeApiNames.has(p.apiName)).length} of ${filteredPermissions.length}`
@@ -3928,6 +3957,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode }: {
                     isLast={idx === sortedEntries.length - 1}
                     activeApiNames={showAll ? activeApiNames : undefined}
                     showAll={showAll}
+                    invertColors={isV2}
                   />
                 ));
               })()}
@@ -3939,7 +3969,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode }: {
                     <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                       All permissions
                     </h3>
-                    <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
+                    <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${isV2 ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
                       {showAll
                         ? `${alphabeticalPermissions.filter(p => activeApiNames.has(p.apiName)).length} of ${alphabeticalPermissions.length}`
                         : alphabeticalPermissions.length}
@@ -3974,7 +4004,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode }: {
                       <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                         {groupName}
                       </h3>
-                      <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
+                      <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${isV2 ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
                         {showAll
                           ? `${perms.filter(p => activeApiNames.has(p.apiName)).length} of ${perms.length}`
                           : perms.filter(p => activeApiNames.has(p.apiName)).length}
@@ -4600,6 +4630,7 @@ export default function TeamAndSecurityPage() {
   const [activeTab, setActiveTab] = useState<"team" | "roles">("roles");
   const [teamSecurityEnabled, setTeamSecurityEnabled] = useState(true);
   const [use14px, setUse14px] = useState(false);
+  const [layoutVersion, setLayoutVersion] = useState<"v1" | "v2">("v1");
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Sandbox mode state - lifted to page level for full-screen takeover
@@ -4633,7 +4664,7 @@ export default function TeamAndSecurityPage() {
 
   return (
     <div className={`h-screen flex bg-white ${use14px ? 'use-14px' : ''}`}>
-      <SideNav protoControls={{ teamSecurityEnabled, onTeamSecurityToggle: setTeamSecurityEnabled, use14px, onUse14pxToggle: setUse14px }} />
+      <SideNav protoControls={{ teamSecurityEnabled, onTeamSecurityToggle: setTeamSecurityEnabled, use14px, onUse14pxToggle: setUse14px, layoutVersion, onLayoutVersionChange: setLayoutVersion }} />
 
       <div className="flex-1 flex flex-col px-8 pb-6 overflow-hidden">
         <Topbar />
@@ -4667,7 +4698,7 @@ export default function TeamAndSecurityPage() {
 
           {/* Tab content */}
           {activeTab === "roles" ? (
-            <RolesPermissionsContent sandboxMode={sandboxMode} setSandboxMode={setSandboxMode} />
+            <RolesPermissionsContent sandboxMode={sandboxMode} setSandboxMode={setSandboxMode} layoutVersion={layoutVersion} />
           ) : (
             <TeamContent teamSecurityEnabled={teamSecurityEnabled} onAddMember={() => setIsModalOpen(true)} />
           )}
