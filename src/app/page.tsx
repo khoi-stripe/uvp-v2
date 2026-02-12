@@ -4619,7 +4619,7 @@ const DATA_ROWS = 10;
 
 function TeamContent({ teamSecurityEnabled, onAddMember }: { teamSecurityEnabled: boolean; onAddMember: () => void }) {
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-8 overflow-auto max-w-[1600px] mx-auto">
+    <div className="flex-1 min-h-0 flex flex-col gap-8 overflow-auto max-w-[1600px] mx-auto w-full">
       {/* Filter cards */}
       <div className="flex gap-2 shrink-0">
         {[0, 1, 2, 3].map((i) => (
