@@ -4290,7 +4290,7 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
     modalEl.style.height = prevModalHeight;
 
     const measure = () => {
-      setStep3ContentHeight(chromeHeight + roleListEl.scrollHeight);
+      setStep3ContentHeight(chromeHeight + roleListEl.scrollHeight + 8);
     };
     const ro = new ResizeObserver(measure);
     ro.observe(roleListEl);
