@@ -4302,7 +4302,7 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
         style={{
           ...(step === 3 ? { transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' } : {}),
           ...(step === 3
-            ? { width: showPermissions ? '100%' : 640, maxWidth: showPermissions ? 1280 : 640, height: '100%' }
+            ? { width: showPermissions ? '100%' : 640, maxWidth: showPermissions ? 1280 : 640, maxHeight: '100%', ...(showPermissions ? { height: '100%' } : {}) }
             : { width: 640, ...(step === 4 ? { maxHeight: '100%' } : { height: 480 }) }),
         }}
       >
@@ -4311,7 +4311,7 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
             <X size={16} />
           </button>
         </div>
-        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+        <div className={`${step === 3 && !showPermissions ? 'min-h-0' : 'flex-1 min-h-0'} overflow-hidden flex flex-col`}>
           {step === 1 && (
             <div className="flex-1 overflow-y-auto flex flex-col gap-8 p-8 pt-0">
               <div className="flex flex-col gap-1">
@@ -4487,12 +4487,12 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
             );
           })()}
           {step === 3 && (
-            <div className="flex-1 min-h-0 flex flex-col gap-4 px-8 overflow-hidden">
+            <div className={`flex flex-col gap-4 px-8 min-h-0 overflow-hidden ${showPermissions ? 'flex-1' : ''}`}>
               <div className="flex-shrink-0">
                 <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{stepLabels[step]}</h2>
               </div>
-              <div className="flex-1 min-h-0 flex gap-6 overflow-hidden">
-                <div className="flex-1 min-w-0 flex flex-col gap-2 overflow-hidden pt-4">
+              <div className={`flex gap-6 min-h-0 overflow-hidden ${showPermissions ? 'flex-1' : ''}`}>
+                <div className="flex-1 min-w-0 flex flex-col gap-2 min-h-0 pt-4">
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <span className="flex-1 text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Roles</span>
                     <SharedToggleSwitch checked={showPermissions} onChange={setShowPermissions} label="Show permissions" />
@@ -4502,7 +4502,7 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
                       To protect your account, users who are recently invited or have recently updated roles may be prevented from performing certain sensitive operations for two to three days.
                     </p>
                   </div>
-                  <div className="flex-1 min-h-0 overflow-y-auto">
+                  <div className="min-h-0 overflow-y-auto">
                     <div className="flex flex-col">
                       {roleCategories.map((cat) => {
                         const isCatExpanded = expandedCategories.has(cat.name);
