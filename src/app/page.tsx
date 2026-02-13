@@ -3862,7 +3862,7 @@ function TeamAndSecurityPageInner() {
   const setActiveTab = useCallback((tab: "team" | "roles") => {
     router.replace(`?tab=${tab}`, { scroll: false });
   }, [router]);
-  const [teamSecurityEnabled, setTeamSecurityEnabled] = useState(true);
+  const [teamSecurityEnabled, setTeamSecurityEnabled] = useState(false);
   const [use14px, setUse14px] = useState(false);
   const [layoutVersion, setLayoutVersion] = useState<"v1" | "v2" | "v3" | "v4">("v3");
   const [isModalOpen, setIsModalOpen] = useState(false);
