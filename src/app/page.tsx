@@ -1357,7 +1357,7 @@ function CustomizeRoleModal({
       
       {/* Modal - full screen with 32px margin */}
       <div 
-        className="relative bg-white rounded-[12px] shadow-[0px_15px_35px_0px_rgba(48,49,61,0.08),0px_5px_15px_0px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden w-full h-full" 
+        className="relative bg-white rounded-[12px] shadow-[0px_15px_35px_0px_rgba(48,49,61,0.08),0px_5px_15px_0px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden w-full h-full max-w-[1280px]" 
         style={{ 
           animation: isClosing ? 'modal-out 150ms ease-out forwards' : 'modal-in 200ms cubic-bezier(0.4, 0, 0.2, 1)'
         }}
@@ -2143,7 +2143,7 @@ function CreateRoleModal({
       
       {/* Modal */}
       <div 
-        className="relative bg-white rounded-[12px] shadow-[0px_15px_35px_0px_rgba(48,49,61,0.08),0px_5px_15px_0px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden w-full h-full" 
+        className="relative bg-white rounded-[12px] shadow-[0px_15px_35px_0px_rgba(48,49,61,0.08),0px_5px_15px_0px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden w-full h-full max-w-[1280px]" 
         style={{ 
           animation: isClosing ? 'modal-out 150ms ease-out forwards' : 'modal-in 200ms cubic-bezier(0.4, 0, 0.2, 1)'
         }}
@@ -2847,6 +2847,14 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                 </div>
               );
             })}
+            {/* Create role button */}
+            <button
+              onClick={() => { setModalMode("create"); setIsCreateModalOpen(true); }}
+              className="w-full flex items-center gap-1.5 px-2 py-2 text-left hover:bg-[#F5F6F8] transition-colors rounded-md mt-1"
+            >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0"><path d="M6 1V11M1 6H11" stroke="#635BFF" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              <span className="text-[13px] font-semibold text-[#635BFF] leading-[19px] tracking-[-0.15px]">Create role</span>
+            </button>
           </div>
         </aside>
 
@@ -3481,7 +3489,7 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
           } : {}),
           ...(step === 3
             ? creatingRole
-              ? { width: '100%', maxWidth: '100%', maxHeight: '100%', height: '100%' }
+              ? { width: '100%', maxWidth: 1280, maxHeight: '100%', height: '100%' }
               : {
                   width: showPermissions ? '100%' : 640,
                   maxWidth: showPermissions ? 1280 : 640,
