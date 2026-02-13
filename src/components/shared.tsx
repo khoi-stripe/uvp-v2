@@ -464,15 +464,16 @@ export function PermissionItem({
 
 // ===== Group Cards =====
 export function BaseGroupCard({
-  groupName, description, countLabel, isFirst = false, isLast = false, defaultExpanded = false, headerLeft, children, invertColors = false,
+  groupName, description, countLabel, isFirst = false, isLast = false, defaultExpanded = false, headerLeft, children, invertColors = false, useDividers = false, lightDividers = false,
 }: {
-  groupName: string; description?: string; countLabel: string; isFirst?: boolean; isLast?: boolean; defaultExpanded?: boolean; headerLeft?: React.ReactNode; children: React.ReactNode; invertColors?: boolean;
+  groupName: string; description?: string; countLabel: string; isFirst?: boolean; isLast?: boolean; defaultExpanded?: boolean; headerLeft?: React.ReactNode; children: React.ReactNode; invertColors?: boolean; useDividers?: boolean; lightDividers?: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
-  const radiusClass = isFirst && isLast ? "rounded-[4px]" : isFirst ? "rounded-t-[4px]" : isLast ? "rounded-b-[4px]" : "";
+  const radiusClass = useDividers ? "" : (isFirst && isLast ? "rounded-[4px]" : isFirst ? "rounded-t-[4px]" : isLast ? "rounded-b-[4px]" : "");
+  const dividerBorder = lightDividers ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]';
 
-  const cardBg = invertColors ? "bg-white" : "bg-[#F5F6F8]";
-  const badgeBg = invertColors ? "bg-[#F5F6F8]" : "bg-white";
+  const cardBg = useDividers ? (invertColors ? "bg-[#F5F6F8]" : "") : (invertColors ? "bg-white" : "bg-[#F5F6F8]");
+  const badgeBg = (useDividers || invertColors) ? "bg-[#F5F6F8]" : "bg-white";
 
   const titleContent = (
     <div className="flex-1 min-w-0">
@@ -484,24 +485,24 @@ export function BaseGroupCard({
     </div>
   );
 
-  const chevron = <ChevronDown className={`w-4 h-4 text-[#474E5A] flex-shrink-0 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />;
+  const chevron = <ChevronDown className={`${useDividers ? 'w-3.5 h-3.5' : 'w-4 h-4'} text-[#474E5A] flex-shrink-0 transition-transform duration-200 ${isExpanded ? "" : "-rotate-90"}`} />;
 
   return (
     <div className={`${cardBg} ${radiusClass} shrink-0 flex flex-col`}>
       {headerLeft ? (
-        <div className="relative flex items-center gap-4 py-4 px-4 before:absolute before:inset-0 before:rounded before:transition-colors hover:before:bg-[#EBEEF1]">
+        <div className={`relative flex items-center gap-4 ${useDividers ? `py-3 px-2 border-b ${dividerBorder}` : 'py-4 px-4'} before:absolute before:inset-0 before:rounded before:transition-colors hover:before:bg-[#EBEEF1]`}>
           <div className="relative z-10">{headerLeft}</div>
           <button onClick={() => setIsExpanded(!isExpanded)} className="relative z-10 flex-1 flex items-center gap-4 text-left group min-w-0">{titleContent}{chevron}</button>
         </div>
       ) : (
-        <button onClick={() => setIsExpanded(!isExpanded)} className="relative w-full flex items-center gap-4 py-4 px-4 text-left group before:absolute before:inset-0 before:rounded before:transition-colors hover:before:bg-[#EBEEF1]">
+        <button onClick={() => setIsExpanded(!isExpanded)} className={`relative w-full flex items-center gap-4 ${useDividers ? `py-3 px-2 border-b ${dividerBorder}` : 'py-4 px-4'} text-left group before:absolute before:inset-0 before:rounded before:transition-colors hover:before:bg-[#EBEEF1]`}>
           <span className="relative z-10 flex items-center gap-4 flex-1 min-w-0">{titleContent}</span>
           <span className="relative z-10">{chevron}</span>
         </button>
       )}
       <div className="grid transition-[grid-template-rows] duration-200 ease-in-out" style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}>
         <div className="overflow-hidden">
-          <div className="flex flex-col divide-y divide-[#D8DEE4] mx-5 pb-2 border-t border-[#D8DEE4]">{children}</div>
+          <div className={`flex flex-col divide-y ${lightDividers ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'} ${useDividers ? 'pl-4 pb-2' : `mx-5 pb-2 border-t ${dividerBorder}`}`}>{children}</div>
         </div>
       </div>
     </div>
@@ -509,16 +510,16 @@ export function BaseGroupCard({
 }
 
 export function GroupCard({
-  groupName, description, permissions: perms, roleId, groupBy, customAccess, defaultExpanded = false, isFirst = false, isLast = false, activeApiNames, showAll = false, invertColors = false,
+  groupName, description, permissions: perms, roleId, groupBy, customAccess, defaultExpanded = false, isFirst = false, isLast = false, activeApiNames, showAll = false, invertColors = false, useDividers = false, lightDividers = false,
 }: {
-  groupName: string; description?: string; permissions: Permission[]; roleId: string; groupBy: string; customAccess?: Record<string, string>; defaultExpanded?: boolean; isFirst?: boolean; isLast?: boolean; activeApiNames?: Set<string>; showAll?: boolean; invertColors?: boolean;
+  groupName: string; description?: string; permissions: Permission[]; roleId: string; groupBy: string; customAccess?: Record<string, string>; defaultExpanded?: boolean; isFirst?: boolean; isLast?: boolean; activeApiNames?: Set<string>; showAll?: boolean; invertColors?: boolean; useDividers?: boolean; lightDividers?: boolean;
 }) {
   return (
     <BaseGroupCard
       groupName={groupName}
       description={description}
       countLabel={showAll && activeApiNames ? `${perms.filter(p => activeApiNames.has(p.apiName)).length} of ${perms.length}` : `${perms.length}`}
-      isFirst={isFirst} isLast={isLast} defaultExpanded={defaultExpanded} invertColors={invertColors}
+      isFirst={isFirst} isLast={isLast} defaultExpanded={defaultExpanded} invertColors={invertColors} useDividers={useDividers} lightDividers={lightDividers}
     >
       {perms.map((permission) => (
         <PermissionItem
@@ -585,7 +586,9 @@ export function PermissionsFilterMenu({
 }
 
 // ===== Drawer Permissions Panel =====
-export function DrawerPermissionsPanel({ roleIds, className, invertColors = false }: { roleIds: string[]; className?: string; invertColors?: boolean }) {
+export function DrawerPermissionsPanel({ roleIds, className, invertColors = false, layoutVersion = "v1" }: { roleIds: string[]; className?: string; invertColors?: boolean; layoutVersion?: "v1" | "v2" | "v3" | "v4" }) {
+  const useDividerStyle = layoutVersion === "v3" || layoutVersion === "v4";
+  const lightDividerStyle = layoutVersion === "v4";
   const [groupBy, setGroupBy] = useState<GroupByOption>("productCategory");
   const [isGrouped, setIsGrouped] = useState(true);
   const [showAll, setShowAll] = useState(false);
@@ -680,7 +683,7 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
         </div>
       )}
       {hasRoles && (
-        <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isGrouped ? "gap-1" : "gap-2"}`}>
+        <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${useDividerStyle ? "gap-0" : isGrouped ? "gap-1" : "gap-2"}`}>
           {isGrouped && groupedPermissions && (() => {
             const entries = Object.entries(groupedPermissions).sort(([a], [b]) => a.localeCompare(b));
             const sortedEntries = showAll
@@ -697,7 +700,8 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
               <GroupCard key={groupName} groupName={groupName} description={GROUP_DESCRIPTIONS[groupBy]?.[groupName]}
                 permissions={perms} roleId={roleIds[0] || ""} groupBy={groupBy}
                 isFirst={idx === 0} isLast={idx === sortedEntries.length - 1}
-                activeApiNames={showAll ? activeApiNames : undefined} showAll={showAll} invertColors={invertColors} />
+                activeApiNames={showAll ? activeApiNames : undefined} showAll={showAll} invertColors={invertColors}
+                useDividers={useDividerStyle} lightDividers={lightDividerStyle} />
             ));
           })()}
           {!isGrouped && alphabeticalPermissions && (

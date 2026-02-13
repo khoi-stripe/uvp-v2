@@ -1228,7 +1228,7 @@ function BaseGroupCard({
     ? "rounded-b-[4px]"
     : "");
 
-  const cardBg = useDividers ? "" : (invertColors ? "bg-white" : "bg-[#F5F6F8]");
+  const cardBg = useDividers ? (invertColors ? "bg-[#F5F6F8]" : "") : (invertColors ? "bg-white" : "bg-[#F5F6F8]");
   const badgeBg = (useDividers || invertColors) ? "bg-[#F5F6F8]" : "bg-white";
 
   const titleContent = (
@@ -4209,7 +4209,7 @@ const MOCK_ACCOUNTS = [
 const ACCOUNT_GROUPS = ["All", ...Array.from(new Set(MOCK_ACCOUNTS.map(a => a.group)))];
 const ALL_ACCOUNT_IDS = new Set(MOCK_ACCOUNTS.map(a => a.id));
 
-function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+function AddMemberModal({ isOpen, onClose, layoutVersion = "v1" }: { isOpen: boolean; onClose: () => void; layoutVersion?: "v1" | "v2" | "v3" | "v4" }) {
   const [step, setStep] = useState(1);
   const [emails, setEmails] = useState<string[]>([]);
   const [currentInput, setCurrentInput] = useState("");
@@ -4707,6 +4707,7 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
                     roleIds={Array.from(selectedRoles)}
                     invertColors={true}
                     className="min-h-0 flex flex-col gap-4 p-4 bg-[#F5F6F8] rounded-[8px] overflow-hidden h-full"
+                    layoutVersion={layoutVersion}
                   />
                 </div>
               </div>
@@ -4926,7 +4927,7 @@ function TeamAndSecurityPageInner() {
         </div>
       </div>
 
-      <AddMemberModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <AddMemberModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} layoutVersion={layoutVersion} />
     </div>
   );
 }
