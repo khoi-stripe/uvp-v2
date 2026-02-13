@@ -3062,8 +3062,8 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
 
               {/* Ungrouped: Alphabetical (flat list) - show task categories as tags */}
               {!isGrouped && alphabeticalPermissions && (
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
+                <div className={(isV3 || isV4) ? "flex flex-col" : "flex flex-col gap-2"}>
+                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `py-3 px-2 border-b ${isV4 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : ''}`}>
                     <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                       All permissions
                     </h3>
@@ -3073,17 +3073,21 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                         : alphabeticalPermissions.length}
                     </span>
                   </div>
-                  {alphabeticalPermissions.map((permission) => (
-                    <PermissionItem
-                      key={permission.apiName}
-                      permission={permission}
-                      roleId={selectedRole.id}
-                      showTaskCategories={true}
-                      customAccess={selectedRole.permissionAccess?.[permission.apiName]}
-                      isInactive={showAll ? !activeApiNames.has(permission.apiName) : false}
-                      invertColors={isV2}
-                    />
-                  ))}
+                  <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-4 ${isV4 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : ''}>
+                    {alphabeticalPermissions.map((permission) => (
+                      <PermissionItem
+                        key={permission.apiName}
+                        permission={permission}
+                        roleId={selectedRole.id}
+                        showTaskCategories={true}
+                        customAccess={selectedRole.permissionAccess?.[permission.apiName]}
+                        isInactive={showAll ? !activeApiNames.has(permission.apiName) : false}
+                        invertColors={isV2}
+                        useDividers={isV3 || isV4}
+                        lightDividers={isV4}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -3098,8 +3102,8 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                   return a.localeCompare(b);
                 })
                 .map(([groupName, perms]) => (
-                  <div key={groupName} className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
+                  <div key={groupName} className={(isV3 || isV4) ? "flex flex-col" : "flex flex-col gap-2"}>
+                    <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `py-3 px-2 border-b ${isV4 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : ''}`}>
                       <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                         {groupName}
                       </h3>
@@ -3109,7 +3113,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                           : perms.filter(p => activeApiNames.has(p.apiName)).length}
                       </span>
                     </div>
-                    <div className="flex flex-col gap-2">
+                    <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-4 ${isV4 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : 'flex flex-col gap-2'}>
                       {perms.map((permission) => (
                         <PermissionItem
                           key={permission.apiName}
@@ -3121,6 +3125,8 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                           customAccess={selectedRole.permissionAccess?.[permission.apiName]}
                           isInactive={showAll ? !activeApiNames.has(permission.apiName) : false}
                           invertColors={isV2}
+                          useDividers={isV3 || isV4}
+                          lightDividers={isV4}
                         />
                       ))}
                     </div>

@@ -336,6 +336,8 @@ export function PermissionCard({
   insideGroup = false,
   isInactive = false,
   invertColors = false,
+  useDividers = false,
+  lightDividers = false,
 }: {
   permission: Permission;
   showCheckbox?: boolean;
@@ -355,6 +357,8 @@ export function PermissionCard({
   insideGroup?: boolean;
   isInactive?: boolean;
   invertColors?: boolean;
+  useDividers?: boolean;
+  lightDividers?: boolean;
 }) {
   const { label: defaultLabel, hasWrite: defaultHasWrite } = getAccessLabel(permission.actions);
   const finalLabel = isInactive ? undefined : (accessLabel ?? defaultLabel);
@@ -398,8 +402,19 @@ export function PermissionCard({
 
   const cardBg = invertColors ? 'bg-white' : 'bg-[#F5F6F8]';
   const cardHover = invertColors ? 'hover:before:bg-[#F5F6F8]' : 'hover:before:bg-[#EBEEF1]';
+  const dividerHover = invertColors ? 'hover:before:bg-white' : 'hover:before:bg-[#F5F6F8]';
 
   if (showCheckbox && onToggle) {
+    if (useDividers) {
+      return (
+        <div
+          onClick={() => !checkboxDisabled && onToggle()}
+          className={`relative flex items-start gap-2 py-3 px-2 transition-all duration-150 before:absolute before:inset-0 before:rounded before:bg-transparent before:transition-colors before:duration-200 ${checkboxDisabled ? 'cursor-default' : `${dividerHover} cursor-pointer`} ${isExiting ? 'animate-scale-out' : ''}`}
+        >
+          <div className="relative z-10 flex items-start gap-2 w-full">{cardContent}</div>
+        </div>
+      );
+    }
     return (
       <div
         onClick={() => !checkboxDisabled && onToggle()}
@@ -409,6 +424,18 @@ export function PermissionCard({
       </div>
     );
   }
+
+  if (useDividers) {
+
+    return (
+      <div className="flex items-start gap-2 py-3 px-2 transition-colors">
+        {cardContent}
+      </div>
+    );
+  }
+
+
+
 
   return (
     <div className={`flex items-start transition-colors ${insideGroup ? "gap-2 py-3 px-2" : `gap-4 p-4 ${cardBg} rounded`}`}>
@@ -427,6 +454,8 @@ export function PermissionItem({
   insideGroup = false,
   isInactive = false,
   invertColors = false,
+  useDividers = false,
+  lightDividers = false,
 }: {
   permission: Permission;
   roleId: string;
@@ -437,6 +466,8 @@ export function PermissionItem({
   insideGroup?: boolean;
   isInactive?: boolean;
   invertColors?: boolean;
+  useDividers?: boolean;
+  lightDividers?: boolean;
 }) {
   const access = permission.roleAccess[roleId];
   const isCustomRole = roleId.startsWith("custom_");
@@ -466,6 +497,8 @@ export function PermissionItem({
       insideGroup={insideGroup}
       isInactive={isInactive}
       invertColors={invertColors}
+      useDividers={useDividers}
+      lightDividers={lightDividers}
     />
   );
 }
@@ -637,7 +670,7 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
     });
   }, [filteredPermissions, showAll, activeApiNames]);
 
-  const groupedPermissions = isGrouped && groupBy !== "alphabetical"
+  const groupedPermissions = groupBy !== "alphabetical"
     ? groupPermissions(sortedFilteredPermissions, groupBy as Exclude<GroupByOption, "alphabetical">)
     : null;
 
@@ -646,6 +679,9 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
     : null;
 
   const hasRoles = roleIds.length > 0;
+
+
+
 
   return (
     <main className={className || "w-[300px] flex-shrink-0 min-h-0 flex flex-col gap-3 p-3 bg-white rounded-lg shadow-[0_2px_5px_0_rgba(48,49,61,0.08),0_1px_1px_0_rgba(0,0,0,0.12)] overflow-hidden"}>
@@ -714,26 +750,28 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
             ));
           })()}
           {!isGrouped && alphabeticalPermissions && (
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
+            <div className={useDividerStyle ? "flex flex-col" : "flex flex-col gap-2"}>
+              <div className={`flex items-center gap-2 ${useDividerStyle ? 'py-3 px-2 border-b ' + (lightDividerStyle ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]') : ''}`}>
                 <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">All permissions</h3>
-                <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
+                <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${useDividerStyle ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
                   {showAll ? `${alphabeticalPermissions.filter(p => activeApiNames.has(p.apiName)).length} of ${alphabeticalPermissions.length}` : alphabeticalPermissions.length}
                 </span>
               </div>
-              {alphabeticalPermissions.map((p) => <PermissionItem key={p.apiName} permission={p} roleId={roleIds[0] || ""} showTaskCategories={true} isInactive={showAll ? !activeApiNames.has(p.apiName) : false} invertColors={invertColors} />)}
+              <div className={useDividerStyle ? `flex flex-col divide-y pl-4 ${lightDividerStyle ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : ''}>
+                {alphabeticalPermissions.map((p) => <PermissionItem key={p.apiName} permission={p} roleId={roleIds[0] || ""} showTaskCategories={true} isInactive={showAll ? !activeApiNames.has(p.apiName) : false} invertColors={invertColors} useDividers={useDividerStyle} lightDividers={lightDividerStyle} />)}
+              </div>
             </div>
           )}
           {!isGrouped && groupedPermissions && Object.entries(groupedPermissions).sort(([a], [b]) => a.localeCompare(b)).map(([groupName, perms]) => (
-            <div key={groupName} className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
+            <div key={groupName} className={useDividerStyle ? "flex flex-col" : "flex flex-col gap-2"}>
+              <div className={`flex items-center gap-2 ${useDividerStyle ? 'py-3 px-2 border-b ' + (lightDividerStyle ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]') : ''}`}>
                 <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">{groupName}</h3>
-                <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
+                <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${useDividerStyle ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
                   {showAll ? `${perms.filter(p => activeApiNames.has(p.apiName)).length} of ${perms.length}` : perms.length}
                 </span>
               </div>
-              <div className="flex flex-col gap-2">
-                {perms.map((p) => <PermissionItem key={p.apiName} permission={p} roleId={roleIds[0] || ""} showTaskCategories={false} currentGroup={groupName} groupBy={groupBy} isInactive={showAll ? !activeApiNames.has(p.apiName) : false} invertColors={invertColors} />)}
+              <div className={useDividerStyle ? `flex flex-col divide-y pl-4 ${lightDividerStyle ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : 'flex flex-col gap-2'}>
+                {perms.map((p) => <PermissionItem key={p.apiName} permission={p} roleId={roleIds[0] || ""} showTaskCategories={false} currentGroup={groupName} groupBy={groupBy} isInactive={showAll ? !activeApiNames.has(p.apiName) : false} invertColors={invertColors} useDividers={useDividerStyle} lightDividers={lightDividerStyle} />)}
               </div>
             </div>
           ))}
