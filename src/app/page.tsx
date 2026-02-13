@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { ChevronDown, MoreHorizontal, Search, X } from "lucide-react";
 import { DrawerPermissionsPanel as SharedDrawerPermissionsPanel, ToggleSwitch as SharedToggleSwitch } from "@/components/shared";
 
@@ -979,7 +980,7 @@ function PermissionsFilterMenu({
         onClick={() => popover.toggle()}
         className="flex items-center gap-1 cursor-pointer"
       >
-        <span className="text-[13px] text-[#596171] leading-[19px]">View by: <span className="text-[#635BFF]">{currentLabel}</span></span>
+        <span className="text-[13px] font-semibold text-[#596171] leading-[19px]">View by: <span className="text-[#635BFF]">{currentLabel}</span></span>
         <span className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#EBEEF1] transition-colors">
           <ControlIcon className="w-3 h-3 text-[#474E5A]" />
         </span>
@@ -1466,7 +1467,7 @@ function ModalPermissionsPanel({
       {/* Controls row - full width */}
       <div className="flex items-center gap-2">
         {/* Search field - spans full width */}
-        <div className="flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white focus-within:border-[#635BFF] transition-colors">
+        <div className="flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white form-focus-ring">
           <SearchIcon className="text-[#818DA0]" />
           <input
             type="text"
@@ -3447,7 +3448,7 @@ function DrawerPermissionsPanel({ roleIds }: { roleIds: string[] }) {
 
       {/* Search */}
       {hasRoles && (
-      <div className="flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white focus-within:border-[#635BFF] transition-colors">
+      <div className="flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white form-focus-ring">
         <SearchIcon className="text-[#818DA0]" />
         <input
           type="text"
@@ -3927,7 +3928,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
             {/* Controls */}
             <div className="flex items-center gap-2">
               {/* Search field */}
-              <div className="flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white focus-within:border-[#635BFF] transition-colors">
+              <div className="flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white form-focus-ring">
                 <SearchIcon className="text-[#818DA0]" />
                 <input
                   type="text"
@@ -4705,7 +4706,7 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
               if (step === 2 && showAccountPicker) { setShowAccountPicker(false); }
               else if (step === 3 && selectedAccount === "selected") { setStep(2); setShowAccountPicker(true); }
               else { setStep(step - 1); }
-            }} className="px-4 py-2 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] bg-white border border-[#D8DEE4] rounded-[6px] hover:bg-[#F5F6F8] transition-colors">Back</button>
+            }} className="px-4 py-2 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] bg-white border border-[#D8DEE4] rounded-[6px] hover:bg-[#F5F6F8] transition-colors shadow-[0_1px_1px_rgba(33,37,44,0.16)]">Back</button>
           )}
           {step < 4
             ? <button onClick={() => {
@@ -4751,7 +4752,7 @@ function TeamContent({ teamSecurityEnabled, onAddMember }: { teamSecurityEnabled
                 : 'text-white bg-[#A3ACB9] cursor-not-allowed'
             }`}
           >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M8 0.25C8.48325 0.25 8.875 0.641751 8.875 1.125V7.125H14.875C15.3582 7.125 15.75 7.51675 15.75 8C15.75 8.48325 15.3582 8.875 14.875 8.875H8.875V14.875C8.875 15.3582 8.48325 15.75 8 15.75C7.51675 15.75 7.125 15.3582 7.125 14.875V8.875H1.125C0.641751 8.875 0.25 8.48325 0.25 8C0.25 7.51675 0.641751 7.125 1.125 7.125H7.125V1.125C7.125 0.641751 7.51675 0.25 8 0.25Z" fill="currentColor"/></svg>
             Add member
           </button>
         </div>
@@ -4784,8 +4785,14 @@ function TeamContent({ teamSecurityEnabled, onAddMember }: { teamSecurityEnabled
 }
 
 // ===== Main Page: Team and Security with Tabs =====
-export default function TeamAndSecurityPage() {
-  const [activeTab, setActiveTab] = useState<"team" | "roles">("roles");
+function TeamAndSecurityPageInner() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tabParam = searchParams.get("tab");
+  const activeTab: "team" | "roles" = tabParam === "team" ? "team" : "roles";
+  const setActiveTab = useCallback((tab: "team" | "roles") => {
+    router.replace(`?tab=${tab}`, { scroll: false });
+  }, [router]);
   const [teamSecurityEnabled, setTeamSecurityEnabled] = useState(true);
   const [use14px, setUse14px] = useState(false);
   const [layoutVersion, setLayoutVersion] = useState<"v1" | "v2" | "v3">("v1");
@@ -4865,6 +4872,14 @@ export default function TeamAndSecurityPage() {
 
       <AddMemberModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
+  );
+}
+
+export default function TeamAndSecurityPage() {
+  return (
+    <Suspense>
+      <TeamAndSecurityPageInner />
+    </Suspense>
   );
 }
 
