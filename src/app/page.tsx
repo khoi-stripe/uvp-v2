@@ -3928,9 +3928,9 @@ function TeamAndSecurityPageInner() {
   // Compact encoding: ?t=team&l=v4&p=abcd
   //   t = tab (team|roles, default roles)
   //   l = layout version (v1-v4, default v3)
-  //   p = proto flags string, each char = a flag that's ON:
-  //       a = addMember, f = 14px font, s = singleRoleSelect
-  //       (searchWhiteBg is ON by default; W = whiteBg OFF)
+  //   p = proto flags string, each char = a non-default flag:
+  //       Uppercase = default-ON toggled OFF: A = addMember off, W = whiteBg off, S = singleRole off
+  //       Lowercase = default-OFF toggled ON: f = 14px font on
   const initFromUrl = useCallback(() => {
     const lParam = searchParams.get("l");
     const validLayouts = ["v1", "v2", "v3", "v4"] as const;
@@ -3938,10 +3938,10 @@ function TeamAndSecurityPageInner() {
     const flags = searchParams.get("p") || "";
     return {
       layout,
-      addMember: flags.includes("a"),
+      addMember: !flags.includes("A"),
       font14: flags.includes("f"),
       whiteBg: !flags.includes("W"),
-      singleRole: flags.includes("s"),
+      singleRole: !flags.includes("S"),
     };
   }, [searchParams]);
 
@@ -3986,11 +3986,12 @@ function TeamAndSecurityPageInner() {
     if (activeTab === "team") params.set("t", "team");
     if (layoutVersion !== "v3") params.set("l", layoutVersion);
     // Build flags string from non-default booleans
+    // Defaults: addMember=on, whiteBg=on, singleRole=on, 14px=off
     let flags = "";
-    if (teamSecurityEnabled) flags += "a";
+    if (!teamSecurityEnabled) flags += "A";
     if (use14px) flags += "f";
     if (!searchWhiteBg) flags += "W";
-    if (singleRoleSelect) flags += "s";
+    if (!singleRoleSelect) flags += "S";
     if (flags) params.set("p", flags);
     const qs = params.toString();
     router.replace(qs ? `?${qs}` : window.location.pathname, { scroll: false });
