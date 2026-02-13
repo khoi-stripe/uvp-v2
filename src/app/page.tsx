@@ -3873,7 +3873,7 @@ function TeamAndSecurityPageInner() {
   }, [router]);
   const [teamSecurityEnabled, setTeamSecurityEnabled] = useState(false);
   const [use14px, setUse14px] = useState(false);
-  const [searchWhiteBg, setSearchWhiteBg] = useState(false);
+  const [searchWhiteBg, setSearchWhiteBg] = useState(true);
   const [layoutVersion, setLayoutVersion] = useState<"v1" | "v2" | "v3" | "v4">("v3");
   const [isModalOpen, setIsModalOpen] = useState(false);
   
