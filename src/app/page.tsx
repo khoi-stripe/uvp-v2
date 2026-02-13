@@ -1306,6 +1306,8 @@ function CustomizeGroupCard({
   defaultExpanded = false,
   isFirst = false,
   isLast = false,
+  invertColors = false,
+  useDividers = false,
 }: {
   groupName: string;
   description?: string;
@@ -1318,6 +1320,8 @@ function CustomizeGroupCard({
   defaultExpanded?: boolean;
   isFirst?: boolean;
   isLast?: boolean;
+  invertColors?: boolean;
+  useDividers?: boolean;
 }) {
   const REQUIRED_PERMISSION = "dashboard_baseline";
 
@@ -1329,6 +1333,8 @@ function CustomizeGroupCard({
       isFirst={isFirst}
       isLast={isLast}
       defaultExpanded={defaultExpanded}
+      invertColors={invertColors}
+      useDividers={useDividers}
       headerLeft={
         <Checkbox
           checked={checkState === "all"}
@@ -1426,6 +1432,7 @@ function ModalPermissionsPanel({
   pendingAccess,
   updatePendingAccess,
   hasResults,
+  layoutVersion = "v1",
 }: {
   isAssistantOpen: boolean;
   onOpenAssistant: () => void;
@@ -1448,12 +1455,15 @@ function ModalPermissionsPanel({
   pendingAccess: Record<string, string>;
   updatePendingAccess: (apiName: string, access: string) => void;
   hasResults: boolean;
+  layoutVersion?: "v1" | "v2" | "v3";
 }) {
   const REQUIRED_PERMISSION = "dashboard_baseline";
+  const isV2 = layoutVersion === "v2" || layoutVersion === "v3";
+  const isV3 = layoutVersion === "v3";
 
   return (
     <div
-      className={`${isAssistantOpen ? 'flex-1' : 'flex-[2]'} bg-white rounded-lg shadow-[0_7px_14px_0_rgba(48,49,61,0.08),0_3px_6px_0_rgba(0,0,0,0.12)] p-4 flex flex-col gap-4 overflow-hidden min-w-0`}
+      className={`${isAssistantOpen ? 'flex-1' : 'flex-[2]'} ${isV2 ? 'bg-[#F5F6F8] rounded-lg pt-6 px-4 pb-4' : 'bg-white rounded-lg shadow-[0_7px_14px_0_rgba(48,49,61,0.08),0_3px_6px_0_rgba(0,0,0,0.12)] p-4'} flex flex-col gap-4 overflow-hidden min-w-0`}
       style={{ transition: 'flex 400ms cubic-bezier(0.4, 0, 0.2, 1)' }}
     >
       {/* Permissions header */}
@@ -1511,7 +1521,7 @@ function ModalPermissionsPanel({
             {selectedCount} of {totalCount} selected
           </span>
         </div>
-        <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isGrouped ? "gap-1" : "gap-2"}`}>
+        <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isV3 ? "gap-0" : isGrouped ? "gap-1" : "gap-2"}`}>
           {isGrouped ? (
             /* Grouped view: CustomizeGroupCard for each group */
             sortedGroupEntries.map(([group, perms], idx) => (
@@ -1527,6 +1537,8 @@ function ModalPermissionsPanel({
                 onAccessChange={updatePermissionAccess}
                 isFirst={idx === 0}
                 isLast={idx === sortedGroupEntries.length - 1}
+                invertColors={isV2}
+                useDividers={isV3}
               />
             ))
           ) : (
@@ -1593,6 +1605,7 @@ function CustomizeRoleModal({
   mode = "create",
   onTestInSandbox,
   initialState,
+  layoutVersion = "v1",
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -1603,8 +1616,11 @@ function CustomizeRoleModal({
   mode?: "create" | "edit";
   onTestInSandbox?: (role: Role, modalState: { roleName: string; customDescription: string; permissionAccess: Record<string, string> }) => void;
   initialState?: { roleName: string; customDescription: string; permissionAccess: Record<string, string> };
+  layoutVersion?: "v1" | "v2" | "v3";
 }) {
   const isEditMode = mode === "edit";
+  const isV2 = layoutVersion === "v2" || layoutVersion === "v3";
+  const isV3 = layoutVersion === "v3";
   const allPermissions = getAllPermissions(); // ~50 consolidated permissions
   
   const [roleName, setRoleName] = useState(isEditMode ? baseRole.name : `${baseRole.name} (copy)`);
@@ -2034,9 +2050,9 @@ function CustomizeRoleModal({
           {/* Main content area */}
           <div className="flex-1 flex min-h-0 overflow-hidden">
             {/* Offset background container - role info + permissions */}
-            <div className="bg-[#F5F6F8] rounded-[12px] p-2 flex gap-4 flex-1 overflow-hidden">
+            <div className={`${isV2 ? '' : 'bg-[#F5F6F8] rounded-[12px] p-2'} flex gap-4 flex-1 overflow-hidden`}>
               {/* Role info column - 1/3 width */}
-              <div className="flex-1 flex flex-col gap-4 px-4 py-4 overflow-y-auto min-w-0">
+              <div className={`flex-1 flex flex-col gap-4 ${isV2 ? 'pt-5 pl-6' : 'px-4 py-4'} overflow-y-auto min-w-0`}>
                 {/* Role name header */}
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
@@ -2106,7 +2122,14 @@ function CustomizeRoleModal({
                 )}
 
                 {/* Combined Can / Cannot container */}
-                <div className="bg-white rounded-lg p-4">
+                <div className={`${isV3 ? '' : isV2 ? 'bg-[#F5F6F8] rounded-lg p-4' : 'bg-white rounded-lg p-4'} flex flex-col`}>
+                  {/* Note */}
+                  <p className="text-[13px] text-[#596171] leading-[19px] pb-4">
+                    Note: The capabilities listed are highlights only. Refer to the permissions panel for the complete, authoritative list of what each role can access.
+                  </p>
+
+                  <div className="h-px bg-[#EBEEF1] mb-4" />
+
                   {/* Can section */}
                   <div className="pb-4">
                     <div className="flex items-center gap-2 mb-3">
@@ -2142,17 +2165,10 @@ function CustomizeRoleModal({
                     </ul>
                   </div>
 
-                  {/* Divider */}
-                  <div className="h-px bg-[#EBEEF1] my-4" />
-
-                  {/* Note */}
-                  <p className="text-[13px] text-[#596171] leading-[19px]">
-                    Note: The capabilities listed are highlights only. Refer to the permissions panel for the complete, authoritative list of what each role can access.
-                  </p>
                 </div>
 
                 {/* Risk Assessment - own container */}
-                <div className="p-4 bg-white rounded-lg">
+                <div className={`${isV3 ? '' : isV2 ? 'p-4 bg-[#F5F6F8] rounded-lg' : 'p-4 bg-white rounded-lg'}`}>
                   <RiskAssessmentCard 
                     assessment={previewRiskAssessment} 
                     showAdvice 
@@ -2184,6 +2200,7 @@ function CustomizeRoleModal({
                 pendingAccess={pendingAccess}
                 updatePendingAccess={updatePendingAccess}
                 hasResults={filteredAll.length > 0}
+                layoutVersion={layoutVersion}
               />
 
               </div>
@@ -3851,6 +3868,13 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
 
             {/* Can, Cannot - combined container */}
             <div className={`${isV3 ? '' : isV2 ? 'bg-[#F5F6F8] rounded-lg p-4' : 'bg-white rounded-lg p-4'} flex flex-col`}>
+              {/* Note */}
+              <p className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px] pb-4">
+                The capabilities listed are highlights only. Refer to the permissions panel for the complete, authoritative list of what each role can access.
+              </p>
+
+              <div className="h-px bg-[#EBEEF1] mb-4" />
+
               {/* Can section */}
               <div className="pb-4">
                 <div className="flex items-center gap-2 mb-2">
@@ -3895,10 +3919,6 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
 
               <div className="h-px bg-[#EBEEF1]" />
 
-              {/* Note */}
-              <p className="pt-4 text-[12px] text-[#596171] leading-4">
-                Note: The capabilities listed are highlights only. Refer to the permissions panel for the complete, authoritative list of what each role can access.
-              </p>
             </div>
 
             {/* Risk Assessment - own container */}
@@ -4121,6 +4141,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
           });
         }}
         initialState={sandboxMode.sourceModal === "customize" ? sandboxMode.modalState : undefined}
+        layoutVersion={layoutVersion}
       />
 
       {/* Create Role Modal */}
