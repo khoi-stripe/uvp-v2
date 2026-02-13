@@ -628,7 +628,7 @@ export function PermissionsFilterMenu({
 }
 
 // ===== Drawer Permissions Panel =====
-export function DrawerPermissionsPanel({ roleIds, className, invertColors = false, layoutVersion = "v1" }: { roleIds: string[]; className?: string; invertColors?: boolean; layoutVersion?: "v1" | "v2" | "v3" | "v4" }) {
+export function DrawerPermissionsPanel({ roleIds, className, invertColors = false, layoutVersion = "v1", customRoles = [] }: { roleIds: string[]; className?: string; invertColors?: boolean; layoutVersion?: "v1" | "v2" | "v3" | "v4"; customRoles?: Role[] }) {
   const useDividerStyle = layoutVersion === "v3" || layoutVersion === "v4";
   const lightDividerStyle = layoutVersion === "v4";
   const [groupBy, setGroupBy] = useState<GroupByOption>("productCategory");
@@ -638,15 +638,33 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
 
   const rolePermissions = useMemo(() => {
     if (roleIds.length === 0) return [];
+    const allPerms = getAllPermissions();
     const seen = new Set<string>();
     const result: Permission[] = [];
     for (const rid of roleIds) {
-      for (const p of getPermissionsForRole(rid)) {
-        if (!seen.has(p.apiName)) { seen.add(p.apiName); result.push(p); }
+      // Check if this is a custom role
+      const customRole = customRoles.find(r => r.id === rid);
+      if (customRole?.permissionAccess) {
+        // Resolve permissions from the custom role's permissionAccess
+        for (const [apiName, access] of Object.entries(customRole.permissionAccess)) {
+          if (seen.has(apiName)) continue;
+          const basePerm = allPerms.find(p => p.apiName === apiName);
+          if (!basePerm) continue;
+          seen.add(apiName);
+          if (access === "read" && basePerm.operationType !== "Read-only") {
+            result.push({ ...basePerm, operationType: "Read-only" as const, actions: "read" });
+          } else {
+            result.push(basePerm);
+          }
+        }
+      } else {
+        for (const p of getPermissionsForRole(rid)) {
+          if (!seen.has(p.apiName)) { seen.add(p.apiName); result.push(p); }
+        }
       }
     }
     return result;
-  }, [roleIds]);
+  }, [roleIds, customRoles]);
 
   const activeApiNames = useMemo(() => new Set(rolePermissions.map(p => p.apiName)), [rolePermissions]);
   const displayPermissions = showAll ? getAllPermissions() : rolePermissions;

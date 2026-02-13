@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ChevronDown, MoreHorizontal, Search, X } from "lucide-react";
+import { ArrowLeft, ChevronDown, MoreHorizontal, Search, X } from "lucide-react";
 import {
   usePopover,
   type GroupByOption,
@@ -1590,52 +1590,50 @@ function CustomizeRoleModal({
 }
 
 // Create Role Modal Component
-function CreateRoleModal({
-  isOpen,
-  onClose,
+// Reusable Create Role content (used by CreateRoleModal and inline in AddMemberModal)
+function CreateRoleContent({
   onSave,
+  onCancel,
   initialGroupBy,
   onTestInSandbox,
   initialState,
   layoutVersion = "v1",
+  showSandbox = true,
 }: {
-  isOpen: boolean;
-  onClose: () => void;
   onSave: (role: Role) => void;
+  onCancel: () => void;
   initialGroupBy: GroupByOption;
   onTestInSandbox?: (role: Role, modalState: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null }) => void;
   initialState?: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null };
   layoutVersion?: "v1" | "v2" | "v3" | "v4";
+  showSandbox?: boolean;
 }) {
   const allPermissions = getAllPermissions();
   const roleNameInputRef = useRef<HTMLInputElement>(null);
   
-  const [selectedBaseRole, setSelectedBaseRole] = useState<Role | null>(null);
-  const [roleName, setRoleName] = useState("");
-  const [customDescription, setCustomDescription] = useState("");
-  const [permissionAccess, setPermissionAccess] = useState<Record<string, string>>({});
+  const [selectedBaseRole, setSelectedBaseRole] = useState<Role | null>(initialState?.selectedBaseRole || null);
+  const [roleName, setRoleName] = useState(initialState?.roleName || "");
+  const [customDescription, setCustomDescription] = useState(initialState?.customDescription || "");
+  const [permissionAccess, setPermissionAccess] = useState<Record<string, string>>(initialState?.permissionAccess || { dashboard_baseline: "read" });
   const [pendingAccess, setPendingAccess] = useState<Record<string, string>>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [groupBy, setGroupBy] = useState<GroupByOption>("productCategory");
   const [isGrouped, setIsGrouped] = useState(true);
-  const [isClosing, setIsClosing] = useState(false);
   const baseRolePopover = usePopover();
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
 
   // Capture initial permission state for stable sort order
-  const initialAccessRef = useRef<Record<string, string>>({});
+  const initialAccessRef = useRef<Record<string, string>>(initialState?.permissionAccess ? { ...initialState.permissionAccess } : { dashboard_baseline: "read" });
 
   // Required permission constant
   const REQUIRED_PERMISSION = "dashboard_baseline";
 
-  // Handle close with animation
-  const handleClose = () => {
-    setIsClosing(true);
+  // Focus role name input on mount
+  useEffect(() => {
     setTimeout(() => {
-      setIsClosing(false);
-      onClose();
-    }, 150);
-  };
+      roleNameInputRef.current?.focus();
+    }, 100);
+  }, []);
 
   // Handle group toggle with auto-switch logic
   const handleGroupToggle = (on: boolean) => {
@@ -1644,43 +1642,6 @@ function CreateRoleModal({
       setGroupBy("productCategory");
     }
   };
-
-  // Reset and initialize when modal opens (or restore from initialState if returning from sandbox)
-  useEffect(() => {
-    if (isOpen) {
-      // If we have initialState (returning from sandbox), use it
-      if (initialState) {
-        setSelectedBaseRole(initialState.selectedBaseRole || null);
-        setRoleName(initialState.roleName);
-        setCustomDescription(initialState.customDescription);
-        setPermissionAccess(initialState.permissionAccess);
-        initialAccessRef.current = { ...initialState.permissionAccess };
-        setPendingAccess({});
-        setSearchQuery("");
-        setGroupBy("productCategory");
-        setIsGrouped(true);
-        baseRolePopover.close();
-        return;
-      }
-
-      const initialAccess = { [REQUIRED_PERMISSION]: "read" };
-      setSelectedBaseRole(null);
-      setRoleName("");
-      setCustomDescription("");
-      setPermissionAccess(initialAccess);
-      initialAccessRef.current = { ...initialAccess };
-      setPendingAccess({});
-      setSearchQuery("");
-      setGroupBy("productCategory");
-      setIsGrouped(true);
-      baseRolePopover.close();
-      
-      // Focus the role name input after a short delay
-      setTimeout(() => {
-        roleNameInputRef.current?.focus();
-      }, 100);
-    }
-  }, [isOpen, initialState]);
 
   // When base role is selected, populate permissions and description
   const handleBaseRoleSelect = (role: Role) => {
@@ -1736,27 +1697,6 @@ function CreateRoleModal({
       roleNameInputRef.current?.focus();
     }, 50);
   };
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        handleClose();
-      }
-      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        handleSave();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, permissionAccess, roleName, customDescription]);
-
-  if (!isOpen) return null;
 
   const selectedApiNames = Object.keys(permissionAccess);
   const selectedPermissions = allPermissions.filter(p => selectedApiNames.includes(p.apiName));
@@ -1930,11 +1870,268 @@ function CreateRoleModal({
     };
     
     onSave(newRole);
-    handleClose();
   };
 
   // Generate preview details
   const previewDetails = generateRoleDetails(selectedPermissions);
+
+  return (
+    <>
+      {/* Content */}
+      <div className="flex-1 flex flex-col gap-4 px-8 overflow-hidden">
+        {/* Title with Reset button */}
+        <div className="flex items-center gap-4">
+          <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
+            Create role
+          </h2>
+        </div>
+
+        {/* Main content area */}
+        <div className="flex-1 flex min-h-0 overflow-hidden">
+          {/* Offset background container */}
+          <div className="bg-[#F5F6F8] rounded-[12px] p-2 flex gap-4 flex-1 overflow-hidden">
+            {/* Left column - Role info (1/3 width) */}
+            <div className="flex-1 flex flex-col gap-6 px-4 py-[13px] overflow-y-auto min-w-0">
+              {/* Start from existing role dropdown */}
+              <div className="flex flex-col gap-2">
+                <label className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
+                  Start from an existing role
+                </label>
+                <div className="relative">
+                  <button
+                    onClick={() => baseRolePopover.toggle()}
+                    className="w-full flex items-center justify-between gap-2 px-2 py-1.5 text-[13px] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white hover:bg-[#F5F6F8] transition-colors shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
+                  >
+                    <span className={selectedBaseRole ? "text-[#353A44]" : "text-[#818DA0]"}>
+                      {selectedBaseRole ? selectedBaseRole.name : "Choose an option"}
+                    </span>
+                    <ArrowUpDownIcon size={12} />
+                  </button>
+                  
+                  {baseRolePopover.isVisible && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-10" 
+                        onClick={() => baseRolePopover.close()} 
+                      />
+                      <div className={`absolute top-full left-0 right-0 mt-1 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_15px_35px_rgba(48,49,61,0.08),0_5px_15px_rgba(0,0,0,0.12)] z-20 max-h-[300px] overflow-y-auto p-1 ${baseRolePopover.animationClass}`} style={{ "--popover-origin": "top left" } as React.CSSProperties}>
+                        {allRoles.map((role) => (
+                          <button
+                            key={role.id}
+                            onClick={() => handleBaseRoleSelect(role)}
+                            className={`w-full flex items-center justify-between gap-3 px-2.5 py-1.5 text-[13px] leading-[19px] tracking-[-0.15px] text-[#353A44] rounded transition-colors ${
+                              selectedBaseRole?.id === role.id ? "bg-[#F5F6F8]" : "hover:bg-[#F5F6F8]"
+                            }`}
+                          >
+                            <span className={selectedBaseRole?.id === role.id ? "font-semibold" : ""}>
+                              {role.name}
+                            </span>
+                            {selectedBaseRole?.id === role.id && <CheckCircleFilledIcon size={12} />}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="h-px bg-[#D8DEE4]" />
+
+              {/* Role name input */}
+              <div className="flex flex-col gap-1">
+                <input
+                  ref={roleNameInputRef}
+                  type="text"
+                  value={roleName}
+                  onChange={(e) => setRoleName(e.target.value)}
+                  placeholder="Role name"
+                  className="w-full px-2 py-1.5 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white outline-none placeholder:text-[#818DA0] input-focus-ring"
+                />
+              </div>
+
+              {/* Description textarea */}
+              <div className="flex flex-col gap-1">
+                <label className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
+                  Description
+                </label>
+                <textarea
+                  value={customDescription}
+                  onChange={(e) => setCustomDescription(e.target.value)}
+                  rows={4}
+                  className="w-full px-2 py-1.5 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white outline-none resize-y placeholder:text-[#818DA0] input-focus-ring"
+                />
+              </div>
+
+              {/* Can / Cannot section */}
+              <div className="bg-white rounded-lg p-4">
+                {/* Can section */}
+                <div className={previewDetails.canDo.length > 0 ? "pb-4" : ""}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircleIcon />
+                    <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Can</span>
+                  </div>
+                  {previewDetails.canDo.length > 0 ? (
+                    <ul className="list-disc pl-4 flex flex-col gap-1">
+                      {previewDetails.canDo.slice(0, 5).map((item, i) => (
+                        <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] pl-1">{item}</li>
+                      ))}
+                      {previewDetails.canDo.length > 5 && (
+                        <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px] pl-1">+{previewDetails.canDo.length - 5} more</li>
+                      )}
+                    </ul>
+                  ) : (
+                    <div className="flex flex-col gap-2.5 py-1.5">
+                      <div className="h-2 bg-[#EBEEF1] rounded-lg w-full" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Cannot section - only show when user has added permissions beyond just dashboard_baseline */}
+                {selectedPermissions.length > 1 && previewDetails.cannotDo.length > 0 && (
+                  <>
+                    <div className="h-px bg-[#EBEEF1] my-4" />
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <CancelCircleIcon />
+                        <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Cannot</span>
+                      </div>
+                      <ul className="list-disc pl-4 flex flex-col gap-1">
+                        {previewDetails.cannotDo.slice(0, 5).map((item, i) => (
+                          <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] pl-1">{item}</li>
+                        ))}
+                        {previewDetails.cannotDo.length > 5 && (
+                          <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px] pl-1">+{previewDetails.cannotDo.length - 5} more</li>
+                        )}
+                      </ul>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <ModalPermissionsPanel
+              isAssistantOpen={isAssistantOpen}
+              onOpenAssistant={() => setIsAssistantOpen(true)}
+              isGrouped={isGrouped}
+              onGroupedChange={handleGroupToggle}
+              groupBy={groupBy}
+              onGroupByChange={setGroupBy}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedCount={selectedPermissions.length}
+              totalCount={allPermissions.length}
+              isAlphabetical={isAlphabetical}
+              sortedGroupEntries={sortedGroupEntries}
+              sortPermsInGroup={sortPermsInGroup}
+              getGroupCheckState={getGroupCheckState}
+              toggleGroup={toggleGroup}
+              permissionAccess={permissionAccess}
+              togglePermission={togglePermission}
+              updatePermissionAccess={updatePermissionAccess}
+              pendingAccess={pendingAccess}
+              updatePendingAccess={updatePendingAccess}
+              hasResults={filteredAll.length > 0}
+              layoutVersion={layoutVersion}
+            />
+
+            </div>
+          
+          {/* AI Assistant Drawer - outside the offset background */}
+          <AIAssistantDrawer 
+            isOpen={isAssistantOpen} 
+            onClose={() => setIsAssistantOpen(false)} 
+          />
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-end gap-2 px-8 py-6">
+        {showSandbox && onTestInSandbox && (
+          <button
+            onClick={() => {
+              const previewRole: Role = {
+                id: `custom_${Date.now()}`,
+                name: roleName || "New Role",
+                category: "Custom",
+                userCount: 0,
+                permissionAccess: { ...permissionAccess },
+                customDescription: customDescription || undefined,
+              };
+              onTestInSandbox(previewRole, {
+                roleName,
+                customDescription,
+                permissionAccess: { ...permissionAccess },
+                selectedBaseRole,
+              });
+            }}
+            className="flex items-center gap-2 px-3 py-1.5 text-[13px] font-medium text-[#353A44] leading-[19px] tracking-[-0.15px] hover:bg-[#F5F6F8] border border-[#D8DEE4] rounded-md transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
+          >
+            <SandboxIcon />
+            Test in sandbox
+          </button>
+        )}
+        {!showSandbox && (
+          <button
+            onClick={onCancel}
+            className="px-4 py-1.5 text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
+          >
+            Back
+          </button>
+        )}
+        <button
+          onClick={handleSave}
+          className="px-4 py-1.5 bg-[#675DFF] text-white text-[13px] font-semibold leading-[19px] tracking-[-0.15px] rounded-md hover:bg-[#5851DB] transition-colors shadow-[0px_1px_1px_0px_rgba(47,14,99,0.32)]"
+        >
+          Save
+        </button>
+      </div>
+    </>
+  );
+}
+
+// Create Role Modal - thin wrapper around CreateRoleContent
+function CreateRoleModal({
+  isOpen,
+  onClose,
+  onSave,
+  initialGroupBy,
+  onTestInSandbox,
+  initialState,
+  layoutVersion = "v1",
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (role: Role) => void;
+  initialGroupBy: GroupByOption;
+  onTestInSandbox?: (role: Role, modalState: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null }) => void;
+  initialState?: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null };
+  layoutVersion?: "v1" | "v2" | "v3" | "v4";
+}) {
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 150);
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        handleClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
@@ -1961,212 +2158,15 @@ function CreateRoleModal({
           </button>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 flex flex-col gap-4 px-8 overflow-hidden">
-          {/* Title with Reset button */}
-          <div className="flex items-center gap-4">
-            <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
-              Create role
-            </h2>
-            <button
-              onClick={handleReset}
-              className="px-3 py-1 text-[13px] font-medium text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
-            >
-              Reset
-            </button>
-          </div>
-
-          {/* Main content area */}
-          <div className="flex-1 flex min-h-0 overflow-hidden">
-            {/* Offset background container */}
-            <div className="bg-[#F5F6F8] rounded-[12px] p-2 flex gap-4 flex-1 overflow-hidden">
-              {/* Left column - Role info (1/3 width) */}
-              <div className="flex-1 flex flex-col gap-6 px-4 py-[13px] overflow-y-auto min-w-0">
-                {/* Start from existing role dropdown */}
-                <div className="flex flex-col gap-2">
-                  <label className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
-                    Start from an existing role
-                  </label>
-                  <div className="relative">
-                    <button
-                      onClick={() => baseRolePopover.toggle()}
-                      className="w-full flex items-center justify-between gap-2 px-2 py-1.5 text-[13px] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white hover:bg-[#F5F6F8] transition-colors shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
-                    >
-                      <span className={selectedBaseRole ? "text-[#353A44]" : "text-[#818DA0]"}>
-                        {selectedBaseRole ? selectedBaseRole.name : "Choose an option"}
-                      </span>
-                      <ArrowUpDownIcon size={12} />
-                    </button>
-                    
-                    {baseRolePopover.isVisible && (
-                      <>
-                        <div 
-                          className="fixed inset-0 z-10" 
-                          onClick={() => baseRolePopover.close()} 
-                        />
-                        <div className={`absolute top-full left-0 right-0 mt-1 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_15px_35px_rgba(48,49,61,0.08),0_5px_15px_rgba(0,0,0,0.12)] z-20 max-h-[300px] overflow-y-auto p-1 ${baseRolePopover.animationClass}`} style={{ "--popover-origin": "top left" } as React.CSSProperties}>
-                          {allRoles.map((role) => (
-                            <button
-                              key={role.id}
-                              onClick={() => handleBaseRoleSelect(role)}
-                              className={`w-full flex items-center justify-between gap-3 px-2.5 py-1.5 text-[13px] leading-[19px] tracking-[-0.15px] text-[#353A44] rounded transition-colors ${
-                                selectedBaseRole?.id === role.id ? "bg-[#F5F6F8]" : "hover:bg-[#F5F6F8]"
-                              }`}
-                            >
-                              <span className={selectedBaseRole?.id === role.id ? "font-semibold" : ""}>
-                                {role.name}
-                              </span>
-                              {selectedBaseRole?.id === role.id && <CheckCircleFilledIcon size={12} />}
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* Divider */}
-                <div className="h-px bg-[#D8DEE4]" />
-
-                {/* Role name input */}
-                <div className="flex flex-col gap-1">
-                  <input
-                    ref={roleNameInputRef}
-                    type="text"
-                    value={roleName}
-                    onChange={(e) => setRoleName(e.target.value)}
-                    placeholder="Role name"
-                    className="w-full px-2 py-1.5 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white outline-none placeholder:text-[#818DA0] input-focus-ring"
-                  />
-                </div>
-
-                {/* Description textarea */}
-                <div className="flex flex-col gap-1">
-                  <label className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
-                    Description
-                  </label>
-                  <textarea
-                    value={customDescription}
-                    onChange={(e) => setCustomDescription(e.target.value)}
-                    rows={4}
-                    className="w-full px-2 py-1.5 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white outline-none resize-y placeholder:text-[#818DA0] input-focus-ring"
-                  />
-                </div>
-
-                {/* Can / Cannot section */}
-                <div className="bg-white rounded-lg p-4">
-                  {/* Can section */}
-                  <div className={previewDetails.canDo.length > 0 ? "pb-4" : ""}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <CheckCircleIcon />
-                      <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Can</span>
-                    </div>
-                    {previewDetails.canDo.length > 0 ? (
-                      <ul className="list-disc pl-4 flex flex-col gap-1">
-                        {previewDetails.canDo.slice(0, 5).map((item, i) => (
-                          <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] pl-1">{item}</li>
-                        ))}
-                        {previewDetails.canDo.length > 5 && (
-                          <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px] pl-1">+{previewDetails.canDo.length - 5} more</li>
-                        )}
-                      </ul>
-                    ) : (
-                      <div className="flex flex-col gap-2.5 py-1.5">
-                        <div className="h-2 bg-[#EBEEF1] rounded-lg w-full" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Cannot section - only show when user has added permissions beyond just dashboard_baseline */}
-                  {selectedPermissions.length > 1 && previewDetails.cannotDo.length > 0 && (
-                    <>
-                      <div className="h-px bg-[#EBEEF1] my-4" />
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <CancelCircleIcon />
-                          <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Cannot</span>
-                        </div>
-                        <ul className="list-disc pl-4 flex flex-col gap-1">
-                          {previewDetails.cannotDo.slice(0, 5).map((item, i) => (
-                            <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] pl-1">{item}</li>
-                          ))}
-                          {previewDetails.cannotDo.length > 5 && (
-                            <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px] pl-1">+{previewDetails.cannotDo.length - 5} more</li>
-                          )}
-                        </ul>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <ModalPermissionsPanel
-                isAssistantOpen={isAssistantOpen}
-                onOpenAssistant={() => setIsAssistantOpen(true)}
-                isGrouped={isGrouped}
-                onGroupedChange={handleGroupToggle}
-                groupBy={groupBy}
-                onGroupByChange={setGroupBy}
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                selectedCount={selectedPermissions.length}
-                totalCount={allPermissions.length}
-                isAlphabetical={isAlphabetical}
-                sortedGroupEntries={sortedGroupEntries}
-                sortPermsInGroup={sortPermsInGroup}
-                getGroupCheckState={getGroupCheckState}
-                toggleGroup={toggleGroup}
-                permissionAccess={permissionAccess}
-                togglePermission={togglePermission}
-                updatePermissionAccess={updatePermissionAccess}
-                pendingAccess={pendingAccess}
-                updatePendingAccess={updatePendingAccess}
-                hasResults={filteredAll.length > 0}
-                layoutVersion={layoutVersion}
-              />
-
-              </div>
-            
-            {/* AI Assistant Drawer - outside the offset background */}
-            <AIAssistantDrawer 
-              isOpen={isAssistantOpen} 
-              onClose={() => setIsAssistantOpen(false)} 
-            />
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-2 px-8 py-6">
-          <button
-            onClick={() => {
-              // Create a preview role with current permissions to test
-              const previewRole: Role = {
-                id: `custom_${Date.now()}`,
-                name: roleName || "New Role",
-                category: "Custom",
-                userCount: 0,
-                permissionAccess: { ...permissionAccess },
-                customDescription: customDescription || undefined,
-              };
-              onTestInSandbox?.(previewRole, {
-                roleName,
-                customDescription,
-                permissionAccess: { ...permissionAccess },
-                selectedBaseRole,
-              });
-            }}
-            className="flex items-center gap-2 px-3 py-1.5 text-[13px] font-medium text-[#353A44] leading-[19px] tracking-[-0.15px] hover:bg-[#F5F6F8] border border-[#D8DEE4] rounded-md transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
-          >
-            <SandboxIcon />
-            Test in sandbox
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-4 py-1.5 bg-[#675DFF] text-white text-[13px] font-semibold leading-[19px] tracking-[-0.15px] rounded-md hover:bg-[#5851DB] transition-colors shadow-[0px_1px_1px_0px_rgba(47,14,99,0.32)]"
-          >
-            Save
-          </button>
-        </div>
+        <CreateRoleContent
+          onSave={(role) => { onSave(role); handleClose(); }}
+          onCancel={handleClose}
+          initialGroupBy={initialGroupBy}
+          onTestInSandbox={onTestInSandbox}
+          initialState={initialState}
+          layoutVersion={layoutVersion}
+          showSandbox={true}
+        />
       </div>
     </div>
   );
@@ -2207,7 +2207,7 @@ function Topbar() {
 }
 
 // Side Navigation Component
-function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void; use14px: boolean; onUse14pxToggle: (v: boolean) => void; searchWhiteBg: boolean; onSearchWhiteBgToggle: (v: boolean) => void; layoutVersion: "v1" | "v2" | "v3" | "v4"; onLayoutVersionChange: (v: "v1" | "v2" | "v3" | "v4") => void } }) {
+function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void; use14px: boolean; onUse14pxToggle: (v: boolean) => void; searchWhiteBg: boolean; onSearchWhiteBgToggle: (v: boolean) => void; singleRoleSelect: boolean; onSingleRoleSelectToggle: (v: boolean) => void; layoutVersion: "v1" | "v2" | "v3" | "v4"; onLayoutVersionChange: (v: "v1" | "v2" | "v3" | "v4") => void } }) {
   const popover = usePopover();
 
   return (
@@ -2286,6 +2286,12 @@ function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boo
                     <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">White search fields</span>
                     <div onClick={(e) => e.stopPropagation()}>
                       <ToggleSwitch checked={protoControls.searchWhiteBg} onChange={protoControls.onSearchWhiteBgToggle} />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => protoControls.onSingleRoleSelectToggle(!protoControls.singleRoleSelect)}>
+                    <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Single role select</span>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <ToggleSwitch checked={protoControls.singleRoleSelect} onChange={protoControls.onSingleRoleSelectToggle} />
                     </div>
                   </div>
                   <div className="h-px bg-[#EBEEF1] my-1" />
@@ -2639,10 +2645,12 @@ function SandboxView({
 // ============================================================
 
 
-function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = "v2" }: {
+function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = "v2", customRoles, setCustomRoles }: {
   sandboxMode: SandboxModeState;
   setSandboxMode: React.Dispatch<React.SetStateAction<SandboxModeState>>;
   layoutVersion?: "v1" | "v2" | "v3" | "v4";
+  customRoles: Role[];
+  setCustomRoles: React.Dispatch<React.SetStateAction<Role[]>>;
 }) {
   const isV2 = layoutVersion === "v2" || layoutVersion === "v3";
   const isV3 = layoutVersion === "v3";
@@ -2657,28 +2665,9 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
   const roleDetailsRef = useRef<HTMLElement>(null);
   const [isRiskExpanded, setIsRiskExpanded] = useState(false);
   
-  // Custom roles state with localStorage persistence
-  const [customRoles, setCustomRoles] = useState<Role[]>([]);
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
-
-  // Load custom roles from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem("customRoles");
-    if (saved) {
-      try {
-        setCustomRoles(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse custom roles:", e);
-      }
-    }
-  }, []);
-
-  // Save custom roles to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem("customRoles", JSON.stringify(customRoles));
-  }, [customRoles]);
 
   // Combined role categories including custom roles
   const allCategories = customRoles.length > 0
@@ -3240,7 +3229,7 @@ const MOCK_ACCOUNTS = [
 const ACCOUNT_GROUPS = ["All", ...Array.from(new Set(MOCK_ACCOUNTS.map(a => a.group)))];
 const ALL_ACCOUNT_IDS = new Set(MOCK_ACCOUNTS.map(a => a.id));
 
-function AddMemberModal({ isOpen, onClose, layoutVersion = "v1" }: { isOpen: boolean; onClose: () => void; layoutVersion?: "v1" | "v2" | "v3" | "v4" }) {
+function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [], singleRoleSelect = false, setCustomRoles }: { isOpen: boolean; onClose: () => void; layoutVersion?: "v1" | "v2" | "v3" | "v4"; customRoles?: Role[]; singleRoleSelect?: boolean; setCustomRoles?: React.Dispatch<React.SetStateAction<Role[]>> }) {
   const [step, setStep] = useState(1);
   const [emails, setEmails] = useState<string[]>([]);
   const [currentInput, setCurrentInput] = useState("");
@@ -3251,6 +3240,7 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1" }: { isOpen: boo
   const [accountSearch, setAccountSearch] = useState("");
   const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set());
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [creatingRole, setCreatingRole] = useState(false);
   const [showPermissions, setShowPermissions] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [emailVisibleCount, setEmailVisibleCount] = useState(0);
@@ -3268,7 +3258,7 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1" }: { isOpen: boo
     if (isOpen) {
       setStep(1); setEmails([]); setCurrentInput(""); setSelectedAccount("all");
       setSelectedAccounts(new Set(ALL_ACCOUNT_IDS)); setShowAccountPicker(false); setAccountGroupFilter("All"); setAccountSearch("");
-      setSelectedRoles(new Set()); setExpandedCategories(new Set()); setShowPermissions(false); setIsClosing(false);
+      setSelectedRoles(new Set()); setExpandedCategories(new Set()); setShowPermissions(false); setIsClosing(false); setCreatingRole(false);
       setEmailVisibleCount(0); setPermClosingPhase(null); setRolesMaxWidth(null);
       // Focus the email input after the modal animation settles
       requestAnimationFrame(() => { inputRef.current?.focus(); });
@@ -3419,18 +3409,28 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1" }: { isOpen: boo
   };
 
   const toggleRole = (roleId: string) => {
-    setSelectedRoles(prev => { const next = new Set(prev); if (next.has(roleId)) next.delete(roleId); else next.add(roleId); return next; });
+    if (singleRoleSelect) {
+      // Single select: replace selection (or deselect if already selected)
+      setSelectedRoles(prev => prev.has(roleId) ? new Set() : new Set([roleId]));
+    } else {
+      setSelectedRoles(prev => { const next = new Set(prev); if (next.has(roleId)) next.delete(roleId); else next.add(roleId); return next; });
+    }
   };
 
   const toggleCategory = (catName: string) => {
     setExpandedCategories(prev => { const next = new Set(prev); if (next.has(catName)) next.delete(catName); else next.add(catName); return next; });
   };
 
-  const selectedRoleNames = roleCategories.flatMap(cat => cat.roles).filter(r => selectedRoles.has(r.id)).map(r => r.name);
+  // Combined role categories including custom roles
+  const allCategories = customRoles.length > 0
+    ? [...roleCategories, { name: "Custom", roles: customRoles }]
+    : roleCategories;
+
+  const selectedRoleNames = allCategories.flatMap(cat => cat.roles).filter(r => selectedRoles.has(r.id)).map(r => r.name);
 
   const categoryDisplayNames: Record<string, string> = {
     "Admin": "Admin", "Developer": "Developer", "Payments": "Payments", "Support": "Support",
-    "Specialists": "Connect", "View only": "View only", "Sandbox": "Sandbox",
+    "Specialists": "Connect", "View only": "View only", "Sandbox": "Sandbox", "Custom": "Custom",
   };
 
   // Account picker derived data
@@ -3480,16 +3480,18 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1" }: { isOpen: boo
               : 'width 500ms cubic-bezier(0.4,0,0.2,1), max-width 500ms cubic-bezier(0.4,0,0.2,1), height 200ms ease-in-out',
           } : {}),
           ...(step === 3
-            ? {
-                width: showPermissions ? '100%' : 640,
-                maxWidth: showPermissions ? 1280 : 640,
-                maxHeight: '100%',
-                ...(showPermissions || isClosingWidth
-                  ? { height: '100%' }
-                  : step3ContentHeight != null
-                    ? { height: step3ContentHeight }
-                    : {}),
-              }
+            ? creatingRole
+              ? { width: '100%', maxWidth: '100%', maxHeight: '100%', height: '100%' }
+              : {
+                  width: showPermissions ? '100%' : 640,
+                  maxWidth: showPermissions ? 1280 : 640,
+                  maxHeight: '100%',
+                  ...(showPermissions || isClosingWidth
+                    ? { height: '100%' }
+                    : step3ContentHeight != null
+                      ? { height: step3ContentHeight }
+                      : {}),
+                }
             : { width: 640, ...(step === 4 ? { maxHeight: '100%' } : { height: 480 }) }),
         }}
       >
@@ -3498,7 +3500,7 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1" }: { isOpen: boo
             <X size={16} />
           </button>
         </div>
-        <div className={`${step === 3 && !showPermissions && !isClosingWidth ? 'min-h-0' : 'flex-1 min-h-0'} overflow-hidden flex flex-col`}>
+        <div className={`${step === 3 && !showPermissions && !isClosingWidth && !creatingRole ? 'min-h-0' : 'flex-1 min-h-0'} overflow-hidden flex flex-col`}>
           {step === 1 && (
             <div className="flex-1 overflow-y-auto flex flex-col gap-8 p-8 pt-0">
               <div className="flex flex-col gap-1">
@@ -3673,10 +3675,10 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1" }: { isOpen: boo
               </div>
             );
           })()}
-          {step === 3 && (
+          {step === 3 && !creatingRole && (
             <div className={`flex flex-col gap-4 px-8 min-h-0 overflow-hidden ${showPermissions || isClosingWidth ? 'flex-1' : ''}`}>
               <div className="flex-shrink-0">
-                <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{stepLabels[step]}</h2>
+                <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{singleRoleSelect ? 'Select a role' : stepLabels[step]}</h2>
               </div>
               <div className={`flex gap-6 min-h-0 overflow-hidden ${showPermissions || isClosingWidth ? 'flex-1' : ''}`}>
                 <div className="flex-1 min-w-0 flex flex-col gap-2 min-h-0 pt-4" style={rolesMaxWidth != null ? { maxWidth: rolesMaxWidth } : undefined}>
@@ -3691,16 +3693,18 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1" }: { isOpen: boo
                   </div>
                   <div className="min-h-0 overflow-y-auto">
                     <div ref={step3ContentRef} className="flex flex-col">
-                      {roleCategories.map((cat) => {
+                      {allCategories.map((cat) => {
                         const isCatExpanded = expandedCategories.has(cat.name);
                         const selectedCount = cat.roles.filter(r => selectedRoles.has(r.id)).length;
                         const displayName = categoryDisplayNames[cat.name] || cat.name;
                         return (
                           <div key={cat.name}>
-                            <button onClick={() => toggleCategory(cat.name)} className="w-full flex items-center gap-2 px-2 py-3 border-b border-[#EBEEF1] text-left">
+                            <button onClick={() => toggleCategory(cat.name)} className="w-full flex items-center gap-2 px-2 py-3 border-b border-[#EBEEF1] text-left hover:bg-[#F5F6F8] transition-colors">
                               <span className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">{displayName}</span>
                               <div className="flex-1 flex items-center">
-                                <span className="bg-[#F5F6F8] rounded-full min-w-[16px] px-1 text-[10px] font-semibold text-[#596171] leading-4 text-center">{selectedCount} of {cat.roles.length}</span>
+                                {!singleRoleSelect && (
+                                  <span className="bg-[#F5F6F8] rounded-full min-w-[16px] px-1 text-[10px] font-semibold text-[#596171] leading-4 text-center">{selectedCount} of {cat.roles.length}</span>
+                                )}
                               </div>
                               <ChevronDown size={14} className={`text-[#474E5A] transition-transform duration-200 flex-shrink-0 ${isCatExpanded ? '' : '-rotate-90'}`} />
                             </button>
@@ -3711,10 +3715,19 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1" }: { isOpen: boo
                                     const isSelected = selectedRoles.has(role.id);
                                     return (
                                       <div key={role.id} onClick={() => toggleRole(role.id)} className={`relative flex items-start gap-2 py-3 pl-6 pr-2 cursor-pointer ${roleIdx > 0 ? 'border-t border-[#EBEEF1]' : ''} before:absolute before:inset-0 before:transition-colors hover:before:bg-[#F5F6F8]`}>
-                                        <div
-                                          className={`relative z-10 mt-[3px] w-[14px] h-[14px] rounded-[4px] border flex-shrink-0 flex items-center justify-center transition-colors ${isSelected ? 'bg-[#675DFF] border-[#675DFF] shadow-[0_1px_1px_rgba(10,33,86,0.16)]' : 'border-[#D8DEE4] bg-white shadow-[0_1px_1px_rgba(33,37,44,0.16)]'}`}>
-                                          {isSelected && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M8.5 2.5L3.75 7.5L1.5 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                                        </div>
+                                        {singleRoleSelect ? (
+                                          /* Radio button for single-select */
+                                          <div
+                                            className={`relative z-10 mt-[3px] w-[14px] h-[14px] rounded-full border flex-shrink-0 flex items-center justify-center transition-colors ${isSelected ? 'border-[#675DFF] bg-white shadow-[0_1px_1px_rgba(10,33,86,0.16)]' : 'border-[#D8DEE4] bg-white shadow-[0_1px_1px_rgba(33,37,44,0.16)]'}`}>
+                                            {isSelected && <div className="w-[8px] h-[8px] rounded-full bg-[#675DFF]" />}
+                                          </div>
+                                        ) : (
+                                          /* Checkbox for multi-select */
+                                          <div
+                                            className={`relative z-10 mt-[3px] w-[14px] h-[14px] rounded-[4px] border flex-shrink-0 flex items-center justify-center transition-colors ${isSelected ? 'bg-[#675DFF] border-[#675DFF] shadow-[0_1px_1px_rgba(10,33,86,0.16)]' : 'border-[#D8DEE4] bg-white shadow-[0_1px_1px_rgba(33,37,44,0.16)]'}`}>
+                                            {isSelected && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M8.5 2.5L3.75 7.5L1.5 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                          </div>
+                                        )}
                                         <div className="relative z-10 flex-1 min-w-0">
                                           <p className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]">{role.name}</p>
                                           {role.details?.description && (
@@ -3730,6 +3743,16 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1" }: { isOpen: boo
                           </div>
                         );
                       })}
+                      {/* Create custom role option (single-select only) */}
+                      {singleRoleSelect && (
+                        <button
+                          onClick={() => setCreatingRole(true)}
+                          className="w-full flex items-center gap-2 px-2 py-3 border-t border-[#EBEEF1] text-left hover:bg-[#F5F6F8] transition-colors"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0"><path d="M6 1V11M1 6H11" stroke="#635BFF" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                          <span className="text-[14px] font-semibold text-[#635BFF] leading-5 tracking-[-0.15px]">Create custom role</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -3739,10 +3762,24 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1" }: { isOpen: boo
                     invertColors={true}
                     className="min-h-0 flex flex-col gap-4 p-4 bg-[#F5F6F8] rounded-[8px] overflow-hidden h-full"
                     layoutVersion={layoutVersion}
+                    customRoles={customRoles}
                   />
                 </div>
               </div>
             </div>
+          )}
+          {step === 3 && creatingRole && (
+            <CreateRoleContent
+              onSave={(newRole) => {
+                setCustomRoles?.(prev => [...prev, newRole]);
+                setSelectedRoles(new Set([newRole.id]));
+                setCreatingRole(false);
+              }}
+              onCancel={() => setCreatingRole(false)}
+              initialGroupBy="productCategory"
+              layoutVersion={layoutVersion}
+              showSandbox={false}
+            />
           )}
           {step === 4 && (
             <div className="flex-1 overflow-y-auto flex flex-col gap-4 px-8 pb-0">
@@ -3777,8 +3814,8 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1" }: { isOpen: boo
                 </div>
                 <div className="flex items-center gap-8 bg-[#F5F6F8] p-4">
                   <div className="flex-1 min-w-0 flex flex-col gap-1">
-                    <p className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">Roles</p>
-                    <p className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{selectedRoleNames.length > 0 ? selectedRoleNames.join(", ") : "No roles selected"}</p>
+                    <p className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">{singleRoleSelect ? 'Role' : 'Roles'}</p>
+                    <p className="text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{selectedRoleNames.length > 0 ? selectedRoleNames.join(", ") : singleRoleSelect ? "No role selected" : "No roles selected"}</p>
                   </div>
                   <button onClick={() => setStep(3)} className="w-7 h-7 flex items-center justify-center flex-shrink-0 rounded-md hover:bg-[#EBEEF1] transition-colors">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path fillRule="evenodd" clipRule="evenodd" d="M0.975001 7.87468C0.991113 7.63299 1.0944 7.40537 1.26568 7.23409L7.43933 1.06043C8.02512 0.474647 8.97487 0.474647 9.56065 1.06043L10.9393 2.43911C11.5251 3.0249 11.5251 3.97465 10.9393 4.56043L4.76568 10.7341C4.5944 10.9054 4.36678 11.0087 4.12509 11.0248L1.03508 11.2308C0.884155 11.2408 0.758938 11.1156 0.769 10.9647L0.975001 7.87468ZM2.3607 9.63906L2.45918 8.16191L6.53031 4.09078L7.90899 5.46946L3.83786 9.54059L2.3607 9.63906ZM8.96965 4.4088L9.87867 3.49977L8.49999 2.12109L7.59097 3.03012L8.96965 4.4088Z" fill="#596171"/></svg>
@@ -3788,22 +3825,24 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1" }: { isOpen: boo
             </div>
           )}
         </div>
-        <div className="flex items-center justify-end gap-[10px] py-6 px-8 flex-shrink-0">
-          {(step > 1 || showAccountPicker) && (
-            <button onClick={() => {
-              if (step === 2 && showAccountPicker) { setShowAccountPicker(false); }
-              else if (step === 3 && selectedAccount === "selected") { setStep(2); setShowAccountPicker(true); }
-              else { setStep(step - 1); }
-            }} className="px-4 py-2 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] bg-white border border-[#D8DEE4] rounded-[6px] hover:bg-[#F5F6F8] transition-colors shadow-[0_1px_1px_rgba(33,37,44,0.16)]">Back</button>
-          )}
-          {step < 4
-            ? <button onClick={() => {
-                if (step === 2 && !showAccountPicker && selectedAccount === "selected") { setShowAccountPicker(true); }
-                else { setStep(step + 1); if (step === 2) setShowAccountPicker(false); }
-              }} className="px-4 py-2 text-[14px] font-semibold text-white leading-5 tracking-[-0.15px] bg-[#635BFF] rounded-[6px] hover:bg-[#5851DF] transition-colors shadow-[0_1px_1px_rgba(47,14,99,0.32)]">Next</button>
-            : <button onClick={handleClose} className="px-4 py-2 text-[14px] font-semibold text-white leading-5 tracking-[-0.15px] bg-[#635BFF] rounded-[6px] hover:bg-[#5851DF] transition-colors shadow-[0_1px_1px_rgba(47,14,99,0.32)]">Send invites</button>
-          }
-        </div>
+        {!(step === 3 && creatingRole) && (
+          <div className="flex items-center justify-end gap-[10px] py-6 px-8 flex-shrink-0">
+            {(step > 1 || showAccountPicker) && (
+              <button onClick={() => {
+                if (step === 2 && showAccountPicker) { setShowAccountPicker(false); }
+                else if (step === 3 && selectedAccount === "selected") { setStep(2); setShowAccountPicker(true); }
+                else { setStep(step - 1); }
+              }} className="px-4 py-2 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] bg-white border border-[#D8DEE4] rounded-[6px] hover:bg-[#F5F6F8] transition-colors shadow-[0_1px_1px_rgba(33,37,44,0.16)]">Back</button>
+            )}
+            {step < 4
+              ? <button onClick={() => {
+                  if (step === 2 && !showAccountPicker && selectedAccount === "selected") { setShowAccountPicker(true); }
+                  else { setStep(step + 1); if (step === 2) setShowAccountPicker(false); }
+                }} className="px-4 py-2 text-[14px] font-semibold text-white leading-5 tracking-[-0.15px] bg-[#635BFF] rounded-[6px] hover:bg-[#5851DF] transition-colors shadow-[0_1px_1px_rgba(47,14,99,0.32)]">Next</button>
+              : <button onClick={handleClose} className="px-4 py-2 text-[14px] font-semibold text-white leading-5 tracking-[-0.15px] bg-[#635BFF] rounded-[6px] hover:bg-[#5851DF] transition-colors shadow-[0_1px_1px_rgba(47,14,99,0.32)]">Send invites</button>
+            }
+          </div>
+        )}
       </div>
     </div>
   );
@@ -3886,6 +3925,28 @@ function TeamAndSecurityPageInner() {
   const [searchWhiteBg, setSearchWhiteBg] = useState(true);
   const [layoutVersion, setLayoutVersion] = useState<"v1" | "v2" | "v3" | "v4">("v3");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Custom roles state with localStorage persistence (lifted to page level for sharing with AddMemberModal)
+  const [customRoles, setCustomRoles] = useState<Role[]>([]);
+
+  // Load custom roles from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("customRoles");
+    if (saved) {
+      try {
+        setCustomRoles(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse custom roles:", e);
+      }
+    }
+  }, []);
+
+  // Save custom roles to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("customRoles", JSON.stringify(customRoles));
+  }, [customRoles]);
+
+  const [singleRoleSelect, setSingleRoleSelect] = useState(false);
   
   // Sandbox mode state - lifted to page level for full-screen takeover
   const [sandboxMode, setSandboxMode] = useState<SandboxModeState>({
@@ -3918,7 +3979,7 @@ function TeamAndSecurityPageInner() {
 
   return (
     <div className={`h-screen flex bg-white ${use14px ? 'use-14px' : ''} ${searchWhiteBg ? 'search-white-bg' : ''}`}>
-      <SideNav protoControls={{ teamSecurityEnabled, onTeamSecurityToggle: setTeamSecurityEnabled, use14px, onUse14pxToggle: setUse14px, searchWhiteBg, onSearchWhiteBgToggle: setSearchWhiteBg, layoutVersion, onLayoutVersionChange: setLayoutVersion }} />
+      <SideNav protoControls={{ teamSecurityEnabled, onTeamSecurityToggle: setTeamSecurityEnabled, use14px, onUse14pxToggle: setUse14px, searchWhiteBg, onSearchWhiteBgToggle: setSearchWhiteBg, singleRoleSelect, onSingleRoleSelectToggle: setSingleRoleSelect, layoutVersion, onLayoutVersionChange: setLayoutVersion }} />
 
       <div className="flex-1 flex flex-col px-8 pb-6 overflow-hidden">
         <Topbar />
@@ -3952,14 +4013,14 @@ function TeamAndSecurityPageInner() {
 
           {/* Tab content */}
           {activeTab === "roles" ? (
-            <RolesPermissionsContent sandboxMode={sandboxMode} setSandboxMode={setSandboxMode} layoutVersion={layoutVersion} />
+            <RolesPermissionsContent sandboxMode={sandboxMode} setSandboxMode={setSandboxMode} layoutVersion={layoutVersion} customRoles={customRoles} setCustomRoles={setCustomRoles} />
           ) : (
             <TeamContent teamSecurityEnabled={teamSecurityEnabled} onAddMember={() => setIsModalOpen(true)} />
           )}
         </div>
       </div>
 
-      <AddMemberModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} layoutVersion={layoutVersion} />
+      <AddMemberModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} layoutVersion={layoutVersion} customRoles={customRoles} singleRoleSelect={singleRoleSelect} setCustomRoles={setCustomRoles} />
     </div>
   );
 }
