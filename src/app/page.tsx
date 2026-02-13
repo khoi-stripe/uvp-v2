@@ -878,9 +878,9 @@ function ModalPermissionsPanel({
           ) : (
             /* Ungrouped view: flat list with optional section headers */
             sortedGroupEntries.map(([group, perms]) => (
-              <div key={group || "all"} className={isAlphabetical ? "" : "mb-3"}>
+              <div key={group || "all"} className={(isV3 || isV4) ? "flex flex-col" : (isAlphabetical ? "" : "mb-3")}>
                 {!isAlphabetical && group && (
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `py-3 px-2 border-b ${isV4 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : 'mb-2'}`}>
                     <Checkbox
                       checked={getGroupCheckState(perms) === "all"}
                       indeterminate={getGroupCheckState(perms) === "some"}
@@ -889,32 +889,36 @@ function ModalPermissionsPanel({
                     <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                       {group}
                     </span>
-                    <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center">
+                    <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${(isV3 || isV4) ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
                       {perms.filter(p => p.apiName in permissionAccess).length} of {perms.length}
                     </span>
                   </div>
                 )}
-                {sortPermsInGroup(perms).map(perm => {
-                  const isChecked = perm.apiName in permissionAccess;
-                  return (
-                    <div key={perm.apiName} className="mb-2">
-                      <PermissionCard
-                        permission={perm}
-                        showCheckbox
-                        isChecked={isChecked}
-                        onToggle={() => togglePermission(perm.apiName)}
-                        currentGroup={group}
-                        groupBy={groupBy}
-                        disabled={perm.apiName === REQUIRED_PERMISSION}
-                        currentAccess={isChecked ? permissionAccess[perm.apiName] : undefined}
-                        onAccessChange={isChecked ? (access) => updatePermissionAccess(perm.apiName, access) : undefined}
-                        pendingAccess={!isChecked ? pendingAccess[perm.apiName] : undefined}
-                        onPendingAccessChange={!isChecked ? (access) => updatePendingAccess(perm.apiName, access) : undefined}
-                        invertColors={isV2}
-                      />
-                    </div>
-                  );
-                })}
+                <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-4 ${isV4 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : ''}>
+                  {sortPermsInGroup(perms).map(perm => {
+                    const isChecked = perm.apiName in permissionAccess;
+                    return (
+                      <div key={perm.apiName} className={(isV3 || isV4) ? '' : 'mb-2'}>
+                        <PermissionCard
+                          permission={perm}
+                          showCheckbox
+                          isChecked={isChecked}
+                          onToggle={() => togglePermission(perm.apiName)}
+                          currentGroup={group}
+                          groupBy={groupBy}
+                          disabled={perm.apiName === REQUIRED_PERMISSION}
+                          currentAccess={isChecked ? permissionAccess[perm.apiName] : undefined}
+                          onAccessChange={isChecked ? (access) => updatePermissionAccess(perm.apiName, access) : undefined}
+                          pendingAccess={!isChecked ? pendingAccess[perm.apiName] : undefined}
+                          onPendingAccessChange={!isChecked ? (access) => updatePendingAccess(perm.apiName, access) : undefined}
+                          invertColors={isV2}
+                          useDividers={isV3 || isV4}
+                          lightDividers={isV4}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             ))
           )}
