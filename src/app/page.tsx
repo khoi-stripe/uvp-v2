@@ -4080,7 +4080,7 @@ function TeamAndSecurityPageInner() {
     if (!singleRoleSelect) flags += "S";
     if (flags) params.set("p", flags);
     const qs = params.toString();
-    router.replace(qs ? `?${qs}` : window.location.pathname, { scroll: false });
+    router.replace(qs ? `?${qs}` : '/', { scroll: false });
   }, [activeTab, layoutVersion, teamSecurityEnabled, use14px, searchWhiteBg, singleRoleSelect, router]);
   
   // Sandbox mode state - lifted to page level for full-screen takeover
