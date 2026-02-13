@@ -335,6 +335,7 @@ export function PermissionCard({
   disabled = false,
   insideGroup = false,
   isInactive = false,
+  invertColors = false,
 }: {
   permission: Permission;
   showCheckbox?: boolean;
@@ -353,6 +354,7 @@ export function PermissionCard({
   disabled?: boolean;
   insideGroup?: boolean;
   isInactive?: boolean;
+  invertColors?: boolean;
 }) {
   const { label: defaultLabel, hasWrite: defaultHasWrite } = getAccessLabel(permission.actions);
   const finalLabel = isInactive ? undefined : (accessLabel ?? defaultLabel);
@@ -394,11 +396,14 @@ export function PermissionCard({
     </>
   );
 
+  const cardBg = invertColors ? 'bg-white' : 'bg-[#F5F6F8]';
+  const cardHover = invertColors ? 'hover:before:bg-[#F5F6F8]' : 'hover:before:bg-[#EBEEF1]';
+
   if (showCheckbox && onToggle) {
     return (
       <div
         onClick={() => !checkboxDisabled && onToggle()}
-        className={`relative flex items-start gap-4 p-4 bg-[#F5F6F8] transition-all duration-150 before:absolute before:inset-0 before:rounded before:transition-colors ${checkboxDisabled ? 'cursor-default' : 'hover:before:bg-[#EBEEF1] cursor-pointer'} ${isExiting ? 'animate-scale-out' : ''}`}
+        className={`relative flex items-start gap-4 p-4 ${cardBg} transition-all duration-150 before:absolute before:inset-0 before:rounded before:transition-colors ${checkboxDisabled ? 'cursor-default' : `${cardHover} cursor-pointer`} ${isExiting ? 'animate-scale-out' : ''}`}
       >
         <div className="relative z-10 flex items-start gap-4 w-full">{cardContent}</div>
       </div>
@@ -406,7 +411,7 @@ export function PermissionCard({
   }
 
   return (
-    <div className={`flex items-start transition-colors ${insideGroup ? "gap-2 py-3 px-2" : "gap-4 p-4 bg-[#F5F6F8] rounded"}`}>
+    <div className={`flex items-start transition-colors ${insideGroup ? "gap-2 py-3 px-2" : `gap-4 p-4 ${cardBg} rounded`}`}>
       {cardContent}
     </div>
   );
@@ -421,6 +426,7 @@ export function PermissionItem({
   customAccess,
   insideGroup = false,
   isInactive = false,
+  invertColors = false,
 }: {
   permission: Permission;
   roleId: string;
@@ -430,6 +436,7 @@ export function PermissionItem({
   customAccess?: string;
   insideGroup?: boolean;
   isInactive?: boolean;
+  invertColors?: boolean;
 }) {
   const access = permission.roleAccess[roleId];
   const isCustomRole = roleId.startsWith("custom_");
@@ -458,6 +465,7 @@ export function PermissionItem({
       hasWrite={isInactive ? false : hasWrite}
       insideGroup={insideGroup}
       isInactive={isInactive}
+      invertColors={invertColors}
     />
   );
 }
@@ -676,7 +684,7 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
         </div>
       )}
       {hasRoles && (
-        <div className="flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-transparent form-focus-ring">
+        <div className="search-field flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-transparent form-focus-ring">
           <SearchIcon className="text-[#474E5A]" />
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search"
             className="flex-1 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] bg-transparent outline-none placeholder:text-[#353A44] focus:placeholder:text-[#818DA0]" />
@@ -713,7 +721,7 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
                   {showAll ? `${alphabeticalPermissions.filter(p => activeApiNames.has(p.apiName)).length} of ${alphabeticalPermissions.length}` : alphabeticalPermissions.length}
                 </span>
               </div>
-              {alphabeticalPermissions.map((p) => <PermissionItem key={p.apiName} permission={p} roleId={roleIds[0] || ""} showTaskCategories={true} isInactive={showAll ? !activeApiNames.has(p.apiName) : false} />)}
+              {alphabeticalPermissions.map((p) => <PermissionItem key={p.apiName} permission={p} roleId={roleIds[0] || ""} showTaskCategories={true} isInactive={showAll ? !activeApiNames.has(p.apiName) : false} invertColors={invertColors} />)}
             </div>
           )}
           {!isGrouped && groupedPermissions && Object.entries(groupedPermissions).sort(([a], [b]) => a.localeCompare(b)).map(([groupName, perms]) => (
@@ -725,7 +733,7 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
                 </span>
               </div>
               <div className="flex flex-col gap-2">
-                {perms.map((p) => <PermissionItem key={p.apiName} permission={p} roleId={roleIds[0] || ""} showTaskCategories={false} currentGroup={groupName} groupBy={groupBy} isInactive={showAll ? !activeApiNames.has(p.apiName) : false} />)}
+                {perms.map((p) => <PermissionItem key={p.apiName} permission={p} roleId={roleIds[0] || ""} showTaskCategories={false} currentGroup={groupName} groupBy={groupBy} isInactive={showAll ? !activeApiNames.has(p.apiName) : false} invertColors={invertColors} />)}
               </div>
             </div>
           ))}

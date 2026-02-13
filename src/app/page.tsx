@@ -827,7 +827,7 @@ function ModalPermissionsPanel({
       {/* Controls row - full width */}
       <div className="flex items-center gap-2">
         {/* Search field - spans full width */}
-        <div className="flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-transparent form-focus-ring">
+        <div className="search-field flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-transparent form-focus-ring">
           <SearchIcon className="text-[#474E5A]" />
           <input
             type="text"
@@ -910,6 +910,7 @@ function ModalPermissionsPanel({
                         onAccessChange={isChecked ? (access) => updatePermissionAccess(perm.apiName, access) : undefined}
                         pendingAccess={!isChecked ? pendingAccess[perm.apiName] : undefined}
                         onPendingAccessChange={!isChecked ? (access) => updatePendingAccess(perm.apiName, access) : undefined}
+                        invertColors={isV2}
                       />
                     </div>
                   );
@@ -2202,7 +2203,7 @@ function Topbar() {
 }
 
 // Side Navigation Component
-function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void; use14px: boolean; onUse14pxToggle: (v: boolean) => void; layoutVersion: "v1" | "v2" | "v3" | "v4"; onLayoutVersionChange: (v: "v1" | "v2" | "v3" | "v4") => void } }) {
+function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void; use14px: boolean; onUse14pxToggle: (v: boolean) => void; searchWhiteBg: boolean; onSearchWhiteBgToggle: (v: boolean) => void; layoutVersion: "v1" | "v2" | "v3" | "v4"; onLayoutVersionChange: (v: "v1" | "v2" | "v3" | "v4") => void } }) {
   const popover = usePopover();
 
   return (
@@ -2275,6 +2276,12 @@ function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boo
                     <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Use 14px type</span>
                     <div onClick={(e) => e.stopPropagation()}>
                       <ToggleSwitch checked={protoControls.use14px} onChange={protoControls.onUse14pxToggle} />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => protoControls.onSearchWhiteBgToggle(!protoControls.searchWhiteBg)}>
+                    <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">White search fields</span>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <ToggleSwitch checked={protoControls.searchWhiteBg} onChange={protoControls.onSearchWhiteBgToggle} />
                     </div>
                   </div>
                   <div className="h-px bg-[#EBEEF1] my-1" />
@@ -2993,7 +3000,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
             {/* Controls */}
             <div className="flex items-center gap-2">
               {/* Search field */}
-              <div className="flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-transparent form-focus-ring">
+              <div className="search-field flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-transparent form-focus-ring">
                 <SearchIcon className="text-[#474E5A]" />
                 <input
                   type="text"
@@ -3074,6 +3081,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                       showTaskCategories={true}
                       customAccess={selectedRole.permissionAccess?.[permission.apiName]}
                       isInactive={showAll ? !activeApiNames.has(permission.apiName) : false}
+                      invertColors={isV2}
                     />
                   ))}
                 </div>
@@ -3112,6 +3120,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                           groupBy={groupBy}
                           customAccess={selectedRole.permissionAccess?.[permission.apiName]}
                           isInactive={showAll ? !activeApiNames.has(permission.apiName) : false}
+                          invertColors={isV2}
                         />
                       ))}
                     </div>
@@ -3864,6 +3873,7 @@ function TeamAndSecurityPageInner() {
   }, [router]);
   const [teamSecurityEnabled, setTeamSecurityEnabled] = useState(false);
   const [use14px, setUse14px] = useState(false);
+  const [searchWhiteBg, setSearchWhiteBg] = useState(false);
   const [layoutVersion, setLayoutVersion] = useState<"v1" | "v2" | "v3" | "v4">("v3");
   const [isModalOpen, setIsModalOpen] = useState(false);
   
@@ -3897,8 +3907,8 @@ function TeamAndSecurityPageInner() {
   }
 
   return (
-    <div className={`h-screen flex bg-white ${use14px ? 'use-14px' : ''}`}>
-      <SideNav protoControls={{ teamSecurityEnabled, onTeamSecurityToggle: setTeamSecurityEnabled, use14px, onUse14pxToggle: setUse14px, layoutVersion, onLayoutVersionChange: setLayoutVersion }} />
+    <div className={`h-screen flex bg-white ${use14px ? 'use-14px' : ''} ${searchWhiteBg ? 'search-white-bg' : ''}`}>
+      <SideNav protoControls={{ teamSecurityEnabled, onTeamSecurityToggle: setTeamSecurityEnabled, use14px, onUse14pxToggle: setUse14px, searchWhiteBg, onSearchWhiteBgToggle: setSearchWhiteBg, layoutVersion, onLayoutVersionChange: setLayoutVersion }} />
 
       <div className="flex-1 flex flex-col px-8 pb-6 overflow-hidden">
         <Topbar />
