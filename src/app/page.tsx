@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from "react";
 import { ChevronDown, MoreHorizontal, Search, X } from "lucide-react";
 import { DrawerPermissionsPanel as SharedDrawerPermissionsPanel, ToggleSwitch as SharedToggleSwitch } from "@/components/shared";
 
@@ -4169,13 +4169,19 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
   const inputRef = useRef<HTMLInputElement>(null);
   const accountSearchRef = useRef<HTMLInputElement>(null);
   const emailReviewRef = useRef<HTMLParagraphElement>(null);
+  const step3ContentRef = useRef<HTMLDivElement>(null);
+  const step3ModalRef = useRef<HTMLDivElement>(null);
+  const [step3ContentHeight, setStep3ContentHeight] = useState<number | null>(null);
+  const prevShowPermRef = useRef(showPermissions);
+  const [permClosingPhase, setPermClosingPhase] = useState<'width' | null>(null);
+  const [rolesMaxWidth, setRolesMaxWidth] = useState<number | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setStep(1); setEmails([]); setCurrentInput(""); setSelectedAccount("all");
       setSelectedAccounts(new Set(ALL_ACCOUNT_IDS)); setShowAccountPicker(false); setAccountGroupFilter("All"); setAccountSearch("");
       setSelectedRoles(new Set()); setExpandedCategories(new Set()); setShowPermissions(false); setIsClosing(false);
-      setEmailVisibleCount(0);
+      setEmailVisibleCount(0); setPermClosingPhase(null); setRolesMaxWidth(null);
       // Focus the email input after the modal animation settles
       requestAnimationFrame(() => { inputRef.current?.focus(); });
     }
@@ -4212,6 +4218,85 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
     if (emailVisibleCount >= emails.length) return emails.join(", ");
     return emails.slice(0, emailVisibleCount).join(", ") + ` +${emails.length - emailVisibleCount} more`;
   }, [emails, emailVisibleCount]);
+
+  // Detect permissions closing on this render (ref has previous value, updated in effect below)
+  const justClosedPerm = prevShowPermRef.current && !showPermissions && step === 3;
+  const isClosingWidth = permClosingPhase === 'width' || justClosedPerm;
+
+  // Handle permissions closing: capture roles column width and start the width-first phase.
+  useLayoutEffect(() => {
+    if (prevShowPermRef.current && !showPermissions && step === 3) {
+      // Navigate from role list ref → scroll container → roles column
+      const rolesCol = step3ContentRef.current?.parentElement?.parentElement;
+      if (rolesCol) {
+        setRolesMaxWidth(rolesCol.offsetWidth);
+      }
+      setPermClosingPhase('width');
+    }
+    prevShowPermRef.current = showPermissions;
+  }, [step, showPermissions]);
+
+  // End the width phase after the width transition completes (500ms)
+  useEffect(() => {
+    if (permClosingPhase === 'width') {
+      const timer = setTimeout(() => {
+        setPermClosingPhase(null);
+        setRolesMaxWidth(null);
+      }, 520);
+      return () => clearTimeout(timer);
+    }
+  }, [permClosingPhase]);
+
+  // Observe step 3 role list height for dynamic modal sizing.
+  // Measures "chrome height" (close button, title, roles header, info box, footer, gaps)
+  // by temporarily collapsing the scroll container, then target = chrome + roleList.scrollHeight.
+  // useLayoutEffect ensures measurement happens before paint (no flash).
+  useLayoutEffect(() => {
+    if (step !== 3) {
+      setStep3ContentHeight(null);
+      return;
+    }
+    if (showPermissions) {
+      // Keep the existing step3ContentHeight so the modal can smoothly
+      // transition from height:100% back to content height when permissions close.
+      return;
+    }
+    const roleListEl = step3ContentRef.current;
+    const modalEl = step3ModalRef.current;
+    if (!roleListEl || !modalEl) return;
+    const scrollContainer = roleListEl.parentElement;
+    if (!scrollContainer) return;
+
+    // Measure chrome by temporarily collapsing the scroll container and the
+    // hidden permissions panel (which can inflate the flex row's cross-axis height).
+    const prevModalHeight = modalEl.style.height;
+    modalEl.style.height = '';
+    scrollContainer.style.maxHeight = '0';
+    scrollContainer.style.overflow = 'hidden';
+    const rolesColumn = scrollContainer.parentElement;
+    const flexRow = rolesColumn?.parentElement;
+    const permissionsPanel = flexRow?.lastElementChild as HTMLElement | null;
+    const prevPermDisplay = permissionsPanel && permissionsPanel !== rolesColumn
+      ? permissionsPanel.style.display : null;
+    if (prevPermDisplay !== null && permissionsPanel) {
+      permissionsPanel.style.display = 'none';
+    }
+    const chromeHeight = modalEl.offsetHeight;
+    if (prevPermDisplay !== null && permissionsPanel) {
+      permissionsPanel.style.display = prevPermDisplay;
+    }
+    scrollContainer.style.maxHeight = '';
+    scrollContainer.style.overflow = '';
+    modalEl.style.height = prevModalHeight;
+
+    const measure = () => {
+      setStep3ContentHeight(chromeHeight + roleListEl.scrollHeight);
+    };
+    const ro = new ResizeObserver(measure);
+    ro.observe(roleListEl);
+    measure();
+    return () => ro.disconnect();
+  }, [step, showPermissions]);
 
   const handleClose = () => {
     setIsClosing(true);
@@ -4298,11 +4383,25 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
     <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
       <div className={`absolute inset-0 bg-[rgba(182,192,205,0.7)] ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`} onClick={handleClose} />
       <div
-        className={`relative bg-white rounded-[12px] shadow-[0px_15px_35px_0px_rgba(48,49,61,0.08),0px_5px_15px_0px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden ${step === 3 ? 'transition-[width,max-width] duration-500' : ''} ${isClosing ? 'animate-modal-out' : 'animate-modal-in'}`}
+        ref={step3ModalRef}
+        className={`relative bg-white rounded-[12px] shadow-[0px_15px_35px_0px_rgba(48,49,61,0.08),0px_5px_15px_0px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden ${isClosing ? 'animate-modal-out' : 'animate-modal-in'}`}
         style={{
-          ...(step === 3 ? { transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' } : {}),
+          ...(step === 3 ? {
+            transition: isClosingWidth
+              ? 'width 500ms cubic-bezier(0.4,0,0.2,1), max-width 500ms cubic-bezier(0.4,0,0.2,1)'
+              : 'width 500ms cubic-bezier(0.4,0,0.2,1), max-width 500ms cubic-bezier(0.4,0,0.2,1), height 200ms ease-in-out',
+          } : {}),
           ...(step === 3
-            ? { width: showPermissions ? '100%' : 640, maxWidth: showPermissions ? 1280 : 640, maxHeight: '100%', ...(showPermissions ? { height: '100%' } : {}) }
+            ? {
+                width: showPermissions ? '100%' : 640,
+                maxWidth: showPermissions ? 1280 : 640,
+                maxHeight: '100%',
+                ...(showPermissions || isClosingWidth
+                  ? { height: '100%' }
+                  : step3ContentHeight != null
+                    ? { height: step3ContentHeight }
+                    : {}),
+              }
             : { width: 640, ...(step === 4 ? { maxHeight: '100%' } : { height: 480 }) }),
         }}
       >
@@ -4311,7 +4410,7 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
             <X size={16} />
           </button>
         </div>
-        <div className={`${step === 3 && !showPermissions ? 'min-h-0' : 'flex-1 min-h-0'} overflow-hidden flex flex-col`}>
+        <div className={`${step === 3 && !showPermissions && !isClosingWidth ? 'min-h-0' : 'flex-1 min-h-0'} overflow-hidden flex flex-col`}>
           {step === 1 && (
             <div className="flex-1 overflow-y-auto flex flex-col gap-8 p-8 pt-0">
               <div className="flex flex-col gap-1">
@@ -4487,12 +4586,12 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
             );
           })()}
           {step === 3 && (
-            <div className={`flex flex-col gap-4 px-8 min-h-0 overflow-hidden ${showPermissions ? 'flex-1' : ''}`}>
+            <div className={`flex flex-col gap-4 px-8 min-h-0 overflow-hidden ${showPermissions || isClosingWidth ? 'flex-1' : ''}`}>
               <div className="flex-shrink-0">
                 <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{stepLabels[step]}</h2>
               </div>
-              <div className={`flex gap-6 min-h-0 overflow-hidden ${showPermissions ? 'flex-1' : ''}`}>
-                <div className="flex-1 min-w-0 flex flex-col gap-2 min-h-0 pt-4">
+              <div className={`flex gap-6 min-h-0 overflow-hidden ${showPermissions || isClosingWidth ? 'flex-1' : ''}`}>
+                <div className="flex-1 min-w-0 flex flex-col gap-2 min-h-0 pt-4" style={rolesMaxWidth != null ? { maxWidth: rolesMaxWidth } : undefined}>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <span className="flex-1 text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Roles</span>
                     <SharedToggleSwitch checked={showPermissions} onChange={setShowPermissions} label="Show permissions" />
@@ -4503,7 +4602,7 @@ function AddMemberModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
                     </p>
                   </div>
                   <div className="min-h-0 overflow-y-auto">
-                    <div className="flex flex-col">
+                    <div ref={step3ContentRef} className="flex flex-col">
                       {roleCategories.map((cat) => {
                         const isCatExpanded = expandedCategories.has(cat.name);
                         const selectedCount = cat.roles.filter(r => selectedRoles.has(r.id)).length;
