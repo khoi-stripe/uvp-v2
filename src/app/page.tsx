@@ -790,7 +790,7 @@ function ModalPermissionsPanel({
   layoutVersion?: "v1" | "v2" | "v3" | "v4";
 }) {
   const REQUIRED_PERMISSION = "dashboard_baseline";
-  const isV2 = layoutVersion === "v2" || layoutVersion === "v3";
+  const isV2 = layoutVersion === "v2";
   const isV3 = layoutVersion === "v3";
   const isV4 = layoutVersion === "v4";
 
@@ -953,7 +953,7 @@ function CustomizeRoleModal({
   layoutVersion?: "v1" | "v2" | "v3" | "v4";
 }) {
   const isEditMode = mode === "edit";
-  const isV2 = layoutVersion === "v2" || layoutVersion === "v3";
+  const isV2 = layoutVersion === "v2";
   const isV3 = layoutVersion === "v3";
   const isV4 = layoutVersion === "v4";
   const allPermissions = getAllPermissions(); // ~50 consolidated permissions

@@ -474,7 +474,7 @@ export function BaseGroupCard({
 
   const cardBg = useDividers ? (invertColors ? "bg-[#F5F6F8]" : "") : (invertColors ? "bg-white" : "bg-[#F5F6F8]");
   const badgeBg = (!useDividers && invertColors) ? "bg-[#F5F6F8]" : "bg-white";
-  const hoverBg = useDividers ? (lightDividers ? 'hover:before:bg-[#F5F6F8]' : 'hover:before:bg-white') : (invertColors ? 'hover:before:bg-[#F5F6F8]' : 'hover:before:bg-white');
+  const hoverBg = useDividers ? (invertColors ? 'hover:before:bg-white' : 'hover:before:bg-[#F5F6F8]') : (invertColors ? 'hover:before:bg-[#F5F6F8]' : 'hover:before:bg-white');
 
   const titleContent = (
     <div className="flex-1 min-w-0">
