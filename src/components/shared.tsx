@@ -103,7 +103,7 @@ export function ControlIcon({ className }: { className?: string }) {
   );
 }
 
-function CheckCircleFilledIcon({ size = 12 }: { size?: number }) {
+export function CheckCircleFilledIcon({ size = 12 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path fillRule="evenodd" clipRule="evenodd" d="M8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16ZM12.2803 6.28027C12.5732 5.98738 12.5732 5.51251 12.2803 5.21961C11.9874 4.92672 11.5125 4.92672 11.2196 5.21961L6.99994 9.43928L5.03027 7.46961C4.73738 7.17672 4.26251 7.17672 3.96961 7.46961C3.67672 7.76251 3.67672 8.23738 3.96961 8.53027L6.46961 11.0303C6.76251 11.3232 7.23738 11.3232 7.53027 11.0303L12.2803 6.28027Z" fill="#474E5A"/>
@@ -266,7 +266,7 @@ export function PermissionCardContent({
   );
 }
 
-function AccessSelector({
+export function AccessSelector({
   value,
   onChange,
   disabled = false,
@@ -473,7 +473,7 @@ export function BaseGroupCard({
   const dividerBorder = lightDividers ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]';
 
   const cardBg = useDividers ? (invertColors ? "bg-[#F5F6F8]" : "") : (invertColors ? "bg-white" : "bg-[#F5F6F8]");
-  const badgeBg = (useDividers || invertColors) ? "bg-[#F5F6F8]" : "bg-white";
+  const badgeBg = (!useDividers && invertColors) ? "bg-[#F5F6F8]" : "bg-white";
   const hoverBg = useDividers ? (lightDividers ? 'hover:before:bg-[#F5F6F8]' : 'hover:before:bg-white') : (invertColors ? 'hover:before:bg-[#F5F6F8]' : 'hover:before:bg-white');
 
   const titleContent = (
@@ -546,7 +546,7 @@ export function PermissionsFilterMenu({
   return (
     <div className="relative flex items-center gap-1">
       <button onClick={() => popover.toggle()} className="flex items-center gap-1 cursor-pointer">
-        <span className="text-[13px] text-[#596171] leading-[19px]">View by: <span className="text-[#635BFF]">{currentLabel}</span></span>
+        <span className="text-[13px] font-semibold text-[#596171] leading-[19px]">View by: <span className="text-[#635BFF]">{currentLabel}</span></span>
         <span className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#EBEEF1] transition-colors">
           <ControlIcon className="w-3 h-3 text-[#474E5A]" />
         </span>
@@ -676,10 +676,10 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
         </div>
       )}
       {hasRoles && (
-        <div className="flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white form-focus-ring">
-          <SearchIcon className="text-[#818DA0]" />
+        <div className="flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-transparent form-focus-ring">
+          <SearchIcon className="text-[#474E5A]" />
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search"
-            className="flex-1 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] bg-transparent outline-none placeholder:text-[#818DA0]" />
+            className="flex-1 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] bg-transparent outline-none placeholder:text-[#353A44] focus:placeholder:text-[#818DA0]" />
           {searchQuery && <button onClick={() => setSearchQuery("")} className="text-[#818DA0] hover:text-[#353A44] transition-colors">×</button>}
         </div>
       )}
