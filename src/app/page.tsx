@@ -3256,6 +3256,8 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
   const accountSearchRef = useRef<HTMLInputElement>(null);
   const emailReviewRef = useRef<HTMLParagraphElement>(null);
   const step3ContentRef = useRef<HTMLDivElement>(null);
+  const rolesScrollRef = useRef<HTMLDivElement>(null);
+  const [rolesShowShadow, setRolesShowShadow] = useState(false);
   const step3ModalRef = useRef<HTMLDivElement>(null);
   const [step3ContentHeight, setStep3ContentHeight] = useState<number | null>(null);
   const prevShowPermRef = useRef(showPermissions);
@@ -3333,6 +3335,7 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
     }
   }, [permClosingPhase]);
 
+  const cleanupRef = useRef<(() => void) | null>(null);
   // Observe step 3 role list height for dynamic modal sizing.
   // Measures "chrome height" (close button, title, roles header, info box, footer, gaps)
   // by temporarily collapsing the scroll container, then target = chrome + roleList.scrollHeight.
@@ -3342,47 +3345,72 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
       setStep3ContentHeight(null);
       return;
     }
-    if (showPermissions) {
+    if (showPermissions || creatingRole) {
       // Keep the existing step3ContentHeight so the modal can smoothly
-      // transition from height:100% back to content height when permissions close.
+      // transition from height:100% back to content height when these close.
       return;
     }
-    const roleListEl = step3ContentRef.current;
-    const modalEl = step3ModalRef.current;
-    if (!roleListEl || !modalEl) return;
-    const scrollContainer = roleListEl.parentElement;
-    if (!scrollContainer) return;
+    // Defer measurement by one frame so the role list DOM is fully mounted
+    const raf = requestAnimationFrame(() => {
+      const roleListEl = step3ContentRef.current;
+      const modalEl = step3ModalRef.current;
+      if (!roleListEl || !modalEl) return;
+      const scrollContainer = roleListEl.parentElement;
+      if (!scrollContainer) return;
 
-    // Measure chrome by temporarily collapsing the scroll container and the
-    // hidden permissions panel (which can inflate the flex row's cross-axis height).
-    const prevModalHeight = modalEl.style.height;
-    modalEl.style.height = '';
-    scrollContainer.style.maxHeight = '0';
-    scrollContainer.style.overflow = 'hidden';
-    const rolesColumn = scrollContainer.parentElement;
-    const flexRow = rolesColumn?.parentElement;
-    const permissionsPanel = flexRow?.lastElementChild as HTMLElement | null;
-    const prevPermDisplay = permissionsPanel && permissionsPanel !== rolesColumn
-      ? permissionsPanel.style.display : null;
-    if (prevPermDisplay !== null && permissionsPanel) {
-      permissionsPanel.style.display = 'none';
-    }
-    const chromeHeight = modalEl.offsetHeight;
-    if (prevPermDisplay !== null && permissionsPanel) {
-      permissionsPanel.style.display = prevPermDisplay;
-    }
-    scrollContainer.style.maxHeight = '';
-    scrollContainer.style.overflow = '';
-    modalEl.style.height = prevModalHeight;
+      // Measure chrome by temporarily collapsing the scroll container and the
+      // hidden permissions panel (which can inflate the flex row's cross-axis height).
+      const prevModalHeight = modalEl.style.height;
+      modalEl.style.height = '';
+      scrollContainer.style.maxHeight = '0';
+      scrollContainer.style.overflow = 'hidden';
+      const rolesColumn = scrollContainer.parentElement;
+      const flexRow = rolesColumn?.parentElement;
+      const permissionsPanel = flexRow?.lastElementChild as HTMLElement | null;
+      const prevPermDisplay = permissionsPanel && permissionsPanel !== rolesColumn
+        ? permissionsPanel.style.display : null;
+      if (prevPermDisplay !== null && permissionsPanel) {
+        permissionsPanel.style.display = 'none';
+      }
+      const chromeHeight = modalEl.offsetHeight;
+      if (prevPermDisplay !== null && permissionsPanel) {
+        permissionsPanel.style.display = prevPermDisplay;
+      }
+      scrollContainer.style.maxHeight = '';
+      scrollContainer.style.overflow = '';
+      modalEl.style.height = prevModalHeight;
 
-    const measure = () => {
-      setStep3ContentHeight(chromeHeight + roleListEl.scrollHeight + 8);
+      const measure = () => {
+        setStep3ContentHeight(chromeHeight + roleListEl.scrollHeight + 8);
+      };
+      const ro = new ResizeObserver(measure);
+      ro.observe(roleListEl);
+      measure();
+      // Store cleanup in a way the outer effect can use
+      cleanupRef.current = () => ro.disconnect();
+    });
+    return () => {
+      cancelAnimationFrame(raf);
+      cleanupRef.current?.();
+      cleanupRef.current = null;
     };
-    const ro = new ResizeObserver(measure);
-    ro.observe(roleListEl);
-    measure();
+  }, [step, showPermissions, creatingRole]);
+
+  // Check if roles scroll container overflows and is not at bottom
+  // Uses ResizeObserver so it rechecks whenever the scroll container changes size
+  useEffect(() => {
+    const el = rolesScrollRef.current;
+    if (!el) { setRolesShowShadow(false); return; }
+    const check = () => {
+      const overflows = el.scrollHeight > el.clientHeight + 4;
+      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 4;
+      setRolesShowShadow(overflows && !atBottom);
+    };
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    check();
     return () => ro.disconnect();
-  }, [step, showPermissions]);
+  }, [step, creatingRole]);
 
   const handleClose = () => {
     setIsClosing(true);
@@ -3426,7 +3454,12 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
   };
 
   const toggleCategory = (catName: string) => {
-    setExpandedCategories(prev => { const next = new Set(prev); if (next.has(catName)) next.delete(catName); else next.add(catName); return next; });
+    if (singleRoleSelect) {
+      // Accordion: only one category open at a time
+      setExpandedCategories(prev => prev.has(catName) ? new Set() : new Set([catName]));
+    } else {
+      setExpandedCategories(prev => { const next = new Set(prev); if (next.has(catName)) next.delete(catName); else next.add(catName); return next; });
+    }
   };
 
   // Combined role categories including custom roles
@@ -3485,7 +3518,7 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
           ...(step === 3 ? {
             transition: isClosingWidth
               ? 'width 500ms cubic-bezier(0.4,0,0.2,1), max-width 500ms cubic-bezier(0.4,0,0.2,1)'
-              : 'width 500ms cubic-bezier(0.4,0,0.2,1), max-width 500ms cubic-bezier(0.4,0,0.2,1), height 200ms ease-in-out',
+              : 'width 500ms cubic-bezier(0.4,0,0.2,1), max-width 500ms cubic-bezier(0.4,0,0.2,1), height 300ms ease-in-out, max-height 300ms ease-in-out',
           } : {}),
           ...(step === 3
             ? creatingRole
@@ -3493,7 +3526,9 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
               : {
                   width: showPermissions ? '100%' : 640,
                   maxWidth: showPermissions ? 1280 : 640,
-                  maxHeight: '100%',
+                  // Phase 1 (isClosingWidth): keep full height while width shrinks
+                  // Phase 2: transition down to 600px max
+                  maxHeight: (showPermissions || isClosingWidth) ? '100%' : 600,
                   ...(showPermissions || isClosingWidth
                     ? { height: '100%' }
                     : step3ContentHeight != null
@@ -3699,7 +3734,13 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
                       To protect your account, users who are recently invited or have recently updated roles may be prevented from performing certain sensitive operations for two to three days.
                     </p>
                   </div>
-                  <div className="min-h-0 overflow-y-auto">
+                  <div className="min-h-0 relative">
+                    <div ref={rolesScrollRef} className="overflow-y-auto h-full" onScroll={(e) => {
+                      const el = e.currentTarget;
+                      const overflows = el.scrollHeight > el.clientHeight + 4;
+                      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 4;
+                      setRolesShowShadow(overflows && !atBottom);
+                    }}>
                     <div ref={step3ContentRef} className="flex flex-col">
                       {allCategories.map((cat) => {
                         const isCatExpanded = expandedCategories.has(cat.name);
@@ -3722,7 +3763,7 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
                                   {cat.roles.map((role, roleIdx) => {
                                     const isSelected = selectedRoles.has(role.id);
                                     return (
-                                      <div key={role.id} onClick={() => toggleRole(role.id)} className={`relative flex items-start gap-2 py-3 pl-6 pr-2 cursor-pointer ${roleIdx > 0 ? 'border-t border-[#EBEEF1]' : ''} before:absolute before:inset-0 before:transition-colors hover:before:bg-[#F5F6F8]`}>
+                                      <div key={role.id} data-role-id={role.id} onClick={() => toggleRole(role.id)} className={`relative flex items-start gap-2 py-3 pl-6 pr-2 cursor-pointer ${roleIdx > 0 ? 'border-t border-[#EBEEF1]' : ''} before:absolute before:inset-0 before:transition-colors hover:before:bg-[#F5F6F8]`}>
                                         {singleRoleSelect ? (
                                           /* Radio button for single-select */
                                           <div
@@ -3762,6 +3803,9 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
                         </button>
                       )}
                     </div>
+                    </div>
+                    {/* Overflow shadow - only when list overflows, fades at bottom */}
+                    <div className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none transition-opacity duration-200" style={{ opacity: rolesShowShadow ? 1 : 0, background: 'radial-gradient(ellipse 100% 100% at 50% 100%, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 70%)' }} />
                   </div>
                 </div>
                 <div className={`flex flex-col overflow-hidden transition-[flex,opacity] duration-500 ${showPermissions ? 'flex-1 min-w-0 opacity-100' : 'flex-[0] w-0 opacity-0 pointer-events-none'}`} style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}>
@@ -3776,19 +3820,61 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
               </div>
             </div>
           )}
-          {step === 3 && creatingRole && (
-            <CreateRoleContent
-              onSave={(newRole) => {
-                setCustomRoles?.(prev => [...prev, newRole]);
-                setSelectedRoles(new Set([newRole.id]));
-                setCreatingRole(false);
-              }}
-              onCancel={() => setCreatingRole(false)}
-              initialGroupBy="productCategory"
-              layoutVersion={layoutVersion}
-              showSandbox={false}
-            />
-          )}
+          {step === 3 && creatingRole && (() => {
+            // Pre-populate from currently selected role (if any)
+            const selectedId = Array.from(selectedRoles)[0];
+            const baseRole = selectedId
+              ? allCategories.flatMap(c => c.roles).find(r => r.id === selectedId) || null
+              : null;
+            let baseInitialState: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null } | undefined;
+            if (baseRole) {
+              const allPerms = getAllPermissions();
+              const accessMap: Record<string, string> = {};
+              if (baseRole.permissionAccess) {
+                Object.assign(accessMap, baseRole.permissionAccess);
+              } else if (baseRole.permissionApiNames) {
+                baseRole.permissionApiNames.forEach(apiName => {
+                  const perm = allPerms.find(p => p.apiName === apiName);
+                  accessMap[apiName] = perm?.actions || "read";
+                });
+              } else {
+                getPermissionsForRole(baseRole.id).forEach(p => {
+                  const roleAccess = p.roleAccess[baseRole.id];
+                  accessMap[p.apiName] = roleAccess || p.actions;
+                });
+              }
+              if (!accessMap["dashboard_baseline"]) accessMap["dashboard_baseline"] = "read";
+              baseInitialState = {
+                roleName: "",
+                customDescription: baseRole.details?.description || "",
+                permissionAccess: accessMap,
+                selectedBaseRole: baseRole,
+              };
+            }
+            return (
+              <CreateRoleContent
+                onSave={(newRole) => {
+                  setCustomRoles?.(prev => [...prev, newRole]);
+                  setSelectedRoles(new Set([newRole.id]));
+                  // Expand "Custom" category so the new role is visible
+                  setExpandedCategories(new Set(["Custom"]));
+                  setCreatingRole(false);
+                  // Scroll to the newly created role after DOM updates
+                  if (!showPermissions) {
+                    setTimeout(() => {
+                      const el = step3ModalRef.current?.querySelector(`[data-role-id="${newRole.id}"]`);
+                      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 350);
+                  }
+                }}
+                onCancel={() => setCreatingRole(false)}
+                initialGroupBy="productCategory"
+                layoutVersion={layoutVersion}
+                showSandbox={false}
+                initialState={baseInitialState}
+              />
+            );
+          })()}
           {step === 4 && (
             <div className="flex-1 overflow-y-auto flex flex-col gap-4 px-8 pb-0">
               <div className="flex flex-col">
