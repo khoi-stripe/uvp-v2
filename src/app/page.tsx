@@ -3915,15 +3915,35 @@ function TeamContent({ teamSecurityEnabled, onAddMember }: { teamSecurityEnabled
 function TeamAndSecurityPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const tabParam = searchParams.get("tab");
-  const activeTab: "team" | "roles" = tabParam === "team" ? "team" : "roles";
-  const setActiveTab = useCallback((tab: "team" | "roles") => {
-    router.replace(`?tab=${tab}`, { scroll: false });
-  }, [router]);
-  const [teamSecurityEnabled, setTeamSecurityEnabled] = useState(false);
-  const [use14px, setUse14px] = useState(false);
-  const [searchWhiteBg, setSearchWhiteBg] = useState(true);
-  const [layoutVersion, setLayoutVersion] = useState<"v1" | "v2" | "v3" | "v4">("v3");
+
+  // --- URL-driven prototype config ---
+  // Compact encoding: ?t=team&l=v4&p=abcd
+  //   t = tab (team|roles, default roles)
+  //   l = layout version (v1-v4, default v3)
+  //   p = proto flags string, each char = a flag that's ON:
+  //       a = addMember, f = 14px font, s = singleRoleSelect
+  //       (searchWhiteBg is ON by default; W = whiteBg OFF)
+  const initFromUrl = useCallback(() => {
+    const lParam = searchParams.get("l");
+    const validLayouts = ["v1", "v2", "v3", "v4"] as const;
+    const layout = validLayouts.includes(lParam as any) ? (lParam as "v1"|"v2"|"v3"|"v4") : "v3";
+    const flags = searchParams.get("p") || "";
+    return {
+      layout,
+      addMember: flags.includes("a"),
+      font14: flags.includes("f"),
+      whiteBg: !flags.includes("W"),
+      singleRole: flags.includes("s"),
+    };
+  }, [searchParams]);
+
+  const init = initFromUrl();
+  const tabParam = searchParams.get("t") || searchParams.get("tab");
+  const [activeTab, setActiveTabState] = useState<"team" | "roles">(tabParam === "team" ? "team" : "roles");
+  const [teamSecurityEnabled, setTeamSecurityEnabled] = useState(init.addMember);
+  const [use14px, setUse14px] = useState(init.font14);
+  const [searchWhiteBg, setSearchWhiteBg] = useState(init.whiteBg);
+  const [layoutVersion, setLayoutVersion] = useState<"v1" | "v2" | "v3" | "v4">(init.layout);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Custom roles state with localStorage persistence (lifted to page level for sharing with AddMemberModal)
@@ -3946,7 +3966,27 @@ function TeamAndSecurityPageInner() {
     localStorage.setItem("customRoles", JSON.stringify(customRoles));
   }, [customRoles]);
 
-  const [singleRoleSelect, setSingleRoleSelect] = useState(false);
+  const [singleRoleSelect, setSingleRoleSelect] = useState(init.singleRole);
+
+  // Sync proto controls to URL (only non-default values, compact encoding)
+  const setActiveTab = useCallback((tab: "team" | "roles") => {
+    setActiveTabState(tab);
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (activeTab === "team") params.set("t", "team");
+    if (layoutVersion !== "v3") params.set("l", layoutVersion);
+    // Build flags string from non-default booleans
+    let flags = "";
+    if (teamSecurityEnabled) flags += "a";
+    if (use14px) flags += "f";
+    if (!searchWhiteBg) flags += "W";
+    if (singleRoleSelect) flags += "s";
+    if (flags) params.set("p", flags);
+    const qs = params.toString();
+    router.replace(qs ? `?${qs}` : window.location.pathname, { scroll: false });
+  }, [activeTab, layoutVersion, teamSecurityEnabled, use14px, searchWhiteBg, singleRoleSelect, router]);
   
   // Sandbox mode state - lifted to page level for full-screen takeover
   const [sandboxMode, setSandboxMode] = useState<SandboxModeState>({
