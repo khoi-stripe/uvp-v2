@@ -4890,7 +4890,7 @@ function TeamAndSecurityPageInner() {
       <div className="flex-1 flex flex-col px-8 pb-6 overflow-hidden">
         <Topbar />
 
-        <div className={`flex-1 min-h-0 flex flex-col gap-8 pt-5 ${activeTab === "roles" ? 'overflow-hidden' : 'overflow-auto'}`}>
+        <div className={`flex-1 min-h-0 flex flex-col gap-6 pt-5 ${activeTab === "roles" ? 'overflow-hidden' : 'overflow-auto'}`}>
           {/* Header: breadcrumb + title + tabs */}
           <div className="flex flex-col gap-2 shrink-0 max-w-[1400px] mx-auto w-full">
             <div className="flex flex-col gap-1">
