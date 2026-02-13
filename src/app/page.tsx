@@ -604,6 +604,19 @@ function RiskBadge({ level, score }: { level: RiskLevel; score?: number }) {
   );
 }
 
+function riskSummaryText(assessment: RiskAssessment): string {
+  const parts: string[] = [];
+  const high = assessment.factors.filter(f => f.level === "High").length;
+  const medium = assessment.factors.filter(f => f.level === "Medium").length;
+  if (high > 0) parts.push(`${high} high-risk factor${high > 1 ? 's' : ''}`);
+  if (medium > 0) parts.push(`${medium} elevated factor${medium > 1 ? 's' : ''}`);
+  if (parts.length === 0 && assessment.factors.length > 0) parts.push(`${assessment.factors.length} factor${assessment.factors.length > 1 ? 's' : ''} analyzed`);
+  const riskLabel = assessment.overallRisk === "High" ? "High" : assessment.overallRisk === "Medium" ? "Moderate" : "Low";
+  return parts.length > 0
+    ? `${riskLabel} security risk with ${parts.join(' and ')}.`
+    : `${riskLabel} security risk.`;
+}
+
 function RiskAssessmentCard({ 
   assessment, 
   showAdvice = false,
@@ -615,26 +628,27 @@ function RiskAssessmentCard({
   isExpanded?: boolean;
   onToggle?: () => void;
 }) {
+  const summary = riskSummaryText(assessment);
+
   return (
     <div>
       {/* Header with overall risk */}
-      <button 
-        onClick={onToggle}
-        className="w-full flex items-center justify-between gap-3 cursor-pointer hover:opacity-80 transition-opacity"
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Risk Assessment</span>
-          <span className={`w-2 h-2 rounded-full ${
-            assessment.overallRisk === "High" ? "bg-[#DF1B41]" :
-            assessment.overallRisk === "Medium" ? "bg-[#D97706]" :
-            "bg-[#1D7C4D]"
-          }`} />
-        </div>
-        <ChevronDown 
-          className="w-4 h-4 text-[#474E5A] transition-transform duration-200"
-          style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
-        />
-      </button>
+      <div className="flex items-center gap-2">
+        <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Risk Assessment</span>
+        <span className={`w-2 h-2 rounded-full ${
+          assessment.overallRisk === "High" ? "bg-[#DF1B41]" :
+          assessment.overallRisk === "Medium" ? "bg-[#D97706]" :
+          "bg-[#1D7C4D]"
+        }`} />
+      </div>
+
+      {/* Summary line + View more (when collapsed) */}
+      {!isExpanded && (
+        <p className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px] mt-1">
+          {summary}{' '}
+          <button onClick={onToggle} className="text-[#635BFF] hover:text-[#5851DF] font-medium transition-colors">View more</button>
+        </p>
+      )}
 
       {/* Collapsible content */}
       <div 
@@ -642,7 +656,7 @@ function RiskAssessmentCard({
         style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
       >
         <div className="overflow-hidden">
-          <div className="pt-4 space-y-4">
+          <div className="pt-2 space-y-4">
             {/* Risk Factors Table */}
             {assessment.factors.length > 0 && (
               <table className="w-full text-[13px]">
@@ -693,6 +707,9 @@ function RiskAssessmentCard({
                 )}
               </div>
             )}
+
+            {/* View less link */}
+            <button onClick={onToggle} className="text-[13px] text-[#635BFF] hover:text-[#5851DF] font-medium leading-[19px] tracking-[-0.15px] transition-colors">View less</button>
           </div>
         </div>
       </div>
