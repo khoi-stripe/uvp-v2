@@ -168,6 +168,13 @@ body {
   outline-offset: -1px;
 }
 
+/* Input focus ring — same as form-focus-ring but for direct input/textarea focus */
+.input-focus-ring:focus {
+  border-color: transparent;
+  outline: 4px solid rgba(8, 142, 249, 0.36);
+  outline-offset: -1px;
+}
+
 /* Prototype control: toggle 13px content text back to 14px */
 .use-14px [class*="text-[13px]"] {
   font-size: 14px !important;

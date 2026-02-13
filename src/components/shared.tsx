@@ -474,6 +474,7 @@ export function BaseGroupCard({
 
   const cardBg = useDividers ? (invertColors ? "bg-[#F5F6F8]" : "") : (invertColors ? "bg-white" : "bg-[#F5F6F8]");
   const badgeBg = (useDividers || invertColors) ? "bg-[#F5F6F8]" : "bg-white";
+  const hoverBg = useDividers ? (lightDividers ? 'hover:before:bg-[#F5F6F8]' : 'hover:before:bg-white') : (invertColors ? 'hover:before:bg-[#F5F6F8]' : 'hover:before:bg-white');
 
   const titleContent = (
     <div className="flex-1 min-w-0">
@@ -490,12 +491,12 @@ export function BaseGroupCard({
   return (
     <div className={`${cardBg} ${radiusClass} shrink-0 flex flex-col`}>
       {headerLeft ? (
-        <div className={`relative flex items-center gap-4 ${useDividers ? `py-3 px-2 border-b ${dividerBorder}` : 'py-4 px-4'} before:absolute before:inset-0 before:rounded before:transition-colors hover:before:bg-[#EBEEF1]`}>
+        <div className={`relative flex items-center gap-4 ${useDividers ? `py-3 px-2 border-b ${dividerBorder}` : 'py-4 px-4'} before:absolute before:inset-0 before:rounded before:bg-transparent before:transition-colors before:duration-200 ${hoverBg}`}>
           <div className="relative z-10">{headerLeft}</div>
           <button onClick={() => setIsExpanded(!isExpanded)} className="relative z-10 flex-1 flex items-center gap-4 text-left group min-w-0">{titleContent}{chevron}</button>
         </div>
       ) : (
-        <button onClick={() => setIsExpanded(!isExpanded)} className={`relative w-full flex items-center gap-4 ${useDividers ? `py-3 px-2 border-b ${dividerBorder}` : 'py-4 px-4'} text-left group before:absolute before:inset-0 before:rounded before:transition-colors hover:before:bg-[#EBEEF1]`}>
+        <button onClick={() => setIsExpanded(!isExpanded)} className={`relative w-full flex items-center gap-4 ${useDividers ? `py-3 px-2 border-b ${dividerBorder}` : 'py-4 px-4'} text-left group before:absolute before:inset-0 before:rounded before:bg-transparent before:transition-colors before:duration-200 ${hoverBg}`}>
           <span className="relative z-10 flex items-center gap-4 flex-1 min-w-0">{titleContent}</span>
           <span className="relative z-10">{chevron}</span>
         </button>

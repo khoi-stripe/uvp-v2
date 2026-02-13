@@ -1230,6 +1230,7 @@ function BaseGroupCard({
 
   const cardBg = useDividers ? (invertColors ? "bg-[#F5F6F8]" : "") : (invertColors ? "bg-white" : "bg-[#F5F6F8]");
   const badgeBg = (useDividers || invertColors) ? "bg-[#F5F6F8]" : "bg-white";
+  const hoverBg = useDividers ? (lightDividers ? 'hover:before:bg-[#F5F6F8]' : 'hover:before:bg-white') : (invertColors ? 'hover:before:bg-[#F5F6F8]' : 'hover:before:bg-white');
 
   const titleContent = (
     <div className="flex-1 min-w-0">
@@ -1261,7 +1262,7 @@ function BaseGroupCard({
     <div className={`${cardBg} ${radiusClass} shrink-0 flex flex-col`}>
       {/* Header */}
       {headerLeft ? (
-        <div className={`relative flex items-center gap-4 ${useDividers ? `py-3 px-2 border-b ${dividerBorder}` : 'py-4 px-4'} before:absolute before:inset-0 before:rounded before:transition-colors hover:before:bg-[#EBEEF1]`}>
+        <div className={`relative flex items-center gap-4 ${useDividers ? `py-3 px-2 border-b ${dividerBorder}` : 'py-4 px-4'} before:absolute before:inset-0 before:rounded before:bg-transparent before:transition-colors before:duration-200 ${hoverBg}`}>
           <div className="relative z-10">{headerLeft}</div>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
@@ -1274,7 +1275,7 @@ function BaseGroupCard({
       ) : (
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className={`relative w-full flex items-center gap-4 ${useDividers ? `py-3 px-2 border-b ${dividerBorder}` : 'py-4 px-4'} text-left group before:absolute before:inset-0 before:rounded before:transition-colors hover:before:bg-[#EBEEF1]`}
+          className={`relative w-full flex items-center gap-4 ${useDividers ? `py-3 px-2 border-b ${dividerBorder}` : 'py-4 px-4'} text-left group before:absolute before:inset-0 before:rounded before:bg-transparent before:transition-colors before:duration-200 ${hoverBg}`}
         >
           <span className="relative z-10 flex items-center gap-4 flex-1 min-w-0">{titleContent}</span>
           <span className="relative z-10">{chevron}</span>
@@ -2059,9 +2060,9 @@ function CustomizeRoleModal({
           {/* Main content area */}
           <div className="flex-1 flex min-h-0 overflow-hidden">
             {/* Offset background container - role info + permissions */}
-            <div className={`${isV2 ? '' : 'bg-[#F5F6F8] rounded-[12px] p-2'} flex gap-4 flex-1 overflow-hidden`}>
+            <div className={`${isV2 ? '' : 'bg-[#F5F6F8] rounded-[12px] p-2 overflow-hidden'} flex gap-4 flex-1`}>
               {/* Role info column - 1/3 width */}
-              <div className={`flex-1 flex flex-col gap-4 ${isV2 ? 'pt-5 pl-6' : 'px-4 py-4'} overflow-y-auto min-w-0`}>
+              <div className={`flex-1 flex flex-col gap-4 ${isV2 ? 'pt-5 pl-6 pr-2' : 'px-4 py-4'} overflow-y-auto min-w-0`}>
                 {/* Role name header */}
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
@@ -2076,7 +2077,7 @@ function CustomizeRoleModal({
                           }
                         }}
                         autoFocus
-                        className="flex-1 text-[20px] font-bold text-[#353A44] leading-7 tracking-[0.3px] bg-white border border-[#D8DEE4] rounded-[6px] px-2 py-1 outline-none font-display min-w-0 focus:shadow-[0px_0px_0px_4px_rgba(8,142,249,0.36)] transition-shadow"
+                        className="flex-1 text-[20px] font-bold text-[#353A44] leading-7 tracking-[0.3px] bg-white border border-[#D8DEE4] rounded-[6px] px-2 py-1 outline-none font-display min-w-0 input-focus-ring"
                         style={{ fontFeatureSettings: "'lnum', 'pnum'" }}
                       />
                     ) : (
@@ -2101,7 +2102,7 @@ function CustomizeRoleModal({
                       onChange={(e) => setCustomDescription(e.target.value)}
                       rows={4}
                       autoFocus
-                      className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] bg-white border border-[#D8DEE4] rounded-[6px] px-2 py-1 outline-none resize-y focus:shadow-[0px_0px_0px_4px_rgba(8,142,249,0.36)] focus:border-[#D8DEE4] transition-shadow"
+                      className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] bg-white border border-[#D8DEE4] rounded-[6px] px-2 py-1 outline-none resize-y input-focus-ring"
                     />
                     <button
                       onClick={() => {
@@ -2705,7 +2706,7 @@ function CreateRoleModal({
                     value={roleName}
                     onChange={(e) => setRoleName(e.target.value)}
                     placeholder="Role name"
-                    className="w-full px-2 py-1.5 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white outline-none placeholder:text-[#818DA0] focus:border-[#635BFF] focus:shadow-[0px_0px_0px_4px_rgba(8,142,249,0.36)] transition-shadow"
+                    className="w-full px-2 py-1.5 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white outline-none placeholder:text-[#818DA0] input-focus-ring"
                   />
                 </div>
 
@@ -2718,7 +2719,7 @@ function CreateRoleModal({
                     value={customDescription}
                     onChange={(e) => setCustomDescription(e.target.value)}
                     rows={4}
-                    className="w-full px-2 py-1.5 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white outline-none resize-y placeholder:text-[#818DA0] focus:border-[#635BFF] focus:shadow-[0px_0px_0px_4px_rgba(8,142,249,0.36)] transition-shadow"
+                    className="w-full px-2 py-1.5 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white outline-none resize-y placeholder:text-[#818DA0] input-focus-ring"
                   />
                 </div>
 
