@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, ChevronDown, MoreHorizontal, Search, X } from "lucide-react";
 import {
   usePopover,
@@ -4008,7 +4008,6 @@ function TeamContent({ teamSecurityEnabled, onAddMember }: { teamSecurityEnabled
 // ===== Main Page: Team and Security with Tabs =====
 function TeamAndSecurityPageInner() {
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   // --- URL-driven prototype config ---
   // Compact encoding: ?t=team&l=v4&p=abcd
@@ -4080,8 +4079,9 @@ function TeamAndSecurityPageInner() {
     if (!singleRoleSelect) flags += "S";
     if (flags) params.set("p", flags);
     const qs = params.toString();
-    router.replace(qs ? `?${qs}` : '/', { scroll: false });
-  }, [activeTab, layoutVersion, teamSecurityEnabled, use14px, searchWhiteBg, singleRoleSelect, router]);
+    const newUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+    window.history.replaceState(null, '', newUrl);
+  }, [activeTab, layoutVersion, teamSecurityEnabled, use14px, searchWhiteBg, singleRoleSelect]);
   
   // Sandbox mode state - lifted to page level for full-screen takeover
   const [sandboxMode, setSandboxMode] = useState<SandboxModeState>({
