@@ -1203,6 +1203,7 @@ function BaseGroupCard({
   children,
   invertColors = false,
   useDividers = false,
+  lightDividers = false,
 }: {
   groupName: string;
   description?: string;
@@ -1214,8 +1215,10 @@ function BaseGroupCard({
   children: React.ReactNode;
   invertColors?: boolean;
   useDividers?: boolean;
+  lightDividers?: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const dividerBorder = lightDividers ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]';
 
   const radiusClass = useDividers ? "" : (isFirst && isLast
     ? "rounded-[4px]"
@@ -1226,12 +1229,12 @@ function BaseGroupCard({
     : "");
 
   const cardBg = useDividers ? "" : (invertColors ? "bg-white" : "bg-[#F5F6F8]");
-  const badgeBg = useDividers ? "bg-[#F5F6F8]" : (invertColors ? "bg-[#F5F6F8]" : "bg-white");
+  const badgeBg = (useDividers || invertColors) ? "bg-[#F5F6F8]" : "bg-white";
 
   const titleContent = (
     <div className="flex-1 min-w-0">
       <div className="flex items-center gap-2">
-        <span className={`${useDividers ? 'text-[14px] leading-5' : 'text-[13px] leading-[19px]'} font-semibold text-[#353A44] tracking-[-0.15px] truncate`}>
+        <span className={`text-[13px] leading-[19px] font-semibold text-[#353A44] tracking-[-0.15px] truncate`}>
           {groupName}
         </span>
         <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${badgeBg} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
@@ -1258,7 +1261,7 @@ function BaseGroupCard({
     <div className={`${cardBg} ${radiusClass} shrink-0 flex flex-col`}>
       {/* Header */}
       {headerLeft ? (
-        <div className={`relative flex items-center gap-4 ${useDividers ? 'py-3 px-2 border-b border-[#D8DEE4]' : 'py-4 px-4'} before:absolute before:inset-0 before:rounded before:transition-colors hover:before:bg-[#EBEEF1]`}>
+        <div className={`relative flex items-center gap-4 ${useDividers ? `py-3 px-2 border-b ${dividerBorder}` : 'py-4 px-4'} before:absolute before:inset-0 before:rounded before:transition-colors hover:before:bg-[#EBEEF1]`}>
           <div className="relative z-10">{headerLeft}</div>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
@@ -1271,7 +1274,7 @@ function BaseGroupCard({
       ) : (
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className={`relative w-full flex items-center gap-4 ${useDividers ? 'py-3 px-2 border-b border-[#D8DEE4]' : 'py-4 px-4'} text-left group before:absolute before:inset-0 before:rounded before:transition-colors hover:before:bg-[#EBEEF1]`}
+          className={`relative w-full flex items-center gap-4 ${useDividers ? `py-3 px-2 border-b ${dividerBorder}` : 'py-4 px-4'} text-left group before:absolute before:inset-0 before:rounded before:transition-colors hover:before:bg-[#EBEEF1]`}
         >
           <span className="relative z-10 flex items-center gap-4 flex-1 min-w-0">{titleContent}</span>
           <span className="relative z-10">{chevron}</span>
@@ -1284,7 +1287,7 @@ function BaseGroupCard({
         style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
       >
         <div className="overflow-hidden">
-          <div className={`flex flex-col divide-y divide-[#D8DEE4] ${useDividers ? 'pl-4 pb-2' : 'mx-5 pb-2 border-t border-[#D8DEE4]'}`}>
+          <div className={`flex flex-col divide-y ${lightDividers ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'} ${useDividers ? 'pl-4 pb-2' : `mx-5 pb-2 border-t ${dividerBorder}`}`}>
             {children}
           </div>
         </div>
@@ -1308,6 +1311,7 @@ function CustomizeGroupCard({
   isLast = false,
   invertColors = false,
   useDividers = false,
+  lightDividers = false,
 }: {
   groupName: string;
   description?: string;
@@ -1322,6 +1326,7 @@ function CustomizeGroupCard({
   isLast?: boolean;
   invertColors?: boolean;
   useDividers?: boolean;
+  lightDividers?: boolean;
 }) {
   const REQUIRED_PERMISSION = "dashboard_baseline";
 
@@ -1335,6 +1340,7 @@ function CustomizeGroupCard({
       defaultExpanded={defaultExpanded}
       invertColors={invertColors}
       useDividers={useDividers}
+      lightDividers={lightDividers}
       headerLeft={
         <Checkbox
           checked={checkState === "all"}
@@ -1455,15 +1461,16 @@ function ModalPermissionsPanel({
   pendingAccess: Record<string, string>;
   updatePendingAccess: (apiName: string, access: string) => void;
   hasResults: boolean;
-  layoutVersion?: "v1" | "v2" | "v3";
+  layoutVersion?: "v1" | "v2" | "v3" | "v4";
 }) {
   const REQUIRED_PERMISSION = "dashboard_baseline";
   const isV2 = layoutVersion === "v2" || layoutVersion === "v3";
   const isV3 = layoutVersion === "v3";
+  const isV4 = layoutVersion === "v4";
 
   return (
     <div
-      className={`${isAssistantOpen ? 'flex-1' : 'flex-[2]'} ${isV2 ? 'bg-[#F5F6F8] rounded-lg pt-6 px-4 pb-4' : 'bg-white rounded-lg shadow-[0_7px_14px_0_rgba(48,49,61,0.08),0_3px_6px_0_rgba(0,0,0,0.12)] p-4'} flex flex-col gap-4 overflow-hidden min-w-0`}
+      className={`${isAssistantOpen ? 'flex-1' : 'flex-[2]'} ${isV2 ? 'bg-[#F5F6F8] rounded-lg pt-6 px-4 pb-4' : 'bg-white rounded-lg p-4'} flex flex-col gap-4 overflow-hidden min-w-0`}
       style={{ transition: 'flex 400ms cubic-bezier(0.4, 0, 0.2, 1)' }}
     >
       {/* Permissions header */}
@@ -1521,7 +1528,7 @@ function ModalPermissionsPanel({
             {selectedCount} of {totalCount} selected
           </span>
         </div>
-        <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isV3 ? "gap-0" : isGrouped ? "gap-1" : "gap-2"}`}>
+        <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isV3 || isV4 ? "gap-0" : isGrouped ? "gap-1" : "gap-2"}`}>
           {isGrouped ? (
             /* Grouped view: CustomizeGroupCard for each group */
             sortedGroupEntries.map(([group, perms], idx) => (
@@ -1538,7 +1545,8 @@ function ModalPermissionsPanel({
                 isFirst={idx === 0}
                 isLast={idx === sortedGroupEntries.length - 1}
                 invertColors={isV2}
-                useDividers={isV3}
+                useDividers={isV3 || isV4}
+                lightDividers={isV4}
               />
             ))
           ) : (
@@ -1616,11 +1624,12 @@ function CustomizeRoleModal({
   mode?: "create" | "edit";
   onTestInSandbox?: (role: Role, modalState: { roleName: string; customDescription: string; permissionAccess: Record<string, string> }) => void;
   initialState?: { roleName: string; customDescription: string; permissionAccess: Record<string, string> };
-  layoutVersion?: "v1" | "v2" | "v3";
+  layoutVersion?: "v1" | "v2" | "v3" | "v4";
 }) {
   const isEditMode = mode === "edit";
   const isV2 = layoutVersion === "v2" || layoutVersion === "v3";
   const isV3 = layoutVersion === "v3";
+  const isV4 = layoutVersion === "v4";
   const allPermissions = getAllPermissions(); // ~50 consolidated permissions
   
   const [roleName, setRoleName] = useState(isEditMode ? baseRole.name : `${baseRole.name} (copy)`);
@@ -2122,13 +2131,13 @@ function CustomizeRoleModal({
                 )}
 
                 {/* Combined Can / Cannot container */}
-                <div className={`${isV3 ? '' : isV2 ? 'bg-[#F5F6F8] rounded-lg p-4' : 'bg-white rounded-lg p-4'} flex flex-col`}>
+                <div className={`${isV2 && !isV3 ? 'bg-[#F5F6F8] rounded-lg p-4' : ''} flex flex-col`}>
                   {/* Note */}
                   <p className="text-[13px] text-[#596171] leading-[19px] pb-4">
                     Note: The capabilities listed are highlights only. Refer to the permissions panel for the complete, authoritative list of what each role can access.
                   </p>
 
-                  <div className="h-px bg-[#EBEEF1] mb-4" />
+                  <div className={`h-px ${isV2 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'} mb-4`} />
 
                   {/* Can section */}
                   <div className="pb-4">
@@ -2147,7 +2156,7 @@ function CustomizeRoleModal({
                   </div>
 
                   {/* Divider */}
-                  <div className="h-px bg-[#EBEEF1] my-4" />
+                  <div className={`h-px ${isV2 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'} my-4`} />
 
                   {/* Cannot section */}
                   <div className="pb-4">
@@ -2168,7 +2177,7 @@ function CustomizeRoleModal({
                 </div>
 
                 {/* Risk Assessment - own container */}
-                <div className={`${isV3 ? '' : isV2 ? 'p-4 bg-[#F5F6F8] rounded-lg' : 'p-4 bg-white rounded-lg'}`}>
+                <div className={`${isV2 && !isV3 ? 'p-4 bg-[#F5F6F8] rounded-lg' : ''}`}>
                   <RiskAssessmentCard 
                     assessment={previewRiskAssessment} 
                     showAdvice 
@@ -2257,6 +2266,7 @@ function CreateRoleModal({
   initialGroupBy,
   onTestInSandbox,
   initialState,
+  layoutVersion = "v1",
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -2264,6 +2274,7 @@ function CreateRoleModal({
   initialGroupBy: GroupByOption;
   onTestInSandbox?: (role: Role, modalState: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null }) => void;
   initialState?: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null };
+  layoutVersion?: "v1" | "v2" | "v3" | "v4";
 }) {
   const allPermissions = getAllPermissions();
   const roleNameInputRef = useRef<HTMLInputElement>(null);
@@ -2780,6 +2791,7 @@ function CreateRoleModal({
                 pendingAccess={pendingAccess}
                 updatePendingAccess={updatePendingAccess}
                 hasResults={filteredAll.length > 0}
+                layoutVersion={layoutVersion}
               />
 
               </div>
@@ -2864,7 +2876,7 @@ function Topbar() {
 }
 
 // Side Navigation Component
-function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void; use14px: boolean; onUse14pxToggle: (v: boolean) => void; layoutVersion: "v1" | "v2" | "v3"; onLayoutVersionChange: (v: "v1" | "v2" | "v3") => void } }) {
+function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void; use14px: boolean; onUse14pxToggle: (v: boolean) => void; layoutVersion: "v1" | "v2" | "v3" | "v4"; onLayoutVersionChange: (v: "v1" | "v2" | "v3" | "v4") => void } }) {
   const popover = usePopover();
 
   return (
@@ -2922,7 +2934,7 @@ function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boo
           {popover.isVisible && (
             <PopoverBackdrop onClose={() => popover.close()}>
               <div className={`absolute bottom-full left-0 mb-2 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_5px_15px_rgba(0,0,0,0.12),0_15px_35px_rgba(48,49,61,0.08)] z-20 whitespace-nowrap overflow-hidden ${popover.animationClass}`}>
-                <div className="p-2 flex flex-col min-w-[220px]">
+                <div className="p-2 flex flex-col min-w-[260px]">
                   <div className="px-2 py-1.5">
                     <span className="text-[12px] font-semibold text-[#818DA0] leading-4 tracking-[-0.024px] uppercase">Prototype controls</span>
                   </div>
@@ -2943,7 +2955,7 @@ function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boo
                   <div className="flex items-center justify-between gap-6 px-2 py-1.5">
                     <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Layout</span>
                     <div className="flex bg-[#F5F6F8] rounded-md p-0.5 gap-0.5">
-                      {(["v1", "v2", "v3"] as const).map((v) => (
+                      {(["v1", "v2", "v3", "v4"] as const).map((v) => (
                         <button
                           key={v}
                           onClick={() => protoControls.onLayoutVersionChange(v)}
@@ -3330,6 +3342,7 @@ function GroupCard({
   showAll = false,
   invertColors = false,
   useDividers = false,
+  lightDividers = false,
 }: {
   groupName: string;
   description?: string;
@@ -3344,6 +3357,7 @@ function GroupCard({
   showAll?: boolean;
   invertColors?: boolean;
   useDividers?: boolean;
+  lightDividers?: boolean;
 }) {
   return (
     <BaseGroupCard
@@ -3359,6 +3373,7 @@ function GroupCard({
       defaultExpanded={defaultExpanded}
       invertColors={invertColors}
       useDividers={useDividers}
+      lightDividers={lightDividers}
     >
       {perms.map((permission) => (
         <PermissionItem
@@ -3604,10 +3619,11 @@ function DrawerPermissionsPanel({ roleIds }: { roleIds: string[] }) {
 function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = "v2" }: {
   sandboxMode: SandboxModeState;
   setSandboxMode: React.Dispatch<React.SetStateAction<SandboxModeState>>;
-  layoutVersion?: "v1" | "v2" | "v3";
+  layoutVersion?: "v1" | "v2" | "v3" | "v4";
 }) {
   const isV2 = layoutVersion === "v2" || layoutVersion === "v3";
   const isV3 = layoutVersion === "v3";
+  const isV4 = layoutVersion === "v4";
   const [selectedRole, setSelectedRole] = useState<Role>(allRoles[0]);
   // Only one category can be expanded at a time (accordion behavior)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(roleCategories[0]?.name || null);
@@ -3867,13 +3883,13 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
             </div>
 
             {/* Can, Cannot - combined container */}
-            <div className={`${isV3 ? '' : isV2 ? 'bg-[#F5F6F8] rounded-lg p-4' : 'bg-white rounded-lg p-4'} flex flex-col`}>
+            <div className={`${isV2 && !isV3 ? 'bg-[#F5F6F8] rounded-lg p-4' : ''} flex flex-col`}>
               {/* Note */}
               <p className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px] pb-4">
                 The capabilities listed are highlights only. Refer to the permissions panel for the complete, authoritative list of what each role can access.
               </p>
 
-              <div className="h-px bg-[#EBEEF1] mb-4" />
+              <div className={`h-px ${isV2 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'} mb-4`} />
 
               {/* Can section */}
               <div className="pb-4">
@@ -3895,7 +3911,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                 )}
               </div>
 
-              <div className="h-px bg-[#EBEEF1]" />
+              <div className={`h-px ${isV2 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'}`} />
 
               {/* Cannot section */}
               <div className="py-4">
@@ -3917,12 +3933,12 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                 )}
               </div>
 
-              <div className="h-px bg-[#EBEEF1]" />
+              <div className={`h-px ${isV2 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'}`} />
 
             </div>
 
             {/* Risk Assessment - own container */}
-            <div className={`${isV3 ? '' : isV2 ? 'p-4 bg-[#F5F6F8] rounded-lg' : 'p-4 bg-white rounded-lg'}`}>
+            <div className={`${isV2 && !isV3 ? 'p-4 bg-[#F5F6F8] rounded-lg' : ''}`}>
               <RiskAssessmentCard 
                 assessment={riskAssessment} 
                 isExpanded={isRiskExpanded}
@@ -3933,7 +3949,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
 
           {/* Permissions Panel */}
           {/* Baseline alignment: pt-6 (24px) for the 16px title; in v1 container's p-2 (8px) + p-4 (16px) = 24px */}
-          <main className={`flex-1 min-h-0 flex flex-col gap-4 rounded-lg overflow-hidden ${isV2 ? 'bg-[#F5F6F8] pt-6 px-4 pb-4' : 'p-4 bg-white shadow-[0_2px_5px_0_rgba(48,49,61,0.08),0_1px_1px_0_rgba(0,0,0,0.12)]'}`}>
+          <main className={`flex-1 min-h-0 flex flex-col gap-4 rounded-lg overflow-hidden ${isV2 ? 'bg-[#F5F6F8] pt-6 px-4 pb-4' : 'p-4 bg-white'}`}>
             {/* Header */}
             <div className="flex items-baseline gap-2">
               <h2 className="text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Permissions</h2>
@@ -3986,7 +4002,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
             </div>
 
             {/* Permissions list */}
-            <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isV3 ? "gap-0" : isGrouped ? "gap-1" : "gap-2"}`}>
+            <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isV3 || isV4 ? "gap-0" : isGrouped ? "gap-1" : "gap-2"}`}>
               {/* Grouped view: collapsible GroupCards */}
               {isGrouped && groupedPermissions && (() => {
                 const entries = Object.entries(groupedPermissions).sort(([a], [b]) => a.localeCompare(b));
@@ -4019,7 +4035,8 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                     activeApiNames={showAll ? activeApiNames : undefined}
                     showAll={showAll}
                     invertColors={isV2}
-                    useDividers={isV3}
+                    useDividers={isV3 || isV4}
+                    lightDividers={isV4}
                   />
                 ));
               })()}
@@ -4171,6 +4188,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
           });
         }}
         initialState={sandboxMode.sourceModal === "create" ? sandboxMode.modalState : undefined}
+        layoutVersion={layoutVersion}
       />
     </>
   );
@@ -4833,7 +4851,7 @@ function TeamAndSecurityPageInner() {
   }, [router]);
   const [teamSecurityEnabled, setTeamSecurityEnabled] = useState(true);
   const [use14px, setUse14px] = useState(false);
-  const [layoutVersion, setLayoutVersion] = useState<"v1" | "v2" | "v3">("v1");
+  const [layoutVersion, setLayoutVersion] = useState<"v1" | "v2" | "v3" | "v4">("v3");
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Sandbox mode state - lifted to page level for full-screen takeover
