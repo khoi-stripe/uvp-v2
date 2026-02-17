@@ -21,6 +21,7 @@ import {
   GroupCard,
   PermissionsFilterMenu,
   DrawerPermissionsPanel as SharedDrawerPermissionsPanel,
+  useToast,
 } from "@/components/shared";
 
 // Animated ticker number component
@@ -2648,6 +2649,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
   customRoles: Role[];
   setCustomRoles: React.Dispatch<React.SetStateAction<Role[]>>;
 }) {
+  const { showToast } = useToast();
   const isV2 = layoutVersion === "v2" || layoutVersion === "v3";
   const isV3 = layoutVersion === "v3";
   const isV4 = layoutVersion === "v4";
@@ -3162,11 +3164,13 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
           handleSaveCustomRole(role);
           // Clear sandbox modal state after saving
           setSandboxMode(prev => ({ ...prev, sourceModal: undefined, modalState: undefined }));
+          showToast(`${role.name} has been created`);
         }}
         onUpdate={(role) => {
           handleUpdateCustomRole(role);
           // Clear sandbox modal state after updating
           setSandboxMode(prev => ({ ...prev, sourceModal: undefined, modalState: undefined }));
+          showToast(`${role.name} has been updated`);
         }}
         initialGroupBy={groupBy}
         mode={modalMode}
@@ -3198,6 +3202,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
           setExpandedCategory("Custom");
           // Clear sandbox modal state after saving
           setSandboxMode(prev => ({ ...prev, sourceModal: undefined, modalState: undefined }));
+          showToast(`${newRole.name} has been created`);
         }}
         initialGroupBy={groupBy}
         onTestInSandbox={(previewRole, modalState) => {
@@ -3232,7 +3237,7 @@ const MOCK_ACCOUNTS = [
 const ACCOUNT_GROUPS = ["All", ...Array.from(new Set(MOCK_ACCOUNTS.map(a => a.group)))];
 const ALL_ACCOUNT_IDS = new Set(MOCK_ACCOUNTS.map(a => a.id));
 
-function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [], singleRoleSelect = false, setCustomRoles }: { isOpen: boolean; onClose: () => void; layoutVersion?: "v1" | "v2" | "v3" | "v4"; customRoles?: Role[]; singleRoleSelect?: boolean; setCustomRoles?: React.Dispatch<React.SetStateAction<Role[]>> }) {
+function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", customRoles = [], singleRoleSelect = false, setCustomRoles }: { isOpen: boolean; onClose: () => void; onComplete?: () => void; layoutVersion?: "v1" | "v2" | "v3" | "v4"; customRoles?: Role[]; singleRoleSelect?: boolean; setCustomRoles?: React.Dispatch<React.SetStateAction<Role[]>> }) {
   const [step, setStep] = useState(1);
   const [emails, setEmails] = useState<string[]>([]);
   const [currentInput, setCurrentInput] = useState("");
@@ -3535,7 +3540,7 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
         </div>
         <div className={`${step === 3 && !showPermissions && !creatingRole ? 'min-h-0' : 'flex-1 min-h-0'} overflow-hidden flex flex-col`}>
           {step === 1 && (
-            <div className="flex-1 min-h-0 flex flex-col gap-8 p-8 pt-0 pb-0">
+            <div className="flex-1 min-h-0 flex flex-col gap-8 p-8 pt-0 pb-2">
               <div className="flex flex-col gap-1 flex-shrink-0">
                 <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{stepLabels[step]}</h2>
                 <p className="text-[14px] text-[#353A44] leading-5 tracking-[-0.15px]">Enter team member email addresses. Invited members will share the same roles.</p>
@@ -3923,7 +3928,7 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
                   if (step === 2 && !showAccountPicker && selectedAccount === "selected") { setShowAccountPicker(true); }
                   else { setStep(step + 1); if (step === 2) setShowAccountPicker(false); }
                 }} className="px-4 py-2 text-[14px] font-semibold text-white leading-5 tracking-[-0.15px] bg-[#635BFF] rounded-[6px] hover:bg-[#5851DF] transition-colors shadow-[0_1px_1px_rgba(47,14,99,0.32)]">Next</button>
-              : <button onClick={handleClose} className="px-4 py-2 text-[14px] font-semibold text-white leading-5 tracking-[-0.15px] bg-[#635BFF] rounded-[6px] hover:bg-[#5851DF] transition-colors shadow-[0_1px_1px_rgba(47,14,99,0.32)]">Send invites</button>
+              : <button onClick={() => { onComplete?.(); handleClose(); }} className="px-4 py-2 text-[14px] font-semibold text-white leading-5 tracking-[-0.15px] bg-[#635BFF] rounded-[6px] hover:bg-[#5851DF] transition-colors shadow-[0_1px_1px_rgba(47,14,99,0.32)]">Send invites</button>
             }
           </div>
         )}
@@ -3997,6 +4002,7 @@ function TeamContent({ teamSecurityEnabled, onAddMember }: { teamSecurityEnabled
 
 // ===== Main Page: Team and Security with Tabs =====
 function TeamAndSecurityPageInner() {
+  const { showToast } = useToast();
   const searchParams = useSearchParams();
 
   // --- URL-driven prototype config ---
@@ -4145,7 +4151,7 @@ function TeamAndSecurityPageInner() {
         </div>
       </div>
 
-      <AddMemberModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} layoutVersion={layoutVersion} customRoles={customRoles} singleRoleSelect={singleRoleSelect} setCustomRoles={setCustomRoles} />
+      <AddMemberModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onComplete={() => showToast("Invitations sent successfully")} layoutVersion={layoutVersion} customRoles={customRoles} singleRoleSelect={singleRoleSelect} setCustomRoles={setCustomRoles} />
     </div>
   );
 }

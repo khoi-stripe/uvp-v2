@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { ChevronDown } from "lucide-react";
+import React, { useState, useRef, useEffect, useMemo, useCallback, createContext, useContext } from "react";
+import { ChevronDown, X } from "lucide-react";
 import {
   roleCategories,
   getPermissionsForRole,
@@ -893,5 +893,80 @@ export function Topbar() {
         <div className="w-4 h-4 rounded-full bg-[#EBEEF1]" />
       </div>
     </header>
+  );
+}
+
+// ===== Toast System =====
+
+type ToastState = {
+  message: string;
+  id: number;
+};
+
+type ToastContextValue = {
+  showToast: (message: string, options?: { duration?: number }) => void;
+};
+
+const ToastContext = createContext<ToastContextValue | null>(null);
+
+export function useToast() {
+  const ctx = useContext(ToastContext);
+  if (!ctx) throw new Error("useToast must be used within a ToastProvider");
+  return ctx;
+}
+
+export function ToastProvider({ children }: { children: React.ReactNode }) {
+  const [toast, setToast] = useState<ToastState | null>(null);
+  const [isDismissing, setIsDismissing] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const counterRef = useRef(0);
+
+  const dismiss = useCallback(() => {
+    setIsDismissing(true);
+    setTimeout(() => {
+      setToast(null);
+      setIsDismissing(false);
+    }, 150);
+  }, []);
+
+  const showToast = useCallback((message: string, options?: { duration?: number }) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setIsDismissing(false);
+    const id = ++counterRef.current;
+    setToast({ message, id });
+    const duration = options?.duration ?? 4000;
+    timerRef.current = setTimeout(() => {
+      dismiss();
+    }, duration);
+  }, [dismiss]);
+
+  useEffect(() => {
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, []);
+
+  return (
+    <ToastContext.Provider value={{ showToast }}>
+      {children}
+      {toast && (
+        <div
+          key={toast.id}
+          className={`fixed bottom-2 left-1/2 -translate-x-1/2 z-[100] flex items-center max-w-[560px] min-h-[44px] bg-[#353A44] rounded-[6px] shadow-[0px_15px_35px_0px_rgba(48,49,61,0.08),0px_5px_15px_0px_rgba(0,0,0,0.12)] overflow-hidden ${isDismissing ? 'animate-toast-out' : 'animate-toast-in'}`}
+        >
+          <div className="flex-1 min-w-0 px-4 py-2">
+            <p className="text-[14px] text-white leading-5 tracking-[-0.15px] truncate" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
+              {toast.message}
+            </p>
+          </div>
+          <div className="flex items-center self-stretch border-l border-white/[0.12]">
+            <button
+              onClick={dismiss}
+              className="flex items-center justify-center w-[44px] h-full hover:bg-white/[0.08] transition-colors rounded-r-[6px]"
+            >
+              <X size={14} className="text-white/70" />
+            </button>
+          </div>
+        </div>
+      )}
+    </ToastContext.Provider>
   );
 }

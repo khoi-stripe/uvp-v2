@@ -161,6 +161,37 @@ body {
   transform-origin: var(--popover-origin, top right);
 }
 
+/* Toast animations */
+@keyframes toast-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes toast-out {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.95) translateY(6px);
+  }
+}
+
+.animate-toast-in {
+  animation: toast-in 0.25s cubic-bezier(0.21, 1.02, 0.73, 1) both;
+}
+
+.animate-toast-out {
+  animation: toast-out 0.15s ease-in forwards;
+}
+
 /* Form focus ring — uses outline so it's never clipped by overflow parents */
 .form-focus-ring:focus-within {
   border-color: transparent;
