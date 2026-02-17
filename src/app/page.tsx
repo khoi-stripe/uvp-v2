@@ -2883,15 +2883,16 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
 
         {/* Compact role selector (shown when sidebar is collapsed) */}
         {compactRoles && (
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <div className="relative flex-1 min-w-0">
+          <div className="flex items-end gap-3 flex-shrink-0">
+            <div className="relative flex-1 min-w-0 flex flex-col gap-1">
+              <label className="text-[14px] font-semibold text-[#596171] leading-5 tracking-[-0.15px]">Roles</label>
               <button
                 onClick={() => roleSelectorPopover.toggle()}
                 className="w-full flex items-center gap-2 px-3 py-1.5 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] border border-[#D8DEE4] rounded-[6px] bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)] hover:bg-[#F5F6F8] transition-colors"
                 style={{ fontFeatureSettings: "'lnum', 'pnum'" }}
               >
                 <span className="flex-1 min-w-0 text-left truncate">{selectedRole.name}</span>
-                <ChevronDown className={`w-4 h-4 text-[#474E5A] flex-shrink-0 transition-transform duration-200 ${roleSelectorPopover.isVisible ? 'rotate-180' : ''}`} />
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="flex-shrink-0 text-[#474E5A]"><path fillRule="evenodd" clipRule="evenodd" d="M2.34963 9.91465C2.67291 9.55546 3.22617 9.52634 3.58536 9.84962L7.99991 13.8228L12.4148 9.84961C12.774 9.52634 13.3272 9.55547 13.6505 9.91467C13.9738 10.2739 13.9446 10.8271 13.5854 11.1504L8.58522 15.6504C8.41884 15.8001 8.20937 15.875 7.99991 15.875C7.79041 15.875 7.58092 15.8001 7.41453 15.6504L2.41466 11.1504C2.05546 10.8271 2.02635 10.2738 2.34963 9.91465Z" fill="currentColor"/><path fillRule="evenodd" clipRule="evenodd" d="M7.41453 0.349625C7.58092 0.199871 7.79041 0.124995 7.99991 0.125C8.20937 0.125005 8.41884 0.199873 8.58522 0.349605L13.5854 4.84961C13.9446 5.17287 13.9738 5.72613 13.6505 6.08533C13.3272 6.44453 12.774 6.47366 12.4148 6.15039L7.99991 2.17719L3.58536 6.15038C3.22617 6.47366 2.67291 6.44454 2.34963 6.08535C2.02635 5.72616 2.05546 5.17291 2.41466 4.84962L7.41453 0.349625Z" fill="currentColor"/></svg>
               </button>
 
               {roleSelectorPopover.isVisible && (
@@ -2932,7 +2933,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
             </div>
             <button
               onClick={() => { setModalMode("create"); setIsCreateModalOpen(true); }}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold text-white leading-[19px] tracking-[-0.15px] rounded-[6px] bg-[#635BFF] hover:bg-[#5851DF] transition-colors shadow-[0px_1px_1px_0px_rgba(47,14,99,0.32)] flex-shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold text-white leading-5 tracking-[-0.15px] rounded-[6px] bg-[#635BFF] hover:bg-[#5851DF] transition-colors shadow-[0px_1px_1px_0px_rgba(47,14,99,0.32)] flex-shrink-0"
             >
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0"><path d="M6 1V11M1 6H11" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
               Create role
