@@ -2881,8 +2881,8 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
         {/* Main content - 3 panels */}
         <div ref={panelContainerRef} className="flex flex-col flex-1 min-h-0 gap-6 overflow-hidden max-w-[1400px] mx-auto">
 
-        {/* Compact role selector (shown when sidebar is collapsed) - dropdown mode */}
-        {compactRoles && !compactTabMode && (
+        {/* Compact role selector (shown when sidebar is collapsed) */}
+        {compactRoles && (
           <div className="flex items-center gap-3 flex-shrink-0">
             <div className="relative flex-1 min-w-0">
               <button
@@ -2937,19 +2937,22 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0"><path d="M6 1V11M1 6H11" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
               Create role
             </button>
+            {useTabLayout && (
+              <ToggleSwitch checked={showPermissionsPanel} onChange={setShowPermissionsPanel} label="Show permissions" />
+            )}
           </div>
         )}
 
-        <div className={`flex flex-1 min-h-0 ${compactRoles && !useTabLayout ? '' : 'gap-6'} overflow-hidden`}>
+        <div className={`flex flex-1 min-h-0 ${compactRoles ? '' : 'gap-6'} overflow-hidden`}>
         {/* Left Panel - Roles List */}
         {/* Baseline alignment: 16px title needs pt-[23px] to align with section's 20px title at pt-5/pt-3+8 */}
-        {(!compactRoles || useTabLayout) && (
+        {!compactRoles && (
         <aside className="w-[240px] max-w-[240px] overflow-y-auto flex-shrink-0 pt-[23px] relative">
           {/* Header */}
           <div className="flex items-center gap-2.5 pb-4 border-b border-[#EBEEF1]">
             <h2 className="flex-1 text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Roles</h2>
             {useTabLayout && (
-              <ToggleSwitch checked={showPermissionsPanel} onChange={setShowPermissionsPanel} label="Permissions" />
+              <ToggleSwitch checked={showPermissionsPanel} onChange={setShowPermissionsPanel} label="Show permissions" />
             )}
           </div>
 
@@ -4319,15 +4322,15 @@ function TeamAndSecurityPageInner() {
             </div>
 
             {/* Tab bar */}
-            <div className="flex items-start gap-6 border-b border-[#D8DEE4]">
-              <button onClick={() => setActiveTab("team")} className={`flex items-center justify-center py-4 cursor-pointer ${activeTab === "team" ? 'border-b-2 border-[#533AFD]' : ''}`}>
-                <span className={`text-[14px] font-semibold leading-5 tracking-[-0.15px] ${activeTab === "team" ? 'text-[#533AFD]' : 'text-[#596171] hover:text-[#353A44]'}`}>Team</span>
+            <div className="flex items-start gap-6 border-b border-[#D8DEE4] overflow-hidden">
+              <button onClick={() => setActiveTab("team")} className={`flex items-center justify-center py-4 cursor-pointer shrink-0 ${activeTab === "team" ? 'border-b-2 border-[#533AFD]' : ''}`}>
+                <span className={`text-[14px] font-semibold leading-5 tracking-[-0.15px] whitespace-nowrap ${activeTab === "team" ? 'text-[#533AFD]' : 'text-[#596171] hover:text-[#353A44]'}`}>Team</span>
               </button>
-              <button onClick={() => setActiveTab("roles")} className={`flex items-center justify-center py-4 cursor-pointer ${activeTab === "roles" ? 'border-b-2 border-[#533AFD]' : ''}`}>
-                <span className={`text-[14px] font-semibold leading-5 tracking-[-0.15px] ${activeTab === "roles" ? 'text-[#533AFD]' : 'text-[#596171] hover:text-[#353A44]'}`}>Roles and permissions</span>
+              <button onClick={() => setActiveTab("roles")} className={`flex items-center justify-center py-4 cursor-pointer shrink-0 ${activeTab === "roles" ? 'border-b-2 border-[#533AFD]' : ''}`}>
+                <span className={`text-[14px] font-semibold leading-5 tracking-[-0.15px] whitespace-nowrap ${activeTab === "roles" ? 'text-[#533AFD]' : 'text-[#596171] hover:text-[#353A44]'}`}>Roles and permissions</span>
               </button>
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="flex flex-col items-start py-4 w-[61px]">
+                <div key={i} className="flex flex-col items-start py-4 w-[61px] shrink-0">
                   <div className="py-1.5 w-full"><div className="h-2 bg-[#EBEEF1] rounded-lg w-full" /></div>
                 </div>
               ))}
