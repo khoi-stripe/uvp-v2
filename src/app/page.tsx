@@ -883,6 +883,7 @@ function ModalPermissionsPanel({
                 isLast={idx === sortedGroupEntries.length - 1}
                 invertColors={isV2}
                 useDividers={isV3 || isV4}
+
                 lightDividers={!isV2}
               />
             ))
@@ -891,7 +892,7 @@ function ModalPermissionsPanel({
             sortedGroupEntries.map(([group, perms]) => (
               <div key={group || "all"} className={(isV3 || isV4) ? "flex flex-col" : (isAlphabetical ? "" : "mb-3")}>
                 {!isAlphabetical && group && (
-                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `py-3 px-2 border-b ${!isV2 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : 'mb-2'}`}>
+                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `p-3 border-b ${!isV2 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : 'mb-2'}`}>
                     <Checkbox
                       checked={getGroupCheckState(perms) === "all"}
                       indeterminate={getGroupCheckState(perms) === "some"}
@@ -905,7 +906,7 @@ function ModalPermissionsPanel({
                     </span>
                   </div>
                 )}
-                <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-4 ${!isV2 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : ''}>
+                <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-3 ${!isV2 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : ''}>
                   {sortPermsInGroup(perms).map(perm => {
                     const isChecked = perm.apiName in permissionAccess;
                     return (
@@ -924,6 +925,7 @@ function ModalPermissionsPanel({
                           onPendingAccessChange={!isChecked ? (access) => updatePendingAccess(perm.apiName, access) : undefined}
                           invertColors={isV2}
                           useDividers={isV3 || isV4}
+
                           lightDividers={!isV2}
                         />
                       </div>
@@ -3251,7 +3253,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
               {/* Ungrouped: Alphabetical (flat list) - show task categories as tags */}
               {!isGrouped && alphabeticalPermissions && (
                 <div className={(isV3 || isV4) ? "flex flex-col" : "flex flex-col gap-2"}>
-                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `py-3 px-2 border-b ${!isV2 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : ''}`}>
+                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `p-3 border-b ${!isV2 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : ''}`}>
                     <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                       All permissions
                     </h3>
@@ -3261,7 +3263,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                         : alphabeticalPermissions.length}
                     </span>
                   </div>
-                  <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-4 ${!isV2 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : ''}>
+                  <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-3 ${!isV2 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : ''}>
                     {alphabeticalPermissions.map((permission) => (
                       <PermissionItem
                         key={permission.apiName}
@@ -3272,6 +3274,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                         isInactive={showAll ? !activeApiNames.has(permission.apiName) : false}
                         invertColors={isV2}
                         useDividers={isV3 || isV4}
+
                         lightDividers={!isV2}
                       />
                     ))}
@@ -3291,7 +3294,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                 })
                 .map(([groupName, perms]) => (
                   <div key={groupName} className={(isV3 || isV4) ? "flex flex-col" : "flex flex-col gap-2"}>
-                    <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `py-3 px-2 border-b ${!isV2 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : ''}`}>
+                    <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `p-3 border-b ${!isV2 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : ''}`}>
                       <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                         {groupName}
                       </h3>
@@ -3301,7 +3304,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                           : perms.filter(p => activeApiNames.has(p.apiName)).length}
                       </span>
                     </div>
-                    <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-4 ${!isV2 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : 'flex flex-col gap-2'}>
+                    <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-3 ${!isV2 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : 'flex flex-col gap-2'}>
                       {perms.map((permission) => (
                         <PermissionItem
                           key={permission.apiName}
@@ -3314,6 +3317,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                           isInactive={showAll ? !activeApiNames.has(permission.apiName) : false}
                           invertColors={isV2}
                           useDividers={isV3 || isV4}
+
                           lightDividers={!isV2}
                         />
                       ))}
@@ -4202,7 +4206,7 @@ function TeamAndSecurityPageInner() {
   // --- URL-driven prototype config ---
   // Compact encoding: ?t=team&l=v4&p=abcd
   //   t = tab (team|roles, default roles)
-  //   l = layout version (v1-v4, default v3)
+  //   l = layout version (v1-v4, default v4)
   //   p = proto flags string, each char = a non-default flag:
   //       Uppercase = default-ON toggled OFF: A = addMember off, W = whiteBg off, S = singleRole off
   //       Lowercase = default-OFF toggled ON: f = 14px font on, c = compactTabMode on
