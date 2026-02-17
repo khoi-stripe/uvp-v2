@@ -980,6 +980,18 @@ function CustomizeRoleModal({
   const [isRiskExpandedModal, setIsRiskExpandedModal] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+  const [modalTab, setModalTab] = useState<"role" | "permissions">("permissions");
+  const modalContentRef = useRef<HTMLDivElement>(null);
+  const [modalNarrow, setModalNarrow] = useState(false);
+  useEffect(() => {
+    const el = modalContentRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setModalNarrow(entry.contentRect.width < 1200);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isOpen]);
 
   // Capture initial permission state for stable sort order (active items on top, frozen after load)
   const initialAccessRef = useRef<Record<string, string>>({});
@@ -1391,10 +1403,24 @@ function CustomizeRoleModal({
           </div>
 
           {/* Main content area */}
-          <div className="flex-1 flex min-h-0 overflow-hidden">
-            {/* Offset background container - role info + permissions */}
-            <div className={`${isV2 ? '' : 'bg-[#F5F6F8] rounded-[12px] p-2 overflow-hidden'} flex gap-4 flex-1`}>
-              {/* Role info column - 1/3 width */}
+          <div ref={modalContentRef} className="flex-1 flex min-h-0 overflow-hidden">
+            {/* Content container - side-by-side or tabbed depending on assistant + width */}
+            <div className={`${isV2 ? '' : 'bg-[#F5F6F8] rounded-[12px] p-2 overflow-hidden'} flex ${isAssistantOpen && modalNarrow ? 'flex-col' : 'gap-4'} flex-1 min-w-0`}>
+
+              {/* Tab bar (only when assistant is open and modal is narrow) */}
+              {isAssistantOpen && modalNarrow && (
+                <div className={`flex gap-6 ${isV2 ? 'px-6' : 'px-4'} border-b border-[#D8DEE4] shrink-0`}>
+                  <button onClick={() => setModalTab("role")} className={`flex items-center justify-center py-3 ${modalTab === "role" ? 'border-b-2 border-[#533AFD]' : ''}`}>
+                    <span className={`text-[14px] font-semibold leading-5 tracking-[-0.15px] ${modalTab === "role" ? 'text-[#533AFD]' : 'text-[#596171] hover:text-[#353A44]'}`}>Role info</span>
+                  </button>
+                  <button onClick={() => setModalTab("permissions")} className={`flex items-center justify-center py-3 ${modalTab === "permissions" ? 'border-b-2 border-[#533AFD]' : ''}`}>
+                    <span className={`text-[14px] font-semibold leading-5 tracking-[-0.15px] ${modalTab === "permissions" ? 'text-[#533AFD]' : 'text-[#596171] hover:text-[#353A44]'}`}>Permissions</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Role info column */}
+              {(!(isAssistantOpen && modalNarrow) || modalTab === "role") && (
               <div className={`flex-1 flex flex-col gap-4 ${isV2 ? 'pt-5 pl-6 pr-2' : 'px-4 py-4'} overflow-y-auto min-w-0`}>
                 {/* Role name header */}
                 <div className="flex flex-col gap-1">
@@ -1518,7 +1544,10 @@ function CustomizeRoleModal({
                   />
                 </div>
               </div>
+              )}
 
+              {/* Permissions panel */}
+              {(!(isAssistantOpen && modalNarrow) || modalTab === "permissions") && (
               <ModalPermissionsPanel
                 isAssistantOpen={isAssistantOpen}
                 onOpenAssistant={() => setIsAssistantOpen(true)}
@@ -1543,6 +1572,7 @@ function CustomizeRoleModal({
                 hasResults={filteredAll.length > 0}
                 layoutVersion={layoutVersion}
               />
+              )}
 
               </div>
             
