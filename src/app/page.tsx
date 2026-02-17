@@ -213,11 +213,13 @@ function RiskAssessmentCard({
   showAdvice = false,
   isExpanded = true,
   onToggle,
+  onGreyBg = false,
 }: { 
   assessment: RiskAssessment; 
   showAdvice?: boolean;
   isExpanded?: boolean;
   onToggle?: () => void;
+  onGreyBg?: boolean;
 }) {
   const summary = riskSummaryText(assessment);
 
@@ -237,7 +239,7 @@ function RiskAssessmentCard({
       {!isExpanded && (
         <p className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px] mt-1">
           {summary}{' '}
-          <button onClick={onToggle} className="text-[#635BFF] hover:text-[#5851DF] font-medium transition-colors">View more</button>
+          <button onClick={onToggle} className="text-[#635BFF] hover:text-[#5851DF] font-medium transition-colors">Show more</button>
         </p>
       )}
 
@@ -251,7 +253,7 @@ function RiskAssessmentCard({
             {/* Risk Factors Table */}
             {assessment.factors.length > 0 && (
               <table className="w-full text-[13px]">
-                <tbody className="divide-y divide-[#EBEEF1]">
+                <tbody className={`divide-y ${onGreyBg ? 'divide-[#D8DEE4]' : 'divide-[#EBEEF1]'}`}>
                   {assessment.factors.map((factor, i) => (
                     <tr key={i}>
                       <td className="py-2 text-[#353A44]">
@@ -300,7 +302,7 @@ function RiskAssessmentCard({
             )}
 
             {/* View less link */}
-            <button onClick={onToggle} className="text-[13px] text-[#635BFF] hover:text-[#5851DF] font-medium leading-[19px] tracking-[-0.15px] transition-colors">View less</button>
+            <button onClick={onToggle} className="text-[13px] text-[#635BFF] hover:text-[#5851DF] font-medium leading-[19px] tracking-[-0.15px] transition-colors">Show less</button>
           </div>
         </div>
       </div>
@@ -889,7 +891,7 @@ function ModalPermissionsPanel({
                     <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                       {group}
                     </span>
-                    <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${(isV3 || isV4) ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
+                    <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${isV2 ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
                       {perms.filter(p => p.apiName in permissionAccess).length} of {perms.length}
                     </span>
                   </div>
@@ -1468,7 +1470,7 @@ function CustomizeRoleModal({
                     Note: The capabilities listed are highlights only. Refer to the permissions panel for the complete, authoritative list of what each role can access.
                   </p>
 
-                  <div className={`h-px ${isV2 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'} mb-4`} />
+                  <div className="h-px bg-[#D8DEE4] mb-4" />
 
                   {/* Can section */}
                   <div className="pb-4">
@@ -1485,9 +1487,6 @@ function CustomizeRoleModal({
                       )}
                     </ul>
                   </div>
-
-                  {/* Divider */}
-                  <div className={`h-px ${isV2 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'} my-4`} />
 
                   {/* Cannot section */}
                   <div className="pb-4">
@@ -1514,6 +1513,7 @@ function CustomizeRoleModal({
                     showAdvice 
                     isExpanded={isRiskExpandedModal}
                     onToggle={() => setIsRiskExpandedModal(!isRiskExpandedModal)}
+                    onGreyBg
                   />
                 </div>
               </div>
@@ -1987,7 +1987,6 @@ function CreateRoleContent({
                 {/* Cannot section - only show when user has added permissions beyond just dashboard_baseline */}
                 {selectedPermissions.length > 1 && previewDetails.cannotDo.length > 0 && (
                   <>
-                    <div className="h-px bg-[#EBEEF1] my-4" />
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <CancelCircleIcon />
@@ -2901,12 +2900,12 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
 
             {/* Can, Cannot - combined container */}
             <div className={`${isV2 && !isV3 ? 'bg-[#F5F6F8] rounded-lg p-4' : ''} flex flex-col`}>
+              {!(isV2 && !isV3) && <div className="h-px bg-[#D8DEE4] mb-4" />}
+
               {/* Note */}
               <p className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px] pb-4">
                 The capabilities listed are highlights only. Refer to the permissions panel for the complete, authoritative list of what each role can access.
               </p>
-
-              <div className={`h-px ${isV2 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'} mb-4`} />
 
               {/* Can section */}
               <div className="pb-4">
@@ -2928,10 +2927,8 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                 )}
               </div>
 
-              <div className={`h-px ${isV2 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'}`} />
-
               {/* Cannot section */}
-              <div className="py-4">
+              <div className={isV2 && !isV3 ? '' : 'pb-4'}>
                 <div className="flex items-center gap-2 mb-2">
                   <CancelCircleIcon />
                   <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Cannot</span>
@@ -2950,7 +2947,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                 )}
               </div>
 
-              <div className={`h-px ${isV2 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'}`} />
+              {!(isV2 && !isV3) && <div className="h-px bg-[#D8DEE4]" />}
 
             </div>
 
@@ -2960,6 +2957,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                 assessment={riskAssessment} 
                 isExpanded={isRiskExpanded}
                 onToggle={() => setIsRiskExpanded(!isRiskExpanded)}
+                onGreyBg
               />
             </div>
           </section>
@@ -3053,7 +3051,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                     showAll={showAll}
                     invertColors={isV2}
                     useDividers={isV3 || isV4}
-                    lightDividers={isV4}
+                    lightDividers={!isV2}
                   />
                 ));
               })()}
@@ -3061,7 +3059,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
               {/* Ungrouped: Alphabetical (flat list) - show task categories as tags */}
               {!isGrouped && alphabeticalPermissions && (
                 <div className={(isV3 || isV4) ? "flex flex-col" : "flex flex-col gap-2"}>
-                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `py-3 px-2 border-b ${isV4 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : ''}`}>
+                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `py-3 px-2 border-b ${!isV2 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : ''}`}>
                     <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                       All permissions
                     </h3>
@@ -3071,7 +3069,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                         : alphabeticalPermissions.length}
                     </span>
                   </div>
-                  <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-4 ${isV4 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : ''}>
+                  <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-4 ${!isV2 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : ''}>
                     {alphabeticalPermissions.map((permission) => (
                       <PermissionItem
                         key={permission.apiName}
@@ -3082,7 +3080,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                         isInactive={showAll ? !activeApiNames.has(permission.apiName) : false}
                         invertColors={isV2}
                         useDividers={isV3 || isV4}
-                        lightDividers={isV4}
+                        lightDividers={!isV2}
                       />
                     ))}
                   </div>
@@ -3101,7 +3099,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                 })
                 .map(([groupName, perms]) => (
                   <div key={groupName} className={(isV3 || isV4) ? "flex flex-col" : "flex flex-col gap-2"}>
-                    <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `py-3 px-2 border-b ${isV4 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : ''}`}>
+                    <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `py-3 px-2 border-b ${!isV2 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : ''}`}>
                       <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                         {groupName}
                       </h3>
@@ -3111,7 +3109,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                           : perms.filter(p => activeApiNames.has(p.apiName)).length}
                       </span>
                     </div>
-                    <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-4 ${isV4 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : 'flex flex-col gap-2'}>
+                    <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-4 ${!isV2 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : 'flex flex-col gap-2'}>
                       {perms.map((permission) => (
                         <PermissionItem
                           key={permission.apiName}
@@ -3124,7 +3122,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                           isInactive={showAll ? !activeApiNames.has(permission.apiName) : false}
                           invertColors={isV2}
                           useDividers={isV3 || isV4}
-                          lightDividers={isV4}
+                          lightDividers={!isV2}
                         />
                       ))}
                     </div>
@@ -3308,10 +3306,9 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
   const justClosedPerm = prevShowPermRef.current && !showPermissions && step === 3;
   const isClosingWidth = permClosingPhase === 'width' || justClosedPerm;
 
-  // Handle permissions closing: capture roles column width and start the width-first phase.
+  // Handle permissions closing: capture roles column width for fixed-width during transition.
   useLayoutEffect(() => {
     if (prevShowPermRef.current && !showPermissions && step === 3) {
-      // Navigate from role list ref → scroll container → roles column
       const rolesCol = step3ContentRef.current?.parentElement?.parentElement;
       if (rolesCol) {
         setRolesMaxWidth(rolesCol.offsetWidth);
@@ -3321,7 +3318,7 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
     prevShowPermRef.current = showPermissions;
   }, [step, showPermissions]);
 
-  // End the width phase after the width transition completes (500ms)
+  // Release the fixed roles width after the transition completes
   useEffect(() => {
     if (permClosingPhase === 'width') {
       const timer = setTimeout(() => {
@@ -3513,9 +3510,7 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
         className={`relative bg-white rounded-[12px] shadow-[0px_15px_35px_0px_rgba(48,49,61,0.08),0px_5px_15px_0px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden ${isClosing ? 'animate-modal-out' : 'animate-modal-in'}`}
         style={{
           ...(step === 3 ? {
-            transition: isClosingWidth
-              ? 'width 500ms cubic-bezier(0.4,0,0.2,1), max-width 500ms cubic-bezier(0.4,0,0.2,1)'
-              : 'width 500ms cubic-bezier(0.4,0,0.2,1), max-width 500ms cubic-bezier(0.4,0,0.2,1), height 300ms ease-in-out, max-height 300ms ease-in-out',
+            transition: 'width 500ms cubic-bezier(0.4,0,0.2,1), max-width 500ms cubic-bezier(0.4,0,0.2,1), height 500ms cubic-bezier(0.4,0,0.2,1), max-height 500ms cubic-bezier(0.4,0,0.2,1)',
           } : {}),
           ...(step === 3
             ? creatingRole
@@ -3523,10 +3518,8 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
               : {
                   width: showPermissions ? '100%' : 640,
                   maxWidth: showPermissions ? 1280 : 640,
-                  // Phase 1 (isClosingWidth): keep full height while width shrinks
-                  // Phase 2: transition down to 600px max
-                  maxHeight: (showPermissions || isClosingWidth) ? '100%' : 600,
-                  ...(showPermissions || isClosingWidth
+                  maxHeight: showPermissions ? '100%' : 661,
+                  ...(showPermissions
                     ? { height: '100%' }
                     : step3ContentHeight != null
                       ? { height: step3ContentHeight }
@@ -3540,7 +3533,7 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
             <X size={16} />
           </button>
         </div>
-        <div className={`${step === 3 && !showPermissions && !isClosingWidth && !creatingRole ? 'min-h-0' : 'flex-1 min-h-0'} overflow-hidden flex flex-col`}>
+        <div className={`${step === 3 && !showPermissions && !creatingRole ? 'min-h-0' : 'flex-1 min-h-0'} overflow-hidden flex flex-col`}>
           {step === 1 && (
             <div className="flex-1 overflow-y-auto flex flex-col gap-8 p-8 pt-0">
               <div className="flex flex-col gap-1">
@@ -3720,7 +3713,7 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
               <div className="flex-shrink-0">
                 <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{singleRoleSelect ? 'Select a role' : stepLabels[step]}</h2>
               </div>
-              <div className={`flex gap-6 min-h-0 overflow-hidden ${showPermissions || isClosingWidth ? 'flex-1' : ''}`}>
+              <div className={`flex gap-6 min-h-0 overflow-hidden ${showPermissions || isClosingWidth ? 'flex-1' : ''}`} style={{ transition: 'flex 500ms cubic-bezier(0.4,0,0.2,1)' }}>
                 <div className="flex-1 min-w-0 flex flex-col gap-2 min-h-0 pt-4" style={rolesMaxWidth != null ? { maxWidth: rolesMaxWidth } : undefined}>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <span className="flex-1 text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Roles</span>
@@ -3752,7 +3745,7 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
                                   <span className="bg-[#F5F6F8] rounded-full min-w-[16px] px-1 text-[10px] font-semibold text-[#596171] leading-4 text-center">{selectedCount} of {cat.roles.length}</span>
                                 )}
                               </div>
-                              <ChevronDown size={14} className={`text-[#474E5A] transition-transform duration-200 flex-shrink-0 ${isCatExpanded ? '' : '-rotate-90'}`} />
+                              <ChevronDown size={14} className={`text-[#474E5A] transition-transform duration-200 flex-shrink-0 ${isCatExpanded ? 'rotate-180' : ''}`} />
                             </button>
                             <div className="grid transition-[grid-template-rows] duration-200 ease-in-out" style={{ gridTemplateRows: isCatExpanded ? '1fr' : '0fr' }}>
                               <div className="overflow-hidden">
@@ -3793,7 +3786,7 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
                       {singleRoleSelect && (
                         <button
                           onClick={() => setCreatingRole(true)}
-                          className="w-full flex items-center gap-2 px-2 py-3 border-t border-[#EBEEF1] text-left hover:bg-[#F5F6F8] transition-colors"
+                          className="w-full flex items-center gap-2 px-2 py-3 text-left hover:bg-[#F5F6F8] transition-colors"
                         >
                           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0"><path d="M6 1V11M1 6H11" stroke="#635BFF" strokeWidth="1.5" strokeLinecap="round"/></svg>
                           <span className="text-[14px] font-semibold text-[#635BFF] leading-5 tracking-[-0.15px]">Create custom role</span>

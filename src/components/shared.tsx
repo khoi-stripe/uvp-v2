@@ -514,7 +514,7 @@ export function BaseGroupCard({
   const dividerBorder = lightDividers ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]';
 
   const cardBg = useDividers ? (invertColors ? "bg-[#F5F6F8]" : "") : (invertColors ? "bg-white" : "bg-[#F5F6F8]");
-  const badgeBg = (!useDividers && invertColors) ? "bg-[#F5F6F8]" : "bg-white";
+  const badgeBg = (useDividers !== invertColors) ? "bg-[#F5F6F8]" : "bg-white";
   const hoverBg = useDividers ? (invertColors ? 'hover:before:bg-white' : 'hover:before:bg-[#F5F6F8]') : (invertColors ? 'hover:before:bg-[#F5F6F8]' : 'hover:before:bg-white');
 
   const titleContent = (
@@ -527,7 +527,7 @@ export function BaseGroupCard({
     </div>
   );
 
-  const chevron = <ChevronDown className={`${useDividers ? 'w-3.5 h-3.5' : 'w-4 h-4'} text-[#474E5A] flex-shrink-0 transition-transform duration-200 ${isExpanded ? "" : "-rotate-90"}`} />;
+  const chevron = <ChevronDown className={`${useDividers ? 'w-3.5 h-3.5' : 'w-4 h-4'} text-[#474E5A] flex-shrink-0 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />;
 
   return (
     <div className={`${cardBg} ${radiusClass} shrink-0 flex flex-col`}>
@@ -630,7 +630,7 @@ export function PermissionsFilterMenu({
 // ===== Drawer Permissions Panel =====
 export function DrawerPermissionsPanel({ roleIds, className, invertColors = false, layoutVersion = "v1", customRoles = [] }: { roleIds: string[]; className?: string; invertColors?: boolean; layoutVersion?: "v1" | "v2" | "v3" | "v4"; customRoles?: Role[] }) {
   const useDividerStyle = layoutVersion === "v3" || layoutVersion === "v4";
-  const lightDividerStyle = layoutVersion === "v4";
+  const lightDividerStyle = !invertColors;
   const [groupBy, setGroupBy] = useState<GroupByOption>("productCategory");
   const [isGrouped, setIsGrouped] = useState(true);
   const [showAll, setShowAll] = useState(false);
@@ -706,7 +706,7 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
       <div className="flex items-center gap-2 flex-shrink-0 min-h-[28px]">
         <h2 className="text-[14px] font-bold text-[#353A44] leading-5">Permissions</h2>
         {hasRoles && (
-          <span className="bg-[#F5F6F8] text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center">
+          <span className={`${invertColors ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center`}>
             {showAll
               ? (searchQuery ? `${filteredPermissions.filter(p => activeApiNames.has(p.apiName)).length} of ${filteredPermissions.length}` : `${rolePermissions.length} of ${getAllPermissions().length}`)
               : (searchQuery ? `${filteredPermissions.length}/${rolePermissions.length}` : rolePermissions.length)}
@@ -771,7 +771,7 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
             <div className={useDividerStyle ? "flex flex-col" : "flex flex-col gap-2"}>
               <div className={`flex items-center gap-2 ${useDividerStyle ? 'py-3 px-2 border-b ' + (lightDividerStyle ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]') : ''}`}>
                 <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">All permissions</h3>
-                <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${useDividerStyle ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
+                <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${invertColors ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
                   {showAll ? `${alphabeticalPermissions.filter(p => activeApiNames.has(p.apiName)).length} of ${alphabeticalPermissions.length}` : alphabeticalPermissions.length}
                 </span>
               </div>
@@ -784,7 +784,7 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
             <div key={groupName} className={useDividerStyle ? "flex flex-col" : "flex flex-col gap-2"}>
               <div className={`flex items-center gap-2 ${useDividerStyle ? 'py-3 px-2 border-b ' + (lightDividerStyle ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]') : ''}`}>
                 <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">{groupName}</h3>
-                <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${useDividerStyle ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
+                <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${invertColors ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
                   {showAll ? `${perms.filter(p => activeApiNames.has(p.apiName)).length} of ${perms.length}` : perms.length}
                 </span>
               </div>
