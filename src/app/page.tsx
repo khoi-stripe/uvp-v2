@@ -84,6 +84,14 @@ function CancelCircleIcon() {
 }
 
 
+function RevertIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5.99372 2.38044C6.33543 2.03873 6.33543 1.48471 5.99372 1.143C5.65201 0.801292 5.09799 0.801292 4.75628 1.143L0.506282 5.393C0.342052 5.55723 0.249853 5.76872 0.25 6.00098C0.250147 6.23323 0.342627 6.4672 0.507065 6.63122L4.75706 10.8705C5.09921 11.2118 5.65322 11.2111 5.9945 10.8689C6.33578 10.5268 6.33508 9.97275 5.99294 9.63148L3.23803 6.87598H10.625C12.4922 6.87598 14 8.27181 14 10.001C14 11.7977 12.4218 13.376 10.625 13.376C10.1418 13.376 9.75 13.7677 9.75 14.251C9.75 14.7342 10.1418 15.126 10.625 15.126C13.3882 15.126 15.75 12.7642 15.75 10.001C15.75 7.17189 13.3208 5.12851 10.63 5.12598H3.24063L5.99372 2.38044Z" fill="currentColor"/>
+    </svg>
+  );
+}
+
 function HistoryIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -253,7 +261,7 @@ function RiskAssessmentCard({
           <div className="pt-2 space-y-4">
             {/* Risk Factors Table */}
             {assessment.factors.length > 0 && (
-              <table className="w-full text-[13px]">
+              <table className="w-full text-[13px] mb-0">
                 <tbody className={`divide-y ${onGreyBg ? 'divide-[#D8DEE4]' : 'divide-[#EBEEF1]'}`}>
                   {assessment.factors.map((factor, i) => (
                     <tr key={i}>
@@ -1396,8 +1404,9 @@ function CustomizeRoleModal({
             </h2>
             <button
               onClick={handleRevert}
-              className="px-3 py-1 text-[13px] font-medium text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
+              className="flex items-center gap-1.5 px-3 py-1 text-[13px] font-medium text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
             >
+              <RevertIcon />
               Revert
             </button>
           </div>
@@ -1531,6 +1540,8 @@ function CustomizeRoleModal({
                     </ul>
                   </div>
 
+                  <div className="h-px bg-[#D8DEE4]" />
+
                 </div>
 
                 {/* Risk Assessment - own container */}
@@ -1652,6 +1663,7 @@ function CreateRoleContent({
   const [isGrouped, setIsGrouped] = useState(true);
   const baseRolePopover = usePopover();
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+  const [isRiskExpanded, setIsRiskExpanded] = useState(false);
   const [createModalTab, setCreateModalTab] = useState<"role" | "permissions">("permissions");
   const createContentRef = useRef<HTMLDivElement>(null);
   const [createModalNarrow, setCreateModalNarrow] = useState(false);
@@ -1917,6 +1929,7 @@ function CreateRoleContent({
 
   // Generate preview details
   const previewDetails = generateRoleDetails(selectedPermissions);
+  const previewRiskAssessment = generateRiskAssessment(selectedPermissions);
 
   return (
     <>
@@ -2017,50 +2030,72 @@ function CreateRoleContent({
                 />
               </div>
 
-              {/* Can / Cannot section */}
-              <div className="bg-white rounded-lg p-4">
+              {/* Combined Can / Cannot container */}
+              <div className="flex flex-col">
+                {/* Note */}
+                <p className="text-[13px] text-[#596171] leading-[19px] pb-4">
+                  Note: The capabilities listed are highlights only. Refer to the permissions panel for the complete, authoritative list of what each role can access.
+                </p>
+
+                <div className="h-px bg-[#D8DEE4] mb-4" />
+
                 {/* Can section */}
-                <div className={previewDetails.canDo.length > 0 ? "pb-4" : ""}>
-                  <div className="flex items-center gap-2 mb-2">
+                <div className="pb-4">
+                  <div className="flex items-center gap-2 mb-3">
                     <CheckCircleIcon />
                     <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Can</span>
                   </div>
                   {previewDetails.canDo.length > 0 ? (
-                    <ul className="list-disc pl-4 flex flex-col gap-1">
+                    <ul className="list-disc pl-6 flex flex-col gap-1.5">
                       {previewDetails.canDo.slice(0, 5).map((item, i) => (
-                        <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] pl-1">{item}</li>
+                        <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">{item}</li>
                       ))}
                       {previewDetails.canDo.length > 5 && (
-                        <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px] pl-1">+{previewDetails.canDo.length - 5} more</li>
+                        <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px]">+{previewDetails.canDo.length - 5} more</li>
                       )}
                     </ul>
                   ) : (
                     <div className="flex flex-col gap-2.5 py-1.5">
                       <div className="h-2 bg-[#EBEEF1] rounded-lg w-full" />
+                      <div className="h-2 bg-[#EBEEF1] rounded-lg w-full" />
                     </div>
                   )}
                 </div>
 
-                {/* Cannot section - only show when user has added permissions beyond just dashboard_baseline */}
-                {selectedPermissions.length > 1 && previewDetails.cannotDo.length > 0 && (
-                  <>
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <CancelCircleIcon />
-                        <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Cannot</span>
-                      </div>
-                      <ul className="list-disc pl-4 flex flex-col gap-1">
-                        {previewDetails.cannotDo.slice(0, 5).map((item, i) => (
-                          <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] pl-1">{item}</li>
-                        ))}
-                        {previewDetails.cannotDo.length > 5 && (
-                          <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px] pl-1">+{previewDetails.cannotDo.length - 5} more</li>
-                        )}
-                      </ul>
+                {/* Cannot section */}
+                <div className="pb-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CancelCircleIcon />
+                    <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Cannot</span>
+                  </div>
+                  {previewDetails.cannotDo.length > 0 ? (
+                    <ul className="list-disc pl-6 flex flex-col gap-1.5">
+                      {previewDetails.cannotDo.slice(0, 5).map((item, i) => (
+                        <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">{item}</li>
+                      ))}
+                      {previewDetails.cannotDo.length > 5 && (
+                        <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px]">+{previewDetails.cannotDo.length - 5} more</li>
+                      )}
+                    </ul>
+                  ) : (
+                    <div className="flex flex-col gap-2.5 py-1.5">
+                      <div className="h-2 bg-[#EBEEF1] rounded-lg w-full" />
+                      <div className="h-2 bg-[#EBEEF1] rounded-lg w-full" />
                     </div>
-                  </>
-                )}
+                  )}
+                </div>
+
+                <div className="h-px bg-[#D8DEE4]" />
               </div>
+
+              {/* Risk Assessment */}
+              <RiskAssessmentCard
+                assessment={previewRiskAssessment}
+                showAdvice
+                isExpanded={isRiskExpanded}
+                onToggle={() => setIsRiskExpanded(!isRiskExpanded)}
+                onGreyBg
+              />
             </div>
             )}
 
@@ -2264,7 +2299,7 @@ function Topbar() {
 }
 
 // Side Navigation Component
-function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void; use14px: boolean; onUse14pxToggle: (v: boolean) => void; searchWhiteBg: boolean; onSearchWhiteBgToggle: (v: boolean) => void; singleRoleSelect: boolean; onSingleRoleSelectToggle: (v: boolean) => void; layoutVersion: "v1" | "v2" | "v3" | "v4"; onLayoutVersionChange: (v: "v1" | "v2" | "v3" | "v4") => void } }) {
+function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void; use14px: boolean; onUse14pxToggle: (v: boolean) => void; searchWhiteBg: boolean; onSearchWhiteBgToggle: (v: boolean) => void; singleRoleSelect: boolean; onSingleRoleSelectToggle: (v: boolean) => void; compactTabMode: boolean; onCompactTabModeToggle: (v: boolean) => void; layoutVersion: "v1" | "v2" | "v3" | "v4"; onLayoutVersionChange: (v: "v1" | "v2" | "v3" | "v4") => void } }) {
   const popover = usePopover();
 
   return (
@@ -2349,6 +2384,12 @@ function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boo
                     <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Single role select</span>
                     <div onClick={(e) => e.stopPropagation()}>
                       <ToggleSwitch checked={protoControls.singleRoleSelect} onChange={protoControls.onSingleRoleSelectToggle} />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => protoControls.onCompactTabModeToggle(!protoControls.compactTabMode)}>
+                    <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Hide permissions by default</span>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <ToggleSwitch checked={protoControls.compactTabMode} onChange={protoControls.onCompactTabModeToggle} />
                     </div>
                   </div>
                   <div className="h-px bg-[#EBEEF1] my-1" />
@@ -2702,12 +2743,13 @@ function SandboxView({
 // ============================================================
 
 
-function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = "v2", customRoles, setCustomRoles }: {
+function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = "v2", customRoles, setCustomRoles, compactTabMode = false }: {
   sandboxMode: SandboxModeState;
   setSandboxMode: React.Dispatch<React.SetStateAction<SandboxModeState>>;
   layoutVersion?: "v1" | "v2" | "v3" | "v4";
   customRoles: Role[];
   setCustomRoles: React.Dispatch<React.SetStateAction<Role[]>>;
+  compactTabMode?: boolean;
 }) {
   const { showToast } = useToast();
   const isV2 = layoutVersion === "v2" || layoutVersion === "v3";
@@ -2726,6 +2768,8 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
   // Responsive: collapse roles sidebar into selector when container is narrow
   const panelContainerRef = useRef<HTMLDivElement>(null);
   const [compactRoles, setCompactRoles] = useState(false);
+  const [showPermissionsPanel, setShowPermissionsPanel] = useState(false);
+  const useTabLayout = compactTabMode;
   const roleSelectorPopover = usePopover();
   useEffect(() => {
     const el = panelContainerRef.current;
@@ -2837,8 +2881,8 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
         {/* Main content - 3 panels */}
         <div ref={panelContainerRef} className="flex flex-col flex-1 min-h-0 gap-6 overflow-hidden max-w-[1400px] mx-auto">
 
-        {/* Compact role selector (shown when sidebar is collapsed) */}
-        {compactRoles && (
+        {/* Compact role selector (shown when sidebar is collapsed) - dropdown mode */}
+        {compactRoles && !compactTabMode && (
           <div className="flex items-center gap-3 flex-shrink-0">
             <div className="relative flex-1 min-w-0">
               <button
@@ -2896,14 +2940,17 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
           </div>
         )}
 
-        <div className={`flex flex-1 min-h-0 ${compactRoles ? '' : 'gap-6'} overflow-hidden`}>
+        <div className={`flex flex-1 min-h-0 ${compactRoles && !useTabLayout ? '' : 'gap-6'} overflow-hidden`}>
         {/* Left Panel - Roles List */}
         {/* Baseline alignment: 16px title needs pt-[23px] to align with section's 20px title at pt-5/pt-3+8 */}
-        {!compactRoles && (
+        {(!compactRoles || useTabLayout) && (
         <aside className="w-[240px] max-w-[240px] overflow-y-auto flex-shrink-0 pt-[23px] relative">
           {/* Header */}
           <div className="flex items-center gap-2.5 pb-4 border-b border-[#EBEEF1]">
             <h2 className="flex-1 text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Roles</h2>
+            {useTabLayout && (
+              <ToggleSwitch checked={showPermissionsPanel} onChange={setShowPermissionsPanel} label="Permissions" />
+            )}
           </div>
 
           {/* Categories */}
@@ -2994,7 +3041,8 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
         )}
 
         {/* Shared Container for Role Details + Permissions */}
-        <div className={`flex-1 min-h-0 min-w-0 flex gap-4 overflow-hidden ${isV2 ? '' : 'bg-[#F5F6F8] rounded-xl p-2'}`}>
+        <div className={`flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden ${isV2 ? '' : 'bg-[#F5F6F8] rounded-xl p-2'}`}>
+          <div className="flex-1 min-h-0 flex gap-4 overflow-hidden">
           {/* Role Details Panel */}
           {/* Baseline alignment: pt-5 (20px) for the 20px title; in v1 subtract container's p-2 (8px) → pt-3 */}
           <section ref={roleDetailsRef} className={`flex-1 min-w-0 flex flex-col gap-6 overflow-y-auto ${isV2 ? 'pt-5 pl-6' : 'px-4 pt-3 pb-[13px]'}`}>
@@ -3103,6 +3151,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
 
           {/* Permissions Panel */}
           {/* Baseline alignment: pt-6 (24px) for the 16px title; in v1 container's p-2 (8px) + p-4 (16px) = 24px */}
+          {(!useTabLayout || showPermissionsPanel) && (
           <main className={`flex-1 min-w-0 min-h-0 flex flex-col gap-4 rounded-lg overflow-hidden ${isV2 ? 'bg-[#F5F6F8] pt-6 px-4 pb-4' : 'p-4 bg-white'}`}>
             {/* Header */}
             <div className="flex items-baseline gap-2">
@@ -3284,6 +3333,8 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
               )}
             </div>
           </main>
+          )}
+          </div>
         </div>
         </div>
         </div>
@@ -4149,7 +4200,7 @@ function TeamAndSecurityPageInner() {
   //   l = layout version (v1-v4, default v3)
   //   p = proto flags string, each char = a non-default flag:
   //       Uppercase = default-ON toggled OFF: A = addMember off, W = whiteBg off, S = singleRole off
-  //       Lowercase = default-OFF toggled ON: f = 14px font on
+  //       Lowercase = default-OFF toggled ON: f = 14px font on, c = compactTabMode on
   const initFromUrl = useCallback(() => {
     const lParam = searchParams.get("l");
     const validLayouts = ["v1", "v2", "v3", "v4"] as const;
@@ -4161,6 +4212,7 @@ function TeamAndSecurityPageInner() {
       font14: flags.includes("f"),
       whiteBg: !flags.includes("W"),
       singleRole: !flags.includes("S"),
+      compactTab: flags.includes("c"),
     };
   }, [searchParams]);
 
@@ -4194,6 +4246,7 @@ function TeamAndSecurityPageInner() {
   }, [customRoles]);
 
   const [singleRoleSelect, setSingleRoleSelect] = useState(init.singleRole);
+  const [compactTabMode, setCompactTabMode] = useState(init.compactTab);
 
   // Sync proto controls to URL (only non-default values, compact encoding)
   const setActiveTab = useCallback((tab: "team" | "roles") => {
@@ -4205,17 +4258,18 @@ function TeamAndSecurityPageInner() {
     if (activeTab === "team") params.set("t", "team");
     if (layoutVersion !== "v4") params.set("l", layoutVersion);
     // Build flags string from non-default booleans
-    // Defaults: addMember=on, whiteBg=on, singleRole=on, 14px=off
+    // Defaults: addMember=on, whiteBg=on, singleRole=on, 14px=off, compactTab=off
     let flags = "";
     if (!teamSecurityEnabled) flags += "A";
     if (use14px) flags += "f";
     if (!searchWhiteBg) flags += "W";
     if (!singleRoleSelect) flags += "S";
+    if (compactTabMode) flags += "c";
     if (flags) params.set("p", flags);
     const qs = params.toString();
     const newUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
     window.history.replaceState(null, '', newUrl);
-  }, [activeTab, layoutVersion, teamSecurityEnabled, use14px, searchWhiteBg, singleRoleSelect]);
+  }, [activeTab, layoutVersion, teamSecurityEnabled, use14px, searchWhiteBg, singleRoleSelect, compactTabMode]);
   
   // Sandbox mode state - lifted to page level for full-screen takeover
   const [sandboxMode, setSandboxMode] = useState<SandboxModeState>({
@@ -4248,7 +4302,7 @@ function TeamAndSecurityPageInner() {
 
   return (
     <div className={`h-screen flex bg-white ${use14px ? 'use-14px' : ''} ${searchWhiteBg ? 'search-white-bg' : ''}`}>
-      <SideNav protoControls={{ teamSecurityEnabled, onTeamSecurityToggle: setTeamSecurityEnabled, use14px, onUse14pxToggle: setUse14px, searchWhiteBg, onSearchWhiteBgToggle: setSearchWhiteBg, singleRoleSelect, onSingleRoleSelectToggle: setSingleRoleSelect, layoutVersion, onLayoutVersionChange: setLayoutVersion }} />
+      <SideNav protoControls={{ teamSecurityEnabled, onTeamSecurityToggle: setTeamSecurityEnabled, use14px, onUse14pxToggle: setUse14px, searchWhiteBg, onSearchWhiteBgToggle: setSearchWhiteBg, singleRoleSelect, onSingleRoleSelectToggle: setSingleRoleSelect, compactTabMode, onCompactTabModeToggle: setCompactTabMode, layoutVersion, onLayoutVersionChange: setLayoutVersion }} />
 
       <div className="flex-1 flex flex-col px-8 pb-6 overflow-hidden">
         <Topbar />
@@ -4282,7 +4336,7 @@ function TeamAndSecurityPageInner() {
 
           {/* Tab content */}
           {activeTab === "roles" ? (
-            <RolesPermissionsContent sandboxMode={sandboxMode} setSandboxMode={setSandboxMode} layoutVersion={layoutVersion} customRoles={customRoles} setCustomRoles={setCustomRoles} />
+            <RolesPermissionsContent sandboxMode={sandboxMode} setSandboxMode={setSandboxMode} layoutVersion={layoutVersion} customRoles={customRoles} setCustomRoles={setCustomRoles} compactTabMode={compactTabMode} />
           ) : (
             <TeamContent teamSecurityEnabled={teamSecurityEnabled} onAddMember={() => setIsModalOpen(true)} />
           )}
