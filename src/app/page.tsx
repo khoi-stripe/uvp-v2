@@ -1652,6 +1652,18 @@ function CreateRoleContent({
   const [isGrouped, setIsGrouped] = useState(true);
   const baseRolePopover = usePopover();
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+  const [createModalTab, setCreateModalTab] = useState<"role" | "permissions">("permissions");
+  const createContentRef = useRef<HTMLDivElement>(null);
+  const [createModalNarrow, setCreateModalNarrow] = useState(false);
+  useEffect(() => {
+    const el = createContentRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setCreateModalNarrow(entry.contentRect.width < 1200);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // Capture initial permission state for stable sort order
   const initialAccessRef = useRef<Record<string, string>>(initialState?.permissionAccess ? { ...initialState.permissionAccess } : { dashboard_baseline: "read" });
@@ -1918,10 +1930,24 @@ function CreateRoleContent({
         </div>
 
         {/* Main content area */}
-        <div className="flex-1 flex min-h-0 overflow-hidden">
-          {/* Offset background container */}
-          <div className="bg-[#F5F6F8] rounded-[12px] p-2 flex gap-4 flex-1 overflow-hidden">
+        <div ref={createContentRef} className="flex-1 flex min-h-0 overflow-hidden">
+          {/* Offset background container - side-by-side or tabbed depending on assistant + width */}
+          <div className={`bg-[#F5F6F8] rounded-[12px] p-2 flex ${isAssistantOpen && createModalNarrow ? 'flex-col' : 'gap-4'} flex-1 overflow-hidden min-w-0`}>
+
+            {/* Tab bar (only when assistant is open and modal is narrow) */}
+            {isAssistantOpen && createModalNarrow && (
+              <div className="flex gap-6 px-4 border-b border-[#D8DEE4] shrink-0">
+                <button onClick={() => setCreateModalTab("role")} className={`flex items-center justify-center py-3 ${createModalTab === "role" ? 'border-b-2 border-[#533AFD]' : ''}`}>
+                  <span className={`text-[14px] font-semibold leading-5 tracking-[-0.15px] ${createModalTab === "role" ? 'text-[#533AFD]' : 'text-[#596171] hover:text-[#353A44]'}`}>Role info</span>
+                </button>
+                <button onClick={() => setCreateModalTab("permissions")} className={`flex items-center justify-center py-3 ${createModalTab === "permissions" ? 'border-b-2 border-[#533AFD]' : ''}`}>
+                  <span className={`text-[14px] font-semibold leading-5 tracking-[-0.15px] ${createModalTab === "permissions" ? 'text-[#533AFD]' : 'text-[#596171] hover:text-[#353A44]'}`}>Permissions</span>
+                </button>
+              </div>
+            )}
+
             {/* Left column - Role info (1/3 width) */}
+            {(!(isAssistantOpen && createModalNarrow) || createModalTab === "role") && (
             <div className="flex-1 flex flex-col gap-6 px-4 py-[13px] overflow-y-auto min-w-0">
               {/* Start from existing role dropdown */}
               <div className="flex flex-col gap-2">
@@ -2036,7 +2062,10 @@ function CreateRoleContent({
                 )}
               </div>
             </div>
+            )}
 
+            {/* Permissions panel */}
+            {(!(isAssistantOpen && createModalNarrow) || createModalTab === "permissions") && (
             <ModalPermissionsPanel
               isAssistantOpen={isAssistantOpen}
               onOpenAssistant={() => setIsAssistantOpen(true)}
@@ -2061,6 +2090,7 @@ function CreateRoleContent({
               hasResults={filteredAll.length > 0}
               layoutVersion={layoutVersion}
             />
+            )}
 
             </div>
           
@@ -4123,7 +4153,7 @@ function TeamAndSecurityPageInner() {
   const initFromUrl = useCallback(() => {
     const lParam = searchParams.get("l");
     const validLayouts = ["v1", "v2", "v3", "v4"] as const;
-    const layout = validLayouts.includes(lParam as any) ? (lParam as "v1"|"v2"|"v3"|"v4") : "v3";
+    const layout = validLayouts.includes(lParam as any) ? (lParam as "v1"|"v2"|"v3"|"v4") : "v4";
     const flags = searchParams.get("p") || "";
     return {
       layout,
@@ -4173,7 +4203,7 @@ function TeamAndSecurityPageInner() {
   useEffect(() => {
     const params = new URLSearchParams();
     if (activeTab === "team") params.set("t", "team");
-    if (layoutVersion !== "v3") params.set("l", layoutVersion);
+    if (layoutVersion !== "v4") params.set("l", layoutVersion);
     // Build flags string from non-default booleans
     // Defaults: addMember=on, whiteBg=on, singleRole=on, 14px=off
     let flags = "";
