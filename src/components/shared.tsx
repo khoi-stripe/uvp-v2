@@ -628,7 +628,7 @@ export function PermissionsFilterMenu({
 }
 
 // ===== Drawer Permissions Panel =====
-export function DrawerPermissionsPanel({ roleIds, className, invertColors = false, layoutVersion = "v1", customRoles = [] }: { roleIds: string[]; className?: string; invertColors?: boolean; layoutVersion?: "v1" | "v2" | "v3" | "v4"; customRoles?: Role[] }) {
+export function DrawerPermissionsPanel({ roleIds, className, invertColors = false, layoutVersion = "v1", customRoles = [], singleRoleSelect = false }: { roleIds: string[]; className?: string; invertColors?: boolean; layoutVersion?: "v1" | "v2" | "v3" | "v4"; customRoles?: Role[]; singleRoleSelect?: boolean }) {
   const useDividerStyle = layoutVersion === "v3" || layoutVersion === "v4";
   const lightDividerStyle = !invertColors;
   const [groupBy, setGroupBy] = useState<GroupByOption>("productCategory");
@@ -733,7 +733,7 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
         <div className="flex-1 flex flex-col items-center justify-center text-center">
           <div className="flex flex-col items-center gap-2 text-[#6C7688]">
             <ShieldCheckIcon />
-            <p className="text-[13px] text-[#596171] leading-5 tracking-[-0.15px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Select one or more roles to see their<br />combined permissions here.</p>
+            <p className="text-[13px] text-[#596171] leading-5 tracking-[-0.15px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>{singleRoleSelect ? 'Select a role to see its permissions.' : <>Select one or more roles to see their<br />combined permissions.</>}</p>
           </div>
         </div>
       )}

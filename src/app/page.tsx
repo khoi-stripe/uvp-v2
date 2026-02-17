@@ -4003,6 +4003,7 @@ function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", cus
                     className="min-h-0 flex flex-col gap-4 p-4 bg-[#F5F6F8] rounded-[8px] overflow-hidden h-full"
                     layoutVersion={layoutVersion}
                     customRoles={customRoles}
+                    singleRoleSelect={singleRoleSelect}
                   />
                 </div>
               </div>
