@@ -2662,6 +2662,20 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
   const [searchQuery, setSearchQuery] = useState("");
   const roleDetailsRef = useRef<HTMLElement>(null);
   const [isRiskExpanded, setIsRiskExpanded] = useState(false);
+
+  // Responsive: collapse roles sidebar into selector when container is narrow
+  const panelContainerRef = useRef<HTMLDivElement>(null);
+  const [compactRoles, setCompactRoles] = useState(false);
+  const roleSelectorPopover = usePopover();
+  useEffect(() => {
+    const el = panelContainerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setCompactRoles(entry.contentRect.width < 900);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -2761,9 +2775,71 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
       <div className="flex-1 min-h-0 flex flex-col gap-6 overflow-hidden">
 
         {/* Main content - 3 panels */}
-        <div className="flex flex-1 min-h-0 gap-6 overflow-hidden max-w-[1400px] mx-auto">
+        <div ref={panelContainerRef} className="flex flex-col flex-1 min-h-0 gap-6 overflow-hidden max-w-[1400px] mx-auto">
+
+        {/* Compact role selector (shown when sidebar is collapsed) */}
+        {compactRoles && (
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="relative flex-1 min-w-0">
+              <button
+                onClick={() => roleSelectorPopover.toggle()}
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] border border-[#D8DEE4] rounded-[6px] bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)] hover:bg-[#F5F6F8] transition-colors"
+                style={{ fontFeatureSettings: "'lnum', 'pnum'" }}
+              >
+                <span className="flex-1 min-w-0 text-left truncate">{selectedRole.name}</span>
+                <ChevronDown className={`w-4 h-4 text-[#474E5A] flex-shrink-0 transition-transform duration-200 ${roleSelectorPopover.isVisible ? 'rotate-180' : ''}`} />
+              </button>
+
+              {roleSelectorPopover.isVisible && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => roleSelectorPopover.close()} />
+                  <div className={`absolute top-full left-0 right-0 mt-1 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_5px_15px_rgba(0,0,0,0.12),0_15px_35px_rgba(48,49,61,0.08)] z-20 overflow-hidden ${roleSelectorPopover.animationClass}`}>
+                    <div className="max-h-[320px] overflow-y-auto py-1">
+                      {allCategories.map((category, catIndex) => (
+                        <div key={category.name}>
+                          {catIndex > 0 && <div className="h-px bg-[#EBEEF1] my-1" />}
+                          <div className="px-3 py-1.5">
+                            <span className="text-[12px] font-bold text-[#353A44] leading-5">{category.name}</span>
+                          </div>
+                          {category.roles.map((role) => (
+                            <button
+                              key={role.id}
+                              onClick={() => {
+                                setSelectedRole(role);
+                                setSearchQuery("");
+                                roleDetailsRef.current?.scrollTo(0, 0);
+                                roleSelectorPopover.close();
+                              }}
+                              className={`w-full text-left px-3 py-1.5 text-[14px] leading-5 tracking-[-0.15px] transition-colors ${
+                                selectedRole.id === role.id
+                                  ? "bg-[#F7F5FD] text-[#533AFD] font-semibold"
+                                  : "text-[#353A44] hover:bg-[#F5F6F8]"
+                              }`}
+                            >
+                              {role.name}
+                            </button>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+            <button
+              onClick={() => { setModalMode("create"); setIsCreateModalOpen(true); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold text-white leading-[19px] tracking-[-0.15px] rounded-[6px] bg-[#635BFF] hover:bg-[#5851DF] transition-colors shadow-[0px_1px_1px_0px_rgba(47,14,99,0.32)] flex-shrink-0"
+            >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0"><path d="M6 1V11M1 6H11" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              Create role
+            </button>
+          </div>
+        )}
+
+        <div className={`flex flex-1 min-h-0 ${compactRoles ? '' : 'gap-6'} overflow-hidden`}>
         {/* Left Panel - Roles List */}
         {/* Baseline alignment: 16px title needs pt-[23px] to align with section's 20px title at pt-5/pt-3+8 */}
+        {!compactRoles && (
         <aside className="w-[240px] max-w-[240px] overflow-y-auto flex-shrink-0 pt-[23px] relative">
           {/* Header */}
           <div className="flex items-center gap-2.5 pb-4 border-b border-[#EBEEF1]">
@@ -2855,12 +2931,13 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
             </button>
           </div>
         </aside>
+        )}
 
         {/* Shared Container for Role Details + Permissions */}
-        <div className={`flex-1 min-h-0 flex gap-4 overflow-hidden ${isV2 ? '' : 'bg-[#F5F6F8] rounded-xl p-2'}`}>
+        <div className={`flex-1 min-h-0 min-w-0 flex gap-4 overflow-hidden ${isV2 ? '' : 'bg-[#F5F6F8] rounded-xl p-2'}`}>
           {/* Role Details Panel */}
           {/* Baseline alignment: pt-5 (20px) for the 20px title; in v1 subtract container's p-2 (8px) → pt-3 */}
-          <section ref={roleDetailsRef} className={`flex-1 flex flex-col gap-6 overflow-y-auto ${isV2 ? 'pt-5 pl-6' : 'px-4 pt-3 pb-[13px]'}`}>
+          <section ref={roleDetailsRef} className={`flex-1 min-w-0 flex flex-col gap-6 overflow-y-auto ${isV2 ? 'pt-5 pl-6' : 'px-4 pt-3 pb-[13px]'}`}>
             {/* Header */}
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2">
@@ -2966,7 +3043,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
 
           {/* Permissions Panel */}
           {/* Baseline alignment: pt-6 (24px) for the 16px title; in v1 container's p-2 (8px) + p-4 (16px) = 24px */}
-          <main className={`flex-1 min-h-0 flex flex-col gap-4 rounded-lg overflow-hidden ${isV2 ? 'bg-[#F5F6F8] pt-6 px-4 pb-4' : 'p-4 bg-white'}`}>
+          <main className={`flex-1 min-w-0 min-h-0 flex flex-col gap-4 rounded-lg overflow-hidden ${isV2 ? 'bg-[#F5F6F8] pt-6 px-4 pb-4' : 'p-4 bg-white'}`}>
             {/* Header */}
             <div className="flex items-baseline gap-2">
               <h2 className="text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Permissions</h2>
@@ -3147,6 +3224,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
               )}
             </div>
           </main>
+        </div>
         </div>
         </div>
       </div>
