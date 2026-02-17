@@ -872,7 +872,7 @@ function ModalPermissionsPanel({
                 isLast={idx === sortedGroupEntries.length - 1}
                 invertColors={isV2}
                 useDividers={isV3 || isV4}
-                lightDividers={isV4}
+                lightDividers={!isV2}
               />
             ))
           ) : (
@@ -880,7 +880,7 @@ function ModalPermissionsPanel({
             sortedGroupEntries.map(([group, perms]) => (
               <div key={group || "all"} className={(isV3 || isV4) ? "flex flex-col" : (isAlphabetical ? "" : "mb-3")}>
                 {!isAlphabetical && group && (
-                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `py-3 px-2 border-b ${isV4 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : 'mb-2'}`}>
+                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `py-3 px-2 border-b ${!isV2 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : 'mb-2'}`}>
                     <Checkbox
                       checked={getGroupCheckState(perms) === "all"}
                       indeterminate={getGroupCheckState(perms) === "some"}
@@ -894,7 +894,7 @@ function ModalPermissionsPanel({
                     </span>
                   </div>
                 )}
-                <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-4 ${isV4 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : ''}>
+                <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-4 ${!isV2 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : ''}>
                   {sortPermsInGroup(perms).map(perm => {
                     const isChecked = perm.apiName in permissionAccess;
                     return (
@@ -913,7 +913,7 @@ function ModalPermissionsPanel({
                           onPendingAccessChange={!isChecked ? (access) => updatePendingAccess(perm.apiName, access) : undefined}
                           invertColors={isV2}
                           useDividers={isV3 || isV4}
-                          lightDividers={isV4}
+                          lightDividers={!isV2}
                         />
                       </div>
                     );
@@ -1934,9 +1934,6 @@ function CreateRoleContent({
                   )}
                 </div>
               </div>
-
-              {/* Divider */}
-              <div className="h-px bg-[#D8DEE4]" />
 
               {/* Role name input */}
               <div className="flex flex-col gap-1">
@@ -3729,11 +3726,6 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
                     <span className="flex-1 text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Roles</span>
                     <ToggleSwitch checked={showPermissions} onChange={setShowPermissions} label="Show permissions" />
                   </div>
-                  <div className="bg-[#F5F6F8] rounded-[4px] p-4 flex-shrink-0">
-                    <p className="text-[13px] text-[#596171] leading-5 tracking-[-0.15px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
-                      To protect your account, users who are recently invited or have recently updated roles may be prevented from performing certain sensitive operations for two to three days.
-                    </p>
-                  </div>
                   <div className="min-h-0 relative">
                     <div ref={rolesScrollRef} className="overflow-y-auto h-full" onScroll={(e) => {
                       const el = e.currentTarget;
@@ -3741,6 +3733,11 @@ function AddMemberModal({ isOpen, onClose, layoutVersion = "v1", customRoles = [
                       const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 4;
                       setRolesShowShadow(overflows && !atBottom);
                     }}>
+                    <div className="bg-[#F5F6F8] rounded-[4px] p-4 mb-2">
+                      <p className="text-[13px] text-[#596171] leading-5 tracking-[-0.15px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
+                        To protect your account, users who are recently invited or have recently updated roles may be prevented from performing certain sensitive operations for two to three days.
+                      </p>
+                    </div>
                     <div ref={step3ContentRef} className="flex flex-col">
                       {allCategories.map((cat) => {
                         const isCatExpanded = expandedCategories.has(cat.name);
