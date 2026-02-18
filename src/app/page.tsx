@@ -2329,7 +2329,7 @@ function Topbar() {
 }
 
 // Side Navigation Component
-function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void; use14px: boolean; onUse14pxToggle: (v: boolean) => void; searchWhiteBg: boolean; onSearchWhiteBgToggle: (v: boolean) => void; singleRoleSelect: boolean; onSingleRoleSelectToggle: (v: boolean) => void; compactTabMode: boolean; onCompactTabModeToggle: (v: boolean) => void; layoutVersion: "v1" | "v2" | "v3" | "v4" | "v5"; onLayoutVersionChange: (v: "v1" | "v2" | "v3" | "v4" | "v5") => void } }) {
+function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void; use14px: boolean; onUse14pxToggle: (v: boolean) => void; searchWhiteBg: boolean; onSearchWhiteBgToggle: (v: boolean) => void; singleRoleSelect: boolean; onSingleRoleSelectToggle: (v: boolean) => void; compactTabMode: boolean; onCompactTabModeToggle: (v: boolean) => void; reduceCounts: boolean; onReduceCountsToggle: (v: boolean) => void; layoutVersion: "v1" | "v2" | "v3" | "v4" | "v5"; onLayoutVersionChange: (v: "v1" | "v2" | "v3" | "v4" | "v5") => void } }) {
   const popover = usePopover();
 
   return (
@@ -2420,6 +2420,12 @@ function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boo
                     <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Hide permissions by default</span>
                     <div onClick={(e) => e.stopPropagation()}>
                       <ToggleSwitch checked={protoControls.compactTabMode} onChange={protoControls.onCompactTabModeToggle} />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => protoControls.onReduceCountsToggle(!protoControls.reduceCounts)}>
+                    <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Reduce counts</span>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <ToggleSwitch checked={protoControls.reduceCounts} onChange={protoControls.onReduceCountsToggle} />
                     </div>
                   </div>
                   <div className="h-px bg-[#EBEEF1] my-1" />
@@ -2773,13 +2779,14 @@ function SandboxView({
 // ============================================================
 
 
-function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = "v2", customRoles, setCustomRoles, compactTabMode = false }: {
+function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = "v2", customRoles, setCustomRoles, compactTabMode = false, reduceCounts = false }: {
   sandboxMode: SandboxModeState;
   setSandboxMode: React.Dispatch<React.SetStateAction<SandboxModeState>>;
   layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5";
   customRoles: Role[];
   setCustomRoles: React.Dispatch<React.SetStateAction<Role[]>>;
   compactTabMode?: boolean;
+  reduceCounts?: boolean;
 }) {
   const { showToast } = useToast();
   // v2 and v3 share inverted color scheme (gray bg, white badges) in the roles view
@@ -3015,9 +3022,11 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                     <span className="flex-1 text-left text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                       {category.name}
                     </span>
-                    <span className="text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 text-center">
-                      {category.roles.length}
-                    </span>
+                    {!reduceCounts && (
+                      <span className="text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 text-center">
+                        {category.roles.length}
+                      </span>
+                    )}
                     <ChevronDown 
                       className="w-4 h-4 text-[#474E5A] transition-transform duration-300"
                       style={{
@@ -3093,11 +3102,13 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                 <h2 className="text-[20px] font-bold text-[#353A44] leading-7 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
                   {selectedRole.name}
                 </h2>
-                <Tooltip content={`There are ${selectedRole.userCount} users with the ${selectedRole.name} role`}>
-                  <span className={`${useInvertedColors ? 'bg-[#F5F6F8]' : 'bg-white'} text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center cursor-default`}>
-                    {selectedRole.userCount}
-                  </span>
-                </Tooltip>
+                {!reduceCounts && (
+                  <Tooltip content={`There are ${selectedRole.userCount} users with the ${selectedRole.name} role`}>
+                    <span className={`${useInvertedColors ? 'bg-[#F5F6F8]' : 'bg-white'} text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center cursor-default`}>
+                      {selectedRole.userCount}
+                    </span>
+                  </Tooltip>
+                )}
                 {selectedRole.category === "Custom" && (
                   <span className="bg-[#e2fbfe] text-[#045ad0] text-[12px] font-normal px-2 py-0.5 rounded flex-shrink-0">
                     Custom
@@ -4244,7 +4255,7 @@ function TeamAndSecurityPageInner() {
   //   t = tab (team|roles, default roles)
   //   l = layout version (v1-v5, default v3)
   //   p = proto flags string, each char = a non-default flag:
-  //       Uppercase = default-ON toggled OFF: A = addMember off, W = whiteBg off, S = singleRole off
+  //       Uppercase = default-ON toggled OFF: A = addMember off, W = whiteBg off, S = singleRole off, R = reduceCounts off
   //       Lowercase = default-OFF toggled ON: f = 14px font on, c = compactTabMode on
   const initFromUrl = useCallback(() => {
     const lParam = searchParams.get("l");
@@ -4258,6 +4269,7 @@ function TeamAndSecurityPageInner() {
       whiteBg: !flags.includes("W"),
       singleRole: !flags.includes("S"),
       compactTab: flags.includes("c"),
+      reduceCounts: !flags.includes("R"),
     };
   }, [searchParams]);
 
@@ -4292,6 +4304,7 @@ function TeamAndSecurityPageInner() {
 
   const [singleRoleSelect, setSingleRoleSelect] = useState(init.singleRole);
   const [compactTabMode, setCompactTabMode] = useState(init.compactTab);
+  const [reduceCounts, setReduceCounts] = useState(init.reduceCounts ?? true);
 
   // Sync proto controls to URL (only non-default values, compact encoding)
   const setActiveTab = useCallback((tab: "team" | "roles") => {
@@ -4310,11 +4323,12 @@ function TeamAndSecurityPageInner() {
     if (!searchWhiteBg) flags += "W";
     if (!singleRoleSelect) flags += "S";
     if (compactTabMode) flags += "c";
+    if (!reduceCounts) flags += "R";
     if (flags) params.set("p", flags);
     const qs = params.toString();
     const newUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
     window.history.replaceState(null, '', newUrl);
-  }, [activeTab, layoutVersion, teamSecurityEnabled, use14px, searchWhiteBg, singleRoleSelect, compactTabMode]);
+  }, [activeTab, layoutVersion, teamSecurityEnabled, use14px, searchWhiteBg, singleRoleSelect, compactTabMode, reduceCounts]);
   
   // Sandbox mode state - lifted to page level for full-screen takeover
   const [sandboxMode, setSandboxMode] = useState<SandboxModeState>({
@@ -4347,7 +4361,7 @@ function TeamAndSecurityPageInner() {
 
   return (
     <div className={`h-screen flex bg-white ${use14px ? 'use-14px' : ''} ${searchWhiteBg ? 'search-white-bg' : ''}`}>
-      <SideNav protoControls={{ teamSecurityEnabled, onTeamSecurityToggle: setTeamSecurityEnabled, use14px, onUse14pxToggle: setUse14px, searchWhiteBg, onSearchWhiteBgToggle: setSearchWhiteBg, singleRoleSelect, onSingleRoleSelectToggle: setSingleRoleSelect, compactTabMode, onCompactTabModeToggle: setCompactTabMode, layoutVersion, onLayoutVersionChange: setLayoutVersion }} />
+      <SideNav protoControls={{ teamSecurityEnabled, onTeamSecurityToggle: setTeamSecurityEnabled, use14px, onUse14pxToggle: setUse14px, searchWhiteBg, onSearchWhiteBgToggle: setSearchWhiteBg, singleRoleSelect, onSingleRoleSelectToggle: setSingleRoleSelect, compactTabMode, onCompactTabModeToggle: setCompactTabMode, reduceCounts, onReduceCountsToggle: setReduceCounts, layoutVersion, onLayoutVersionChange: setLayoutVersion }} />
 
       <div className="flex-1 flex flex-col px-8 pb-6 overflow-hidden">
         <Topbar />
@@ -4381,7 +4395,7 @@ function TeamAndSecurityPageInner() {
 
           {/* Tab content */}
           {activeTab === "roles" ? (
-            <RolesPermissionsContent sandboxMode={sandboxMode} setSandboxMode={setSandboxMode} layoutVersion={layoutVersion} customRoles={customRoles} setCustomRoles={setCustomRoles} compactTabMode={compactTabMode} />
+            <RolesPermissionsContent sandboxMode={sandboxMode} setSandboxMode={setSandboxMode} layoutVersion={layoutVersion} customRoles={customRoles} setCustomRoles={setCustomRoles} compactTabMode={compactTabMode} reduceCounts={reduceCounts} />
           ) : (
             <TeamContent teamSecurityEnabled={teamSecurityEnabled} onAddMember={() => setIsModalOpen(true)} />
           )}
