@@ -3005,6 +3005,8 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
           <div className="flex flex-col">
             {allCategories.map((category) => {
               const isExpanded = expandedCategory === category.name;
+              const hasActiveRole = category.roles.some(r => r.id === selectedRole.id);
+              const showActiveCategory = !isExpanded && hasActiveRole;
               return (
                 <div 
                   key={category.name} 
@@ -3017,9 +3019,9 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                   {/* Category header */}
                   <button
                     onClick={() => toggleCategory(category.name)}
-                    className="w-full flex items-center gap-2 px-2 py-1 rounded-md hover:bg-[#F5F6F8] transition-colors"
+                    className={`w-full flex items-center gap-2 px-2 py-1 rounded-md transition-colors ${showActiveCategory ? 'bg-[#F5F6F8] hover:bg-[#EBEEF1]' : 'hover:bg-[#F5F6F8]'}`}
                   >
-                    <span className="flex-1 text-left text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
+                    <span className={`flex-1 text-left text-[13px] font-semibold leading-[19px] tracking-[-0.15px] ${showActiveCategory ? 'text-[#533AFD]' : 'text-[#353A44]'}`}>
                       {category.name}
                     </span>
                     {!reduceCounts && (
@@ -3028,7 +3030,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                       </span>
                     )}
                     <ChevronDown 
-                      className="w-4 h-4 text-[#474E5A] transition-transform duration-300"
+                      className={`w-4 h-4 transition-transform duration-300 ${showActiveCategory ? 'text-[#533AFD]' : 'text-[#474E5A]'}`}
                       style={{
                         transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
                         transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
