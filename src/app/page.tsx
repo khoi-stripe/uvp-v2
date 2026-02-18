@@ -3106,7 +3106,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
 
             {/* Can, Cannot - combined container */}
             <div className={`${isV2Only ? 'bg-[#F5F6F8] rounded-lg p-4' : ''} flex flex-col`}>
-              {!isV2Only && <div className="h-px mb-4 bg-[#EBEEF1]" />}
+              {!isV2Only && <div className={`h-px mb-4 ${isV3 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'}`} />}
 
               {/* Note */}
               <p className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px] pb-4">
@@ -3153,7 +3153,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                 )}
               </div>
 
-              {!isV2Only && <div className="h-px bg-[#EBEEF1]" />}
+              {!isV2Only && <div className={`h-px ${isV3 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'}`} />}
 
             </div>
 
