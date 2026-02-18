@@ -1657,6 +1657,7 @@ function CreateRoleContent({
   layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5";
   showSandbox?: boolean;
 }) {
+  const isV2 = layoutVersion === "v2";
   const allPermissions = getAllPermissions();
   const roleNameInputRef = useRef<HTMLInputElement>(null);
   
