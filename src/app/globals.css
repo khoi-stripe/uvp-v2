@@ -224,8 +224,3 @@ body {
 .use-14px [class*="text-[13px]"] {
   font-size: 14px !important;
 }
-
-/* Prototype control: white search field backgrounds */
-.search-white-bg .search-field {
-  background-color: white !important;
-}

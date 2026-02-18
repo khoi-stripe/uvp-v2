@@ -1508,45 +1508,68 @@ function CustomizeRoleModal({
                 )}
 
                 {/* Combined Can / Cannot container */}
-                <div className={`${isV2 ? 'bg-[#F5F6F8] rounded-lg p-4' : ''} flex flex-col`}>
-                  <div className="h-px mb-4 bg-[#D8DEE4]" />
+                <div className={`${isV2 ? 'bg-[#F5F6F8] rounded-lg p-4' : ''} flex flex-col gap-4`}>
+                  <div className="h-px bg-[#D8DEE4]" />
 
                   {/* Note */}
-                  <p className="text-[13px] text-[#596171] leading-[19px] pb-4">
+                  <p className="text-[13px] text-[#596171] leading-[19px]">
                     Capabilities listed are highlights. View permissions for the full list by role.
                   </p>
 
-                  {/* Can section */}
-                  <div className="pb-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <CheckCircleIcon />
-                      <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Can</span>
-                    </div>
-                    <ul className="list-disc pl-6 flex flex-col gap-1.5">
+                  {mergedCanCannot ? (
+                    <ul className="flex flex-col gap-1.5">
                       {previewDetails.canDo.slice(0, 5).map((item, i) => (
-                        <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">{item}</li>
+                        <li key={`can-${i}`} className="flex items-start gap-2 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">
+                          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 mt-[3px]">
+                            <path fillRule="evenodd" clipRule="evenodd" d="M15.4695 2.23296C15.8241 2.56129 15.8454 3.1149 15.5171 3.46949L6.14206 13.5945C5.97228 13.7778 5.73221 13.8799 5.48237 13.8748C5.23253 13.8698 4.99677 13.7582 4.83452 13.5681L0.459523 8.44311C0.145767 8.07557 0.18937 7.52327 0.556912 7.20951C0.924454 6.89575 1.47676 6.93936 1.79051 7.3069L5.52658 11.6834L14.233 2.28052C14.5613 1.92593 15.1149 1.90464 15.4695 2.23296Z" fill="#2B8700"/>
+                          </svg>
+                          {item}
+                        </li>
                       ))}
-                      {previewDetails.canDo.length > 5 && (
-                        <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px]">+{previewDetails.canDo.length - 5} more</li>
-                      )}
-                    </ul>
-                  </div>
-
-                  {/* Cannot section */}
-                  <div className="pb-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <CancelCircleIcon />
-                      <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Cannot</span>
-                    </div>
-                    <ul className="list-disc pl-6 flex flex-col gap-1.5">
                       {previewDetails.cannotDo.slice(0, 5).map((item, i) => (
-                        <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">{item}</li>
+                        <li key={`cannot-${i}`} className="flex items-start gap-2 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">
+                          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 mt-[3px]">
+                            <path fillRule="evenodd" clipRule="evenodd" d="M1.25628 1.25628C1.59799 0.914573 2.15201 0.914573 2.49372 1.25628L8 6.76256L13.5063 1.25628C13.848 0.914573 14.402 0.914573 14.7437 1.25628C15.0854 1.59799 15.0854 2.15201 14.7437 2.49372L9.23744 8L14.7437 13.5063C15.0854 13.848 15.0854 14.402 14.7437 14.7437C14.402 15.0854 13.848 15.0854 13.5063 14.7437L8 9.23744L2.49372 14.7437C2.15201 15.0854 1.59799 15.0854 1.25628 14.7437C0.914573 14.402 0.914573 13.848 1.25628 13.5063L6.76256 8L1.25628 2.49372C0.914573 2.15201 0.914573 1.59799 1.25628 1.25628Z" fill="#C0123C"/>
+                          </svg>
+                          {item}
+                        </li>
                       ))}
-                      {previewDetails.cannotDo.length > 5 && (
-                        <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px]">+{previewDetails.cannotDo.length - 5} more</li>
-                      )}
                     </ul>
-                  </div>
+                  ) : (
+                    <>
+                    {/* Can section */}
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        <CheckCircleIcon />
+                        <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Can</span>
+                      </div>
+                      <ul className="list-disc pl-6 flex flex-col gap-1.5">
+                        {previewDetails.canDo.slice(0, 5).map((item, i) => (
+                          <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">{item}</li>
+                        ))}
+                        {previewDetails.canDo.length > 5 && (
+                          <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px]">+{previewDetails.canDo.length - 5} more</li>
+                        )}
+                      </ul>
+                    </div>
+
+                    {/* Cannot section */}
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        <CancelCircleIcon />
+                        <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Cannot</span>
+                      </div>
+                      <ul className="list-disc pl-6 flex flex-col gap-1.5">
+                        {previewDetails.cannotDo.slice(0, 5).map((item, i) => (
+                          <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">{item}</li>
+                        ))}
+                        {previewDetails.cannotDo.length > 5 && (
+                          <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px]">+{previewDetails.cannotDo.length - 5} more</li>
+                        )}
+                      </ul>
+                    </div>
+                    </>
+                  )}
 
                   <div className="h-px bg-[#D8DEE4]" />
 
@@ -2062,59 +2085,82 @@ function CreateRoleContent({
               </div>
 
               {/* Combined Can / Cannot container */}
-              <div className="flex flex-col">
-                <div className="h-px mb-4 bg-[#D8DEE4]" />
+              <div className="flex flex-col gap-4">
+                <div className="h-px bg-[#D8DEE4]" />
 
                 {/* Note */}
-                <p className="text-[13px] text-[#596171] leading-[19px] pb-4">
+                <p className="text-[13px] text-[#596171] leading-[19px]">
                   Capabilities listed are highlights. View permissions for the full list by role.
                 </p>
 
-                {/* Can section */}
-                <div className="pb-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <CheckCircleIcon />
-                    <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Can</span>
-                  </div>
-                  {previewDetails.canDo.length > 0 ? (
-                    <ul className="list-disc pl-6 flex flex-col gap-1.5">
-                      {previewDetails.canDo.slice(0, 5).map((item, i) => (
-                        <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">{item}</li>
-                      ))}
-                      {previewDetails.canDo.length > 5 && (
-                        <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px]">+{previewDetails.canDo.length - 5} more</li>
-                      )}
-                    </ul>
-                  ) : (
-                    <div className="flex flex-col gap-2.5 py-1.5">
-                      <div className="h-2 bg-[#EBEEF1] rounded-lg w-full" />
-                      <div className="h-2 bg-[#EBEEF1] rounded-lg w-full" />
+                {mergedCanCannot ? (
+                  <ul className="flex flex-col gap-1.5">
+                    {previewDetails.canDo.slice(0, 5).map((item, i) => (
+                      <li key={`can-${i}`} className="flex items-start gap-2 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 mt-[3px]">
+                          <path fillRule="evenodd" clipRule="evenodd" d="M15.4695 2.23296C15.8241 2.56129 15.8454 3.1149 15.5171 3.46949L6.14206 13.5945C5.97228 13.7778 5.73221 13.8799 5.48237 13.8748C5.23253 13.8698 4.99677 13.7582 4.83452 13.5681L0.459523 8.44311C0.145767 8.07557 0.18937 7.52327 0.556912 7.20951C0.924454 6.89575 1.47676 6.93936 1.79051 7.3069L5.52658 11.6834L14.233 2.28052C14.5613 1.92593 15.1149 1.90464 15.4695 2.23296Z" fill="#2B8700"/>
+                        </svg>
+                        {item}
+                      </li>
+                    ))}
+                    {previewDetails.cannotDo.slice(0, 5).map((item, i) => (
+                      <li key={`cannot-${i}`} className="flex items-start gap-2 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 mt-[3px]">
+                          <path fillRule="evenodd" clipRule="evenodd" d="M1.25628 1.25628C1.59799 0.914573 2.15201 0.914573 2.49372 1.25628L8 6.76256L13.5063 1.25628C13.848 0.914573 14.402 0.914573 14.7437 1.25628C15.0854 1.59799 15.0854 2.15201 14.7437 2.49372L9.23744 8L14.7437 13.5063C15.0854 13.848 15.0854 14.402 14.7437 14.7437C14.402 15.0854 13.848 15.0854 13.5063 14.7437L8 9.23744L2.49372 14.7437C2.15201 15.0854 1.59799 15.0854 1.25628 14.7437C0.914573 14.402 0.914573 13.848 1.25628 13.5063L6.76256 8L1.25628 2.49372C0.914573 2.15201 0.914573 1.59799 1.25628 1.25628Z" fill="#C0123C"/>
+                        </svg>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <>
+                  {/* Can section */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <CheckCircleIcon />
+                      <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Can</span>
                     </div>
-                  )}
-                </div>
+                    {previewDetails.canDo.length > 0 ? (
+                      <ul className="list-disc pl-6 flex flex-col gap-1.5">
+                        {previewDetails.canDo.slice(0, 5).map((item, i) => (
+                          <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">{item}</li>
+                        ))}
+                        {previewDetails.canDo.length > 5 && (
+                          <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px]">+{previewDetails.canDo.length - 5} more</li>
+                        )}
+                      </ul>
+                    ) : (
+                      <div className="flex flex-col gap-2.5 py-1.5">
+                        <div className="h-2 bg-[#EBEEF1] rounded-lg w-full" />
+                        <div className="h-2 bg-[#EBEEF1] rounded-lg w-full" />
+                      </div>
+                    )}
+                  </div>
 
-                {/* Cannot section */}
-                <div className="pb-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <CancelCircleIcon />
-                    <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Cannot</span>
-                  </div>
-                  {previewDetails.cannotDo.length > 0 ? (
-                    <ul className="list-disc pl-6 flex flex-col gap-1.5">
-                      {previewDetails.cannotDo.slice(0, 5).map((item, i) => (
-                        <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">{item}</li>
-                      ))}
-                      {previewDetails.cannotDo.length > 5 && (
-                        <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px]">+{previewDetails.cannotDo.length - 5} more</li>
-                      )}
-                    </ul>
-                  ) : (
-                    <div className="flex flex-col gap-2.5 py-1.5">
-                      <div className="h-2 bg-[#EBEEF1] rounded-lg w-full" />
-                      <div className="h-2 bg-[#EBEEF1] rounded-lg w-full" />
+                  {/* Cannot section */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <CancelCircleIcon />
+                      <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Cannot</span>
                     </div>
-                  )}
-                </div>
+                    {previewDetails.cannotDo.length > 0 ? (
+                      <ul className="list-disc pl-6 flex flex-col gap-1.5">
+                        {previewDetails.cannotDo.slice(0, 5).map((item, i) => (
+                          <li key={i} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">{item}</li>
+                        ))}
+                        {previewDetails.cannotDo.length > 5 && (
+                          <li className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px]">+{previewDetails.cannotDo.length - 5} more</li>
+                        )}
+                      </ul>
+                    ) : (
+                      <div className="flex flex-col gap-2.5 py-1.5">
+                        <div className="h-2 bg-[#EBEEF1] rounded-lg w-full" />
+                        <div className="h-2 bg-[#EBEEF1] rounded-lg w-full" />
+                      </div>
+                    )}
+                  </div>
+                  </>
+                )}
 
                 <div className="h-px bg-[#D8DEE4]" />
               </div>
@@ -2316,10 +2362,10 @@ function NavItem({ hasIcon = true }: { hasIcon?: boolean }) {
 type ProtoControlsType = {
   teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void;
   use14px: boolean; onUse14pxToggle: (v: boolean) => void;
-  searchWhiteBg: boolean; onSearchWhiteBgToggle: (v: boolean) => void;
   singleRoleSelect: boolean; onSingleRoleSelectToggle: (v: boolean) => void;
   compactTabMode: boolean; onCompactTabModeToggle: (v: boolean) => void;
   reduceCounts: boolean; onReduceCountsToggle: (v: boolean) => void;
+  mergedCanCannot: boolean; onMergedCanCannotToggle: (v: boolean) => void;
   wireframe: boolean; onWireframeToggle: (v: boolean) => void;
   layoutVersion: "v1" | "v2" | "v3" | "v4" | "v5"; onLayoutVersionChange: (v: "v1" | "v2" | "v3" | "v4" | "v5") => void;
 };
@@ -2338,14 +2384,14 @@ function ProtoControlsPopover({ protoControls }: { protoControls: ProtoControlsT
               <div className="px-2 py-1.5">
                 <span className="text-[12px] font-semibold text-[#818DA0] leading-4 tracking-[-0.024px] uppercase">Prototype controls</span>
               </div>
+
+              {/* General */}
               <div className="h-px bg-[#EBEEF1] my-1" />
+              <div className="px-2 pt-1 pb-0.5">
+                <span className="text-[11px] font-semibold text-[#B0B9C9] leading-4 uppercase tracking-[0.04em]">General</span>
+              </div>
               {([
-                { label: "Enable add member", key: "teamSecurityEnabled", toggle: "onTeamSecurityToggle" },
                 { label: "Use 14px type", key: "use14px", toggle: "onUse14pxToggle" },
-                { label: "White search fields", key: "searchWhiteBg", toggle: "onSearchWhiteBgToggle" },
-                { label: "Single role select", key: "singleRoleSelect", toggle: "onSingleRoleSelectToggle" },
-                { label: "Hide permissions by default", key: "compactTabMode", toggle: "onCompactTabModeToggle" },
-                { label: "Reduce counts", key: "reduceCounts", toggle: "onReduceCountsToggle" },
                 { label: "Wireframe chrome", key: "wireframe", toggle: "onWireframeToggle" },
               ] as const).map(({ label, key, toggle }) => (
                 <div key={key} className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => (protoControls[toggle] as (v: boolean) => void)(!protoControls[key])}>
@@ -2355,6 +2401,42 @@ function ProtoControlsPopover({ protoControls }: { protoControls: ProtoControlsT
                   </div>
                 </div>
               ))}
+
+              {/* Add member flow */}
+              <div className="h-px bg-[#EBEEF1] my-1" />
+              <div className="px-2 pt-1 pb-0.5">
+                <span className="text-[11px] font-semibold text-[#B0B9C9] leading-4 uppercase tracking-[0.04em]">Add member flow</span>
+              </div>
+              {([
+                { label: "Enable add member", key: "teamSecurityEnabled", toggle: "onTeamSecurityToggle" },
+                { label: "Single role select", key: "singleRoleSelect", toggle: "onSingleRoleSelectToggle" },
+              ] as const).map(({ label, key, toggle }) => (
+                <div key={key} className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => (protoControls[toggle] as (v: boolean) => void)(!protoControls[key])}>
+                  <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">{label}</span>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <ToggleSwitch checked={protoControls[key] as boolean} onChange={(protoControls[toggle] as (v: boolean) => void)} />
+                  </div>
+                </div>
+              ))}
+
+              {/* Roles & permissions */}
+              <div className="h-px bg-[#EBEEF1] my-1" />
+              <div className="px-2 pt-1 pb-0.5">
+                <span className="text-[11px] font-semibold text-[#B0B9C9] leading-4 uppercase tracking-[0.04em]">Roles &amp; permissions</span>
+              </div>
+              {([
+                { label: "Hide permissions by default", key: "compactTabMode", toggle: "onCompactTabModeToggle" },
+                { label: "Reduce counts", key: "reduceCounts", toggle: "onReduceCountsToggle" },
+                { label: "Simplified can/cannot", key: "mergedCanCannot", toggle: "onMergedCanCannotToggle" },
+              ] as const).map(({ label, key, toggle }) => (
+                <div key={key} className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => (protoControls[toggle] as (v: boolean) => void)(!protoControls[key])}>
+                  <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">{label}</span>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <ToggleSwitch checked={protoControls[key] as boolean} onChange={(protoControls[toggle] as (v: boolean) => void)} />
+                  </div>
+                </div>
+              ))}
+
               <div className="h-px bg-[#EBEEF1] my-1" />
               <div className="flex items-center justify-between gap-6 px-2 py-1.5">
                 <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Layout</span>
@@ -2920,7 +3002,7 @@ function SandboxView({
 // ============================================================
 
 
-function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = "v2", customRoles, setCustomRoles, compactTabMode = false, reduceCounts = false }: {
+function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = "v2", customRoles, setCustomRoles, compactTabMode = false, reduceCounts = false, mergedCanCannot = false }: {
   sandboxMode: SandboxModeState;
   setSandboxMode: React.Dispatch<React.SetStateAction<SandboxModeState>>;
   layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5";
@@ -2928,6 +3010,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
   setCustomRoles: React.Dispatch<React.SetStateAction<Role[]>>;
   compactTabMode?: boolean;
   reduceCounts?: boolean;
+  mergedCanCannot?: boolean;
 }) {
   const { showToast } = useToast();
   // v2 and v3 share inverted color scheme (gray bg, white badges) in the roles view
@@ -3294,11 +3377,11 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
             </div>
 
             {/* Can, Cannot - combined container */}
-            <div className={`${isV2Only ? 'bg-[#F5F6F8] rounded-lg p-4' : ''} flex flex-col`}>
-              {!isV2Only && <div className={`h-px mb-4 ${isV3 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'}`} />}
+            <div className={`${isV2Only ? 'bg-[#F5F6F8] rounded-lg p-4' : ''} flex flex-col gap-4`}>
+              {!isV2Only && <div className={`h-px ${isV3 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'}`} />}
 
               {/* Note */}
-              <p className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px] pb-4">
+              <p className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px]">
                 Capabilities listed are highlights.{' '}
                 {useTabLayout ? (
                   <button
@@ -3314,45 +3397,69 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                 for the full list by role.
               </p>
 
-              {/* Can section */}
-              <div className="pb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <CheckCircleIcon />
-                  <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Can</span>
-                </div>
-                {selectedRole.details?.canDo && selectedRole.details.canDo.length > 0 ? (
-                  <ul className="list-disc pl-4 flex flex-col gap-1">
-                    {selectedRole.details.canDo.map((item, index) => (
-                      <li key={index} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] pl-1">{item}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="flex flex-col gap-2.5 py-1.5">
-                    <div className="h-2 bg-[#EBEEF1] rounded-lg w-full"></div>
-                    <div className="h-2 bg-[#EBEEF1] rounded-lg w-full"></div>
+              {mergedCanCannot ? (
+                /* Merged can/cannot list */
+                <ul className="flex flex-col gap-1.5">
+                  {(selectedRole.details?.canDo ?? []).map((item, i) => (
+                    <li key={`can-${i}`} className="flex items-start gap-2 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 mt-[3px]">
+                        <path fillRule="evenodd" clipRule="evenodd" d="M15.4695 2.23296C15.8241 2.56129 15.8454 3.1149 15.5171 3.46949L6.14206 13.5945C5.97228 13.7778 5.73221 13.8799 5.48237 13.8748C5.23253 13.8698 4.99677 13.7582 4.83452 13.5681L0.459523 8.44311C0.145767 8.07557 0.18937 7.52327 0.556912 7.20951C0.924454 6.89575 1.47676 6.93936 1.79051 7.3069L5.52658 11.6834L14.233 2.28052C14.5613 1.92593 15.1149 1.90464 15.4695 2.23296Z" fill="#2B8700"/>
+                      </svg>
+                      {item}
+                    </li>
+                  ))}
+                  {(selectedRole.details?.cannotDo ?? []).map((item, i) => (
+                    <li key={`cannot-${i}`} className="flex items-start gap-2 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 mt-[3px]">
+                        <path fillRule="evenodd" clipRule="evenodd" d="M1.25628 1.25628C1.59799 0.914573 2.15201 0.914573 2.49372 1.25628L8 6.76256L13.5063 1.25628C13.848 0.914573 14.402 0.914573 14.7437 1.25628C15.0854 1.59799 15.0854 2.15201 14.7437 2.49372L9.23744 8L14.7437 13.5063C15.0854 13.848 15.0854 14.402 14.7437 14.7437C14.402 15.0854 13.848 15.0854 13.5063 14.7437L8 9.23744L2.49372 14.7437C2.15201 15.0854 1.59799 15.0854 1.25628 14.7437C0.914573 14.402 0.914573 13.848 1.25628 13.5063L6.76256 8L1.25628 2.49372C0.914573 2.15201 0.914573 1.59799 1.25628 1.25628Z" fill="#C0123C"/>
+                      </svg>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <>
+                {/* Can section */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircleIcon />
+                    <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Can</span>
                   </div>
-                )}
-              </div>
+                  {selectedRole.details?.canDo && selectedRole.details.canDo.length > 0 ? (
+                    <ul className="list-disc pl-4 flex flex-col gap-1">
+                      {selectedRole.details.canDo.map((item, index) => (
+                        <li key={index} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] pl-1">{item}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="flex flex-col gap-2.5 py-1.5">
+                      <div className="h-2 bg-[#EBEEF1] rounded-lg w-full"></div>
+                      <div className="h-2 bg-[#EBEEF1] rounded-lg w-full"></div>
+                    </div>
+                  )}
+                </div>
 
-              {/* Cannot section */}
-              <div className={isV2Only ? '' : 'pb-4'}>
-                <div className="flex items-center gap-2 mb-2">
-                  <CancelCircleIcon />
-                  <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Cannot</span>
-                </div>
-                {selectedRole.details?.cannotDo && selectedRole.details.cannotDo.length > 0 ? (
-                  <ul className="list-disc pl-4 flex flex-col gap-1">
-                    {selectedRole.details.cannotDo.map((item, index) => (
-                      <li key={index} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] pl-1">{item}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="flex flex-col gap-2.5 py-1.5">
-                    <div className="h-2 bg-[#EBEEF1] rounded-lg w-full"></div>
-                    <div className="h-2 bg-[#EBEEF1] rounded-lg w-full"></div>
+                {/* Cannot section */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <CancelCircleIcon />
+                    <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Cannot</span>
                   </div>
-                )}
-              </div>
+                  {selectedRole.details?.cannotDo && selectedRole.details.cannotDo.length > 0 ? (
+                    <ul className="list-disc pl-4 flex flex-col gap-1">
+                      {selectedRole.details.cannotDo.map((item, index) => (
+                        <li key={index} className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] pl-1">{item}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="flex flex-col gap-2.5 py-1.5">
+                      <div className="h-2 bg-[#EBEEF1] rounded-lg w-full"></div>
+                      <div className="h-2 bg-[#EBEEF1] rounded-lg w-full"></div>
+                    </div>
+                  )}
+                </div>
+                </>
+              )}
 
               {!isV2Only && <div className={`h-px ${isV3 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'}`} />}
 
@@ -3652,7 +3759,7 @@ const MOCK_ACCOUNTS = [
 const ACCOUNT_GROUPS = ["All", ...Array.from(new Set(MOCK_ACCOUNTS.map(a => a.group)))];
 const ALL_ACCOUNT_IDS = new Set(MOCK_ACCOUNTS.map(a => a.id));
 
-function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", customRoles = [], singleRoleSelect = false, setCustomRoles }: { isOpen: boolean; onClose: () => void; onComplete?: () => void; layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5"; customRoles?: Role[]; singleRoleSelect?: boolean; setCustomRoles?: React.Dispatch<React.SetStateAction<Role[]>> }) {
+function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", customRoles = [], singleRoleSelect = false, setCustomRoles, mergedCanCannot = false }: { isOpen: boolean; onClose: () => void; onComplete?: () => void; layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5"; customRoles?: Role[]; singleRoleSelect?: boolean; setCustomRoles?: React.Dispatch<React.SetStateAction<Role[]>>; mergedCanCannot?: boolean }) {
   const [step, setStep] = useState(1);
   const [emails, setEmails] = useState<string[]>([]);
   const [currentInput, setCurrentInput] = useState("");
@@ -4426,8 +4533,8 @@ function TeamAndSecurityPageInner() {
   //   t = tab (team|roles, default roles)
   //   l = layout version (v1-v5, default v3)
   //   p = proto flags string, each char = a non-default flag:
-  //       Uppercase = default-ON toggled OFF: A = addMember off, W = whiteBg off, S = singleRole off, R = reduceCounts off
-  //       Lowercase = default-OFF toggled ON: f = 14px font on, c = compactTabMode on, w = wireframe on
+  //       Uppercase = default-ON toggled OFF: A = addMember off, S = singleRole off, R = reduceCounts off, C = compactTabMode off
+  //       Lowercase = default-OFF toggled ON: f = 14px font on, w = wireframe on, m = mergedCanCannot on
   const initFromUrl = useCallback(() => {
     const lParam = searchParams.get("l");
     const validLayouts = ["v1", "v2", "v3", "v4", "v5"] as const;
@@ -4437,10 +4544,10 @@ function TeamAndSecurityPageInner() {
       layout,
       addMember: !flags.includes("A"),
       font14: flags.includes("f"),
-      whiteBg: !flags.includes("W"),
       singleRole: !flags.includes("S"),
-      compactTab: flags.includes("c"),
+      compactTab: !flags.includes("C"),
       reduceCounts: !flags.includes("R"),
+      mergedCanCannot: flags.includes("m"),
       wireframe: flags.includes("w"),
     };
   }, [searchParams]);
@@ -4450,7 +4557,6 @@ function TeamAndSecurityPageInner() {
   const [activeTab, setActiveTabState] = useState<"team" | "roles">(tabParam === "team" ? "team" : "roles");
   const [teamSecurityEnabled, setTeamSecurityEnabled] = useState(init.addMember);
   const [use14px, setUse14px] = useState(init.font14);
-  const [searchWhiteBg, setSearchWhiteBg] = useState(init.whiteBg);
   const [layoutVersion, setLayoutVersion] = useState<"v1" | "v2" | "v3" | "v4" | "v5">(init.layout);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -4477,6 +4583,7 @@ function TeamAndSecurityPageInner() {
   const [singleRoleSelect, setSingleRoleSelect] = useState(init.singleRole);
   const [compactTabMode, setCompactTabMode] = useState(init.compactTab);
   const [reduceCounts, setReduceCounts] = useState(init.reduceCounts ?? true);
+  const [mergedCanCannot, setMergedCanCannot] = useState(init.mergedCanCannot);
   const [wireframe, setWireframe] = useState(init.wireframe);
 
   // Sync proto controls to URL (only non-default values, compact encoding)
@@ -4489,20 +4596,20 @@ function TeamAndSecurityPageInner() {
     if (activeTab === "team") params.set("t", "team");
     if (layoutVersion !== "v4") params.set("l", layoutVersion);
     // Build flags string from non-default booleans
-    // Defaults: addMember=on, whiteBg=on, singleRole=on, 14px=off, compactTab=off
+    // Defaults: addMember=on, singleRole=on, compactTab=on, 14px=off
     let flags = "";
     if (!teamSecurityEnabled) flags += "A";
     if (use14px) flags += "f";
-    if (!searchWhiteBg) flags += "W";
     if (!singleRoleSelect) flags += "S";
-    if (compactTabMode) flags += "c";
+    if (!compactTabMode) flags += "C";
     if (!reduceCounts) flags += "R";
+    if (mergedCanCannot) flags += "m";
     if (wireframe) flags += "w";
     if (flags) params.set("p", flags);
     const qs = params.toString();
     const newUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
     window.history.replaceState(null, '', newUrl);
-  }, [activeTab, layoutVersion, teamSecurityEnabled, use14px, searchWhiteBg, singleRoleSelect, compactTabMode, reduceCounts, wireframe]);
+  }, [activeTab, layoutVersion, teamSecurityEnabled, use14px, singleRoleSelect, compactTabMode, reduceCounts, mergedCanCannot, wireframe]);
   
   // Sandbox mode state - lifted to page level for full-screen takeover
   const [sandboxMode, setSandboxMode] = useState<SandboxModeState>({
@@ -4536,16 +4643,16 @@ function TeamAndSecurityPageInner() {
   const protoControls: ProtoControlsType = {
     teamSecurityEnabled, onTeamSecurityToggle: setTeamSecurityEnabled,
     use14px, onUse14pxToggle: setUse14px,
-    searchWhiteBg, onSearchWhiteBgToggle: setSearchWhiteBg,
     singleRoleSelect, onSingleRoleSelectToggle: setSingleRoleSelect,
     compactTabMode, onCompactTabModeToggle: setCompactTabMode,
     reduceCounts, onReduceCountsToggle: setReduceCounts,
+    mergedCanCannot, onMergedCanCannotToggle: setMergedCanCannot,
     wireframe, onWireframeToggle: setWireframe,
     layoutVersion, onLayoutVersionChange: setLayoutVersion,
   };
 
   return (
-    <div className={`h-screen flex bg-white min-w-[1024px] ${use14px ? 'use-14px' : ''} ${searchWhiteBg ? 'search-white-bg' : ''}`}>
+    <div className={`h-screen flex bg-white min-w-[1024px] ${use14px ? 'use-14px' : ''}`}>
       {wireframe
         ? <SideNav protoControls={protoControls} />
         : <RealSideNav protoControls={protoControls} />
@@ -4583,14 +4690,14 @@ function TeamAndSecurityPageInner() {
 
           {/* Tab content */}
           {activeTab === "roles" ? (
-            <RolesPermissionsContent sandboxMode={sandboxMode} setSandboxMode={setSandboxMode} layoutVersion={layoutVersion} customRoles={customRoles} setCustomRoles={setCustomRoles} compactTabMode={compactTabMode} reduceCounts={reduceCounts} />
+            <RolesPermissionsContent sandboxMode={sandboxMode} setSandboxMode={setSandboxMode} layoutVersion={layoutVersion} customRoles={customRoles} setCustomRoles={setCustomRoles} compactTabMode={compactTabMode} reduceCounts={reduceCounts} mergedCanCannot={mergedCanCannot} />
           ) : (
             <TeamContent teamSecurityEnabled={teamSecurityEnabled} onAddMember={() => setIsModalOpen(true)} />
           )}
         </div>
       </div>
 
-      <AddMemberModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onComplete={() => showToast("Invitations sent successfully")} layoutVersion={layoutVersion} customRoles={customRoles} singleRoleSelect={singleRoleSelect} setCustomRoles={setCustomRoles} />
+      <AddMemberModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onComplete={() => showToast("Invitations sent successfully")} layoutVersion={layoutVersion} customRoles={customRoles} singleRoleSelect={singleRoleSelect} setCustomRoles={setCustomRoles} mergedCanCannot={mergedCanCannot} />
     </div>
   );
 }
