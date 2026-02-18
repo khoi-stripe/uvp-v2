@@ -966,6 +966,7 @@ function CustomizeRoleModal({
   onTestInSandbox,
   initialState,
   layoutVersion = "v1",
+  mergedCanCannot = false,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -977,6 +978,7 @@ function CustomizeRoleModal({
   onTestInSandbox?: (role: Role, modalState: { roleName: string; customDescription: string; permissionAccess: Record<string, string> }) => void;
   initialState?: { roleName: string; customDescription: string; permissionAccess: Record<string, string> };
   layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5";
+  mergedCanCannot?: boolean;
 }) {
   const isEditMode = mode === "edit";
   const isV2 = layoutVersion === "v2";
@@ -1672,6 +1674,7 @@ function CreateRoleContent({
   initialState,
   layoutVersion = "v1",
   showSandbox = true,
+  mergedCanCannot = false,
 }: {
   onSave: (role: Role) => void;
   onCancel: () => void;
@@ -1680,6 +1683,7 @@ function CreateRoleContent({
   initialState?: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null };
   layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5";
   showSandbox?: boolean;
+  mergedCanCannot?: boolean;
 }) {
   const isV2 = layoutVersion === "v2";
   const allPermissions = getAllPermissions();
@@ -2268,6 +2272,7 @@ function CreateRoleModal({
   onTestInSandbox,
   initialState,
   layoutVersion = "v1",
+  mergedCanCannot = false,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -2276,6 +2281,7 @@ function CreateRoleModal({
   onTestInSandbox?: (role: Role, modalState: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null }) => void;
   initialState?: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null };
   layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5";
+  mergedCanCannot?: boolean;
 }) {
   const [isClosing, setIsClosing] = useState(false);
 
@@ -2335,6 +2341,7 @@ function CreateRoleModal({
           initialState={initialState}
           layoutVersion={layoutVersion}
           showSandbox={true}
+          mergedCanCannot={mergedCanCannot}
         />
       </div>
     </div>
@@ -3708,6 +3715,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
         }}
         initialState={sandboxMode.sourceModal === "customize" ? sandboxMode.modalState : undefined}
         layoutVersion={layoutVersion}
+        mergedCanCannot={mergedCanCannot}
       />
 
       {/* Create Role Modal */}
@@ -3739,6 +3747,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
         }}
         initialState={sandboxMode.sourceModal === "create" ? sandboxMode.modalState : undefined}
         layoutVersion={layoutVersion}
+        mergedCanCannot={mergedCanCannot}
       />
     </>
   );
@@ -4390,6 +4399,7 @@ function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", cus
                 layoutVersion={layoutVersion}
                 showSandbox={false}
                 initialState={baseInitialState}
+                mergedCanCannot={mergedCanCannot}
               />
             );
           })()}
