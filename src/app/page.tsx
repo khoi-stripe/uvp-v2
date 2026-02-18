@@ -2377,31 +2377,36 @@ function ProtoControlsPopover({ protoControls }: { protoControls: ProtoControlsT
 
 function RealHeader() {
   return (
-    <header className="bg-white border-b border-[#D8DEE4] flex items-center justify-between h-[60px] px-8 flex-shrink-0">
-      {/* Search */}
-      <div className="flex-1 max-w-[500px]">
-        <div className="flex items-center gap-2 px-3 py-2 bg-[#F5F6F8] rounded-lg cursor-pointer hover:bg-[#EBEEF1] transition-colors">
-          <Icon name="search" size="small" fill="currentColor" className="text-[#596171] flex-shrink-0" />
-          <span className="text-sm text-[#596171]">Search</span>
+    <header className="bg-white flex items-center h-[60px] flex-shrink-0">
+      <div className="max-w-[1400px] mx-auto w-full flex items-center justify-between">
+        {/* Search */}
+        <div className="flex-1 max-w-[500px]">
+          <div className="flex items-center gap-2 px-3 py-2 bg-[#F5F6F8] rounded-lg cursor-pointer hover:bg-[#EBEEF1] transition-colors">
+            <Icon name="search" size="small" fill="currentColor" className="text-[#596171] flex-shrink-0" />
+            <span className="text-sm text-[#596171]">Search</span>
+          </div>
         </div>
-      </div>
-      {/* Actions */}
-      <div className="flex items-center gap-2">
-        {(["apps", "notifications", "settings"] as const).map((name) => (
-          <button key={name} className="w-8 h-8 rounded-full flex items-center justify-center text-[#474E5A] hover:bg-[#F5F6F8] transition-colors">
-            <Icon name={name} size="small" fill="currentColor" />
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          {(["apps", "notifications"] as const).map((name) => (
+            <button key={name} className="w-8 h-8 rounded-full flex items-center justify-center text-[#474E5A] hover:bg-[#F5F6F8] transition-colors">
+              <Icon name={name} size="small" fill="currentColor" />
+            </button>
+          ))}
+          <button className="w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F6F8] text-[#533AFD] transition-colors">
+            <Icon name="settings" size="small" fill="currentColor" />
           </button>
-        ))}
-        <button className="w-8 h-8 rounded-full flex items-center justify-center text-[#533AFD] hover:bg-[#F5F6F8] transition-colors">
-          <Icon name="addCircleFilled" size="medium" fill="currentColor" />
-        </button>
+          <button className="w-8 h-8 rounded-full flex items-center justify-center text-[#533AFD] hover:bg-[#F5F6F8] transition-colors">
+            <Icon name="addCircleFilled" size="medium" fill="currentColor" />
+          </button>
+        </div>
       </div>
     </header>
   );
 }
 
 function RealSideNav({ protoControls }: { protoControls?: ProtoControlsType }) {
-  const [expandedSection, setExpandedSection] = useState<string | null>('connect');
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   const NavItemReal = ({ iconName, label, active = false }: { iconName: string; label: string; active?: boolean }) => (
     <div className={`flex items-center gap-2 h-[30px] px-1 rounded-md cursor-pointer hover:bg-[#F5F6F8] transition-colors ${active ? 'bg-[#F5F6F8]' : ''}`}>
@@ -2428,9 +2433,7 @@ function RealSideNav({ protoControls }: { protoControls?: ProtoControlsType }) {
             <Icon name={iconName} size="small" fill="currentColor" />
           </div>
           <span className="text-sm text-[#353A44] flex-1">{label}</span>
-          <div className="w-6 h-6 flex items-center justify-center text-[#596171]">
-            <Icon name="chevronDown" size="xxsmall" fill="currentColor" className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
-          </div>
+          <ChevronDown className={`w-4 h-4 text-[#596171] transition-transform duration-200 flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} />
         </div>
         <div className={`grid transition-[grid-template-rows] duration-200 ${isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
           <div className="overflow-hidden"><div className="pb-1">{children}</div></div>
@@ -2442,12 +2445,22 @@ function RealSideNav({ protoControls }: { protoControls?: ProtoControlsType }) {
   return (
     <aside className="w-[240px] h-full flex flex-col bg-white border-r border-[#D8DEE4] flex-shrink-0">
       {/* Account */}
-      <div className="h-[60px] px-5 flex items-center border-b border-[#D8DEE4]">
-        <div className="flex items-center gap-2">
+      <div className="h-[60px] px-5 flex items-center">
+        <div className="flex items-center gap-2 h-9">
           <div className="w-6 h-6 bg-[#F5F6F8] rounded flex items-center justify-center">
             <OrgIcon />
           </div>
-          <span className="font-semibold text-[#353A44] text-sm">Acme, Inc.</span>
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-1">
+              <span className="text-xs font-semibold text-[#353A44] leading-4 tracking-[-0.024px]">
+                Acme, Inc.
+              </span>
+              <ChevronDown className="w-3 h-3 text-[#6C7688]" />
+            </div>
+            <span className="text-xs text-[#596171] leading-4 truncate">
+              Organization
+            </span>
+          </div>
         </div>
       </div>
 
@@ -2497,11 +2510,12 @@ function RealSideNav({ protoControls }: { protoControls?: ProtoControlsType }) {
         </div>
       </div>
 
-      {/* Settings (active) + proto controls */}
-      <div className="px-5 py-4 border-t border-[#D8DEE4] flex items-center justify-between">
-        <NavItemReal iconName="settings" label="Settings" active={true} />
-        {protoControls && <ProtoControlsPopover protoControls={protoControls} />}
-      </div>
+      {/* Proto controls */}
+      {protoControls && (
+        <div className="px-5 py-4 flex items-center justify-end">
+          <ProtoControlsPopover protoControls={protoControls} />
+        </div>
+      )}
     </aside>
   );
 }
@@ -2511,16 +2525,18 @@ function RealSideNav({ protoControls }: { protoControls?: ProtoControlsType }) {
 // Global Top Bar Component
 function Topbar() {
   return (
-    <header className="bg-white flex items-center justify-between py-3 flex-shrink-0">
-      {/* Search field placeholder */}
-      <div className="flex items-center gap-6">
-        <div className="bg-[#F5F6F8] h-9 w-[360px] rounded-lg opacity-80" />
-      </div>
-      
-      {/* Right icons */}
-      <div className="flex items-center gap-4">
-        <div className="w-4 h-4 rounded-full bg-[#EBEEF1]" />
-        <div className="w-4 h-4 rounded-full bg-[#EBEEF1]" />
+    <header className="bg-white flex items-center py-3 flex-shrink-0">
+      <div className="max-w-[1400px] mx-auto w-full flex items-center justify-between">
+        {/* Search field placeholder */}
+        <div className="flex items-center gap-6">
+          <div className="bg-[#F5F6F8] h-9 w-[360px] rounded-lg opacity-80" />
+        </div>
+
+        {/* Right icons */}
+        <div className="flex items-center gap-4">
+          <div className="w-4 h-4 rounded-full bg-[#EBEEF1]" />
+          <div className="w-4 h-4 rounded-full bg-[#EBEEF1]" />
+        </div>
       </div>
     </header>
   );
