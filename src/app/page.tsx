@@ -701,7 +701,7 @@ function CustomizeGroupCard({
             key={permission.apiName}
             onClick={() => !isRequired && onTogglePermission(permission.apiName)}
             className={`relative flex items-start gap-4 px-2 py-3 transition-all duration-150 before:absolute before:inset-0 before:rounded-[8px] before:transition-colors ${
-              isRequired ? 'cursor-default' : 'hover:before:bg-[#EBEEF1] cursor-pointer'
+              isRequired ? 'cursor-default' : 'hover:before:bg-[#F5F6F8] cursor-pointer'
             }`}
           >
             <div className="relative z-10 self-center">
@@ -808,6 +808,9 @@ function ModalPermissionsPanel({
   const isV3 = layoutVersion === "v3";
   const isV4 = layoutVersion === "v4";
   const isV5 = layoutVersion === "v5";
+  const useCompactLayout = isV3 || isV4 || isV5;
+  const useDividerStyle = isV3 || isV4;
+  const useLightDividers = !isV2;
 
   return (
     <div
@@ -869,7 +872,7 @@ function ModalPermissionsPanel({
             {selectedCount} of {totalCount} selected
           </span>
         </div>
-        <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isV3 || isV4 || isV5 ? "gap-0" : isGrouped ? "gap-1" : "gap-2"}`}>
+        <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${useCompactLayout ? "gap-0" : isGrouped ? "gap-1" : "gap-2"}`}>
           {isGrouped ? (
             /* Grouped view: CustomizeGroupCard for each group */
             sortedGroupEntries.map(([group, perms], idx) => (
@@ -886,17 +889,17 @@ function ModalPermissionsPanel({
                 isFirst={idx === 0}
                 isLast={idx === sortedGroupEntries.length - 1}
                 invertColors={isV2}
-                useDividers={isV3 || isV4}
+                useDividers={useDividerStyle}
                 noDividers={isV5}
-                lightDividers={!isV2}
+                lightDividers={useLightDividers}
               />
             ))
           ) : (
             /* Ungrouped view: flat list with optional section headers */
             sortedGroupEntries.map(([group, perms]) => (
-              <div key={group || "all"} className={(isV3 || isV4 || isV5) ? "flex flex-col" : (isAlphabetical ? "" : "mb-3")}>
+              <div key={group || "all"} className={useCompactLayout ? "flex flex-col" : (isAlphabetical ? "" : "mb-3")}>
                 {!isAlphabetical && group && (
-                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `relative p-3 after:content-[''] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px ${!isV2 ? 'after:bg-[#EBEEF1]' : 'after:bg-[#D8DEE4]'}` : (isV5 ? 'p-4' : 'mb-2')}`}>
+                  <div className={`flex items-center gap-2 ${useDividerStyle ? `relative p-3 after:content-[''] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px ${useLightDividers ? 'after:bg-[#EBEEF1]' : 'after:bg-[#D8DEE4]'}` : (isV5 ? 'p-4' : 'mb-2')}`}>
                     <Checkbox
                       checked={getGroupCheckState(perms) === "all"}
                       indeterminate={getGroupCheckState(perms) === "some"}
@@ -910,11 +913,11 @@ function ModalPermissionsPanel({
                     </span>
                   </div>
                 )}
-                <div className={(isV3 || isV4) ? `flex flex-col pl-3 [&>*:not(:last-child)]:relative [&>*:not(:last-child)]:after:content-[''] [&>*:not(:last-child)]:after:absolute [&>*:not(:last-child)]:after:bottom-0 [&>*:not(:last-child)]:after:left-3 [&>*:not(:last-child)]:after:right-3 [&>*:not(:last-child)]:after:h-px ${!isV2 ? '[&>*:not(:last-child)]:after:bg-[#EBEEF1]' : '[&>*:not(:last-child)]:after:bg-[#D8DEE4]'}` : (isV5 ? 'flex flex-col pl-4' : '')}>
+                <div className={useDividerStyle ? `flex flex-col pl-3 [&>*:not(:last-child)]:relative [&>*:not(:last-child)]:after:content-[''] [&>*:not(:last-child)]:after:absolute [&>*:not(:last-child)]:after:bottom-0 [&>*:not(:last-child)]:after:left-3 [&>*:not(:last-child)]:after:right-3 [&>*:not(:last-child)]:after:h-px ${useLightDividers ? '[&>*:not(:last-child)]:after:bg-[#EBEEF1]' : '[&>*:not(:last-child)]:after:bg-[#D8DEE4]'}` : (isV5 ? 'flex flex-col pl-4' : '')}>
                   {sortPermsInGroup(perms).map(perm => {
                     const isChecked = perm.apiName in permissionAccess;
                     return (
-                      <div key={perm.apiName} className={(isV3 || isV4 || isV5) ? '' : 'mb-2'}>
+                      <div key={perm.apiName} className={useCompactLayout ? '' : 'mb-2'}>
                         <PermissionCard
                           permission={perm}
                           showCheckbox
@@ -928,9 +931,9 @@ function ModalPermissionsPanel({
                           pendingAccess={!isChecked ? pendingAccess[perm.apiName] : undefined}
                           onPendingAccessChange={!isChecked ? (access) => updatePendingAccess(perm.apiName, access) : undefined}
                           invertColors={isV2}
-                          useDividers={isV3 || isV4}
+                          useDividers={useDividerStyle}
                           noDividers={isV5}
-                          lightDividers={!isV2}
+                          lightDividers={useLightDividers}
                         />
                       </div>
                     );
@@ -976,9 +979,6 @@ function CustomizeRoleModal({
 }) {
   const isEditMode = mode === "edit";
   const isV2 = layoutVersion === "v2";
-  const isV3 = layoutVersion === "v3";
-  const isV4 = layoutVersion === "v4";
-  const isV5 = layoutVersion === "v5";
   const allPermissions = getAllPermissions(); // ~50 consolidated permissions
   
   const [roleName, setRoleName] = useState(isEditMode ? baseRole.name : `${baseRole.name} (copy)`);
@@ -1507,13 +1507,13 @@ function CustomizeRoleModal({
                 )}
 
                 {/* Combined Can / Cannot container */}
-                <div className={`${isV2 && !isV3 ? 'bg-[#F5F6F8] rounded-lg p-4' : ''} flex flex-col`}>
+                <div className={`${isV2 ? 'bg-[#F5F6F8] rounded-lg p-4' : ''} flex flex-col`}>
+                  <div className={`h-px mb-4 ${isV2 ? 'bg-[#D8DEE4]' : 'bg-[#EBEEF1]'}`} />
+
                   {/* Note */}
                   <p className="text-[13px] text-[#596171] leading-[19px] pb-4">
-                    Note: The capabilities listed are highlights only. Refer to the permissions panel for the complete, authoritative list of what each role can access.
+                    Capabilities listed are highlights. See the permissions panel for the full list by role.
                   </p>
-
-                  <div className="h-px bg-[#D8DEE4] mb-4" />
 
                   {/* Can section */}
                   <div className="pb-4">
@@ -1547,12 +1547,12 @@ function CustomizeRoleModal({
                     </ul>
                   </div>
 
-                  <div className="h-px bg-[#D8DEE4]" />
+                  <div className={`h-px ${isV2 ? 'bg-[#D8DEE4]' : 'bg-[#EBEEF1]'}`} />
 
                 </div>
 
                 {/* Risk Assessment - own container */}
-                <div className={`${isV2 && !isV3 ? 'p-4 bg-[#F5F6F8] rounded-lg' : ''}`}>
+                <div className={`${isV2 ? 'p-4 bg-[#F5F6F8] rounded-lg' : ''}`}>
                   <RiskAssessmentCard 
                     assessment={previewRiskAssessment} 
                     showAdvice 
@@ -2039,12 +2039,12 @@ function CreateRoleContent({
 
               {/* Combined Can / Cannot container */}
               <div className="flex flex-col">
+                <div className={`h-px mb-4 ${isV2 ? 'bg-[#D8DEE4]' : 'bg-[#EBEEF1]'}`} />
+
                 {/* Note */}
                 <p className="text-[13px] text-[#596171] leading-[19px] pb-4">
-                  Note: The capabilities listed are highlights only. Refer to the permissions panel for the complete, authoritative list of what each role can access.
+                  Capabilities listed are highlights. See the permissions panel for the full list by role.
                 </p>
-
-                <div className="h-px bg-[#D8DEE4] mb-4" />
 
                 {/* Can section */}
                 <div className="pb-4">
@@ -2092,7 +2092,7 @@ function CreateRoleContent({
                   )}
                 </div>
 
-                <div className="h-px bg-[#D8DEE4]" />
+                <div className={`h-px ${isV2 ? 'bg-[#D8DEE4]' : 'bg-[#EBEEF1]'}`} />
               </div>
 
               {/* Risk Assessment */}
@@ -2759,10 +2759,15 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
   compactTabMode?: boolean;
 }) {
   const { showToast } = useToast();
-  const isV2 = layoutVersion === "v2" || layoutVersion === "v3";
+  // v2 and v3 share inverted color scheme (gray bg, white badges) in the roles view
+  const useInvertedColors = layoutVersion === "v2" || layoutVersion === "v3";
+  const isV2Only = layoutVersion === "v2";
   const isV3 = layoutVersion === "v3";
   const isV4 = layoutVersion === "v4";
   const isV5 = layoutVersion === "v5";
+  const useCompactLayout = isV3 || isV4 || isV5;
+  const useDividerStyle = isV3 || isV4;
+  const useLightDividers = !useInvertedColors;
   const [selectedRole, setSelectedRole] = useState<Role>(allRoles[0]);
   // Only one category can be expanded at a time (accordion behavior)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(roleCategories[0]?.name || null);
@@ -3054,11 +3059,11 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
         )}
 
         {/* Shared Container for Role Details + Permissions */}
-        <div className={`flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden ${isV2 ? '' : 'bg-[#F5F6F8] rounded-xl p-2'}`}>
+        <div className={`flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden ${useInvertedColors ? '' : 'bg-[#F5F6F8] rounded-xl p-2'}`}>
           <div className="flex-1 min-h-0 flex gap-4 overflow-hidden">
           {/* Role Details Panel */}
           {/* Baseline alignment: pt-5 (20px) for the 20px title; in v1 subtract container's p-2 (8px) → pt-3 */}
-          <section ref={roleDetailsRef} className={`flex-1 min-w-0 flex flex-col gap-6 overflow-y-auto ${isV2 ? 'pt-5 pl-6' : 'px-4 pt-3 pb-[13px]'}`}>
+          <section ref={roleDetailsRef} className={`flex-1 min-w-0 flex flex-col gap-6 overflow-y-auto ${useInvertedColors ? 'pt-5 pl-6' : 'px-4 pt-3 pb-[13px]'}`}>
             {/* Header */}
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2">
@@ -3066,7 +3071,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                   {selectedRole.name}
                 </h2>
                 <Tooltip content={`There are ${selectedRole.userCount} users with the ${selectedRole.name} role`}>
-                  <span className={`${isV2 ? 'bg-[#F5F6F8]' : 'bg-white'} text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center cursor-default`}>
+                  <span className={`${useInvertedColors ? 'bg-[#F5F6F8]' : 'bg-white'} text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center cursor-default`}>
                     {selectedRole.userCount}
                   </span>
                 </Tooltip>
@@ -3099,12 +3104,12 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
             </div>
 
             {/* Can, Cannot - combined container */}
-            <div className={`${isV2 && !isV3 ? 'bg-[#F5F6F8] rounded-lg p-4' : ''} flex flex-col`}>
-              {!(isV2 && !isV3) && <div className="h-px bg-[#D8DEE4] mb-4" />}
+            <div className={`${isV2Only ? 'bg-[#F5F6F8] rounded-lg p-4' : ''} flex flex-col`}>
+              {!isV2Only && <div className="h-px mb-4 bg-[#EBEEF1]" />}
 
               {/* Note */}
               <p className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px] pb-4">
-                The capabilities listed are highlights only. Refer to the permissions panel for the complete, authoritative list of what each role can access.
+                Capabilities listed are highlights. See the permissions panel for the full list by role.
               </p>
 
               {/* Can section */}
@@ -3128,7 +3133,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
               </div>
 
               {/* Cannot section */}
-              <div className={isV2 && !isV3 ? '' : 'pb-4'}>
+              <div className={isV2Only ? '' : 'pb-4'}>
                 <div className="flex items-center gap-2 mb-2">
                   <CancelCircleIcon />
                   <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">Cannot</span>
@@ -3147,12 +3152,12 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                 )}
               </div>
 
-              {!(isV2 && !isV3) && <div className="h-px bg-[#D8DEE4]" />}
+              {!isV2Only && <div className="h-px bg-[#EBEEF1]" />}
 
             </div>
 
             {/* Risk Assessment - own container */}
-            <div className={`${isV2 && !isV3 ? 'p-4 bg-[#F5F6F8] rounded-lg' : ''}`}>
+            <div className={`${isV2Only ? 'p-4 bg-[#F5F6F8] rounded-lg' : ''}`}>
               <RiskAssessmentCard 
                 assessment={riskAssessment} 
                 isExpanded={isRiskExpanded}
@@ -3165,11 +3170,11 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
           {/* Permissions Panel */}
           {/* Baseline alignment: pt-6 (24px) for the 16px title; in v1 container's p-2 (8px) + p-4 (16px) = 24px */}
           {(!useTabLayout || showPermissionsPanel) && (
-          <main className={`flex-1 min-w-0 min-h-0 flex flex-col gap-4 rounded-lg overflow-hidden ${isV2 ? 'bg-[#F5F6F8] pt-6 px-4 pb-4' : 'p-4 bg-white'}`}>
+          <main className={`flex-1 min-w-0 min-h-0 flex flex-col gap-4 rounded-lg overflow-hidden ${useInvertedColors ? 'bg-[#F5F6F8] pt-6 px-4 pb-4' : 'p-4 bg-white'}`}>
             {/* Header */}
             <div className="flex items-baseline gap-2">
               <h2 className="text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Permissions</h2>
-              <span className={`${isV2 ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center`}>
+              <span className={`${useInvertedColors ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center`}>
                 {showAll
                   ? (searchQuery
                     ? `${filteredPermissions.filter(p => activeApiNames.has(p.apiName)).length} of ${filteredPermissions.length}`
@@ -3218,7 +3223,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
             </div>
 
             {/* Permissions list */}
-            <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isV3 || isV4 || isV5 ? "gap-0" : isGrouped ? "gap-1" : "gap-2"}`}>
+            <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${useCompactLayout ? "gap-0" : isGrouped ? "gap-1" : "gap-2"}`}>
               {/* Grouped view: collapsible GroupCards */}
               {isGrouped && groupedPermissions && (() => {
                 const entries = Object.entries(groupedPermissions).sort(([a], [b]) => a.localeCompare(b));
@@ -3250,28 +3255,28 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                     isLast={idx === sortedEntries.length - 1}
                     activeApiNames={showAll ? activeApiNames : undefined}
                     showAll={showAll}
-                    invertColors={isV2}
-                    useDividers={isV3 || isV4}
+                    invertColors={useInvertedColors}
+                    useDividers={useDividerStyle}
                     noDividers={isV5}
-                    lightDividers={!isV2}
+                    lightDividers={useLightDividers}
                   />
                 ));
               })()}
 
               {/* Ungrouped: Alphabetical (flat list) - show task categories as tags */}
               {!isGrouped && alphabeticalPermissions && (
-                <div className={(isV3 || isV4 || isV5) ? "flex flex-col" : "flex flex-col gap-2"}>
-                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `relative p-3 after:content-[''] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px ${!isV2 ? 'after:bg-[#EBEEF1]' : 'after:bg-[#D8DEE4]'}` : (isV5 ? 'p-4' : '')}`}>
+                <div className={useCompactLayout ? "flex flex-col" : "flex flex-col gap-2"}>
+                  <div className={`flex items-center gap-2 ${useDividerStyle ? `relative p-3 after:content-[''] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px ${useLightDividers ? 'after:bg-[#EBEEF1]' : 'after:bg-[#D8DEE4]'}` : (isV5 ? 'p-4' : '')}`}>
                     <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                       All permissions
                     </h3>
-                    <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${isV2 ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
+                    <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${useInvertedColors ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
                       {showAll
                         ? `${alphabeticalPermissions.filter(p => activeApiNames.has(p.apiName)).length} of ${alphabeticalPermissions.length}`
                         : alphabeticalPermissions.length}
                     </span>
                   </div>
-                  <div className={(isV3 || isV4) ? `flex flex-col pl-3 [&>*:not(:last-child)]:relative [&>*:not(:last-child)]:after:content-[''] [&>*:not(:last-child)]:after:absolute [&>*:not(:last-child)]:after:bottom-0 [&>*:not(:last-child)]:after:left-3 [&>*:not(:last-child)]:after:right-3 [&>*:not(:last-child)]:after:h-px ${!isV2 ? '[&>*:not(:last-child)]:after:bg-[#EBEEF1]' : '[&>*:not(:last-child)]:after:bg-[#D8DEE4]'}` : (isV5 ? 'flex flex-col pl-4' : '')}>
+                  <div className={useDividerStyle ? `flex flex-col pl-3 [&>*:not(:last-child)]:relative [&>*:not(:last-child)]:after:content-[''] [&>*:not(:last-child)]:after:absolute [&>*:not(:last-child)]:after:bottom-0 [&>*:not(:last-child)]:after:left-3 [&>*:not(:last-child)]:after:right-3 [&>*:not(:last-child)]:after:h-px ${useLightDividers ? '[&>*:not(:last-child)]:after:bg-[#EBEEF1]' : '[&>*:not(:last-child)]:after:bg-[#D8DEE4]'}` : (isV5 ? 'flex flex-col pl-4' : '')}>
                     {alphabeticalPermissions.map((permission) => (
                       <PermissionItem
                         key={permission.apiName}
@@ -3280,10 +3285,10 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                         showTaskCategories={true}
                         customAccess={selectedRole.permissionAccess?.[permission.apiName]}
                         isInactive={showAll ? !activeApiNames.has(permission.apiName) : false}
-                        invertColors={isV2}
-                        useDividers={isV3 || isV4}
+                        invertColors={useInvertedColors}
+                        useDividers={useDividerStyle}
                         noDividers={isV5}
-                        lightDividers={!isV2}
+                        lightDividers={useLightDividers}
                       />
                     ))}
                   </div>
@@ -3301,18 +3306,18 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                   return a.localeCompare(b);
                 })
                 .map(([groupName, perms]) => (
-                  <div key={groupName} className={(isV3 || isV4 || isV5) ? "flex flex-col" : "flex flex-col gap-2"}>
-                    <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `relative p-3 after:content-[''] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px ${!isV2 ? 'after:bg-[#EBEEF1]' : 'after:bg-[#D8DEE4]'}` : (isV5 ? 'p-4' : '')}`}>
+                  <div key={groupName} className={useCompactLayout ? "flex flex-col" : "flex flex-col gap-2"}>
+                    <div className={`flex items-center gap-2 ${useDividerStyle ? `relative p-3 after:content-[''] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px ${useLightDividers ? 'after:bg-[#EBEEF1]' : 'after:bg-[#D8DEE4]'}` : (isV5 ? 'p-4' : '')}`}>
                       <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                         {groupName}
                       </h3>
-                      <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${isV2 ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
+                      <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${useInvertedColors ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
                         {showAll
                           ? `${perms.filter(p => activeApiNames.has(p.apiName)).length} of ${perms.length}`
                           : perms.filter(p => activeApiNames.has(p.apiName)).length}
                       </span>
                     </div>
-                    <div className={(isV3 || isV4) ? `flex flex-col pl-3 [&>*:not(:last-child)]:relative [&>*:not(:last-child)]:after:content-[''] [&>*:not(:last-child)]:after:absolute [&>*:not(:last-child)]:after:bottom-0 [&>*:not(:last-child)]:after:left-3 [&>*:not(:last-child)]:after:right-3 [&>*:not(:last-child)]:after:h-px ${!isV2 ? '[&>*:not(:last-child)]:after:bg-[#EBEEF1]' : '[&>*:not(:last-child)]:after:bg-[#D8DEE4]'}` : (isV5 ? 'flex flex-col pl-4' : 'flex flex-col gap-2')}>
+                    <div className={useDividerStyle ? `flex flex-col pl-3 [&>*:not(:last-child)]:relative [&>*:not(:last-child)]:after:content-[''] [&>*:not(:last-child)]:after:absolute [&>*:not(:last-child)]:after:bottom-0 [&>*:not(:last-child)]:after:left-3 [&>*:not(:last-child)]:after:right-3 [&>*:not(:last-child)]:after:h-px ${useLightDividers ? '[&>*:not(:last-child)]:after:bg-[#EBEEF1]' : '[&>*:not(:last-child)]:after:bg-[#D8DEE4]'}` : (isV5 ? 'flex flex-col pl-4' : 'flex flex-col gap-2')}>
                       {perms.map((permission) => (
                         <PermissionItem
                           key={permission.apiName}
@@ -3323,10 +3328,10 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                           groupBy={groupBy}
                           customAccess={selectedRole.permissionAccess?.[permission.apiName]}
                           isInactive={showAll ? !activeApiNames.has(permission.apiName) : false}
-                          invertColors={isV2}
-                          useDividers={isV3 || isV4}
+                          invertColors={useInvertedColors}
+                          useDividers={useDividerStyle}
                           noDividers={isV5}
-                          lightDividers={!isV2}
+                          lightDividers={useLightDividers}
                         />
                       ))}
                     </div>
