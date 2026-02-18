@@ -2898,7 +2898,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
         {/* Compact role selector (shown when sidebar is collapsed) */}
         {compactRoles && (
           <div className="flex items-end gap-3 flex-shrink-0">
-            <div className="relative flex flex-col gap-1">
+            <div className="relative flex items-center gap-3">
               <label className="text-[14px] font-semibold text-[#596171] leading-5 tracking-[-0.15px]">Roles</label>
               <button
                 onClick={() => roleSelectorPopover.toggle()}
@@ -2948,9 +2948,9 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
             <div className="flex-1" />
             <button
               onClick={() => { setModalMode("create"); setIsCreateModalOpen(true); }}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold text-white leading-5 tracking-[-0.15px] rounded-[6px] bg-[#635BFF] hover:bg-[#5851DF] transition-colors shadow-[0px_1px_1px_0px_rgba(47,14,99,0.32)] flex-shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] rounded-[6px] bg-white border border-[#D8DEE4] hover:bg-[#F5F6F8] transition-colors shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)] flex-shrink-0"
             >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0"><path d="M6 1V11M1 6H11" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0"><path d="M6 1V11M1 6H11" stroke="#353A44" strokeWidth="1.5" strokeLinecap="round"/></svg>
               Create role
             </button>
             {useTabLayout && (
@@ -4220,14 +4220,14 @@ function TeamAndSecurityPageInner() {
   // --- URL-driven prototype config ---
   // Compact encoding: ?t=team&l=v4&p=abcd
   //   t = tab (team|roles, default roles)
-  //   l = layout version (v1-v5, default v4)
+  //   l = layout version (v1-v5, default v3)
   //   p = proto flags string, each char = a non-default flag:
   //       Uppercase = default-ON toggled OFF: A = addMember off, W = whiteBg off, S = singleRole off
   //       Lowercase = default-OFF toggled ON: f = 14px font on, c = compactTabMode on
   const initFromUrl = useCallback(() => {
     const lParam = searchParams.get("l");
     const validLayouts = ["v1", "v2", "v3", "v4", "v5"] as const;
-    const layout = validLayouts.includes(lParam as any) ? (lParam as "v1"|"v2"|"v3"|"v4"|"v5") : "v4";
+    const layout = validLayouts.includes(lParam as any) ? (lParam as "v1"|"v2"|"v3"|"v4"|"v5") : "v3";
     const flags = searchParams.get("p") || "";
     return {
       layout,
