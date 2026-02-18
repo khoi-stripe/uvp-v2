@@ -818,19 +818,19 @@ function ModalPermissionsPanel({
       style={{ transition: 'flex 400ms cubic-bezier(0.4, 0, 0.2, 1)' }}
     >
       {/* Permissions header */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4">
         <span className="text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
           Permissions
         </span>
         {/* AI Assistant toggle button - invisible (not removed) when assistant is open to prevent layout shift */}
         <button
           onClick={onOpenAssistant}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] font-medium transition-all duration-200 text-[#353A44] hover:bg-[#F5F6F8] border border-[#D8DEE4] bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)] ${
+          className={`flex items-center gap-1.5 text-[13px] font-semibold text-[#635BFF] leading-5 tracking-[-0.15px] transition-opacity duration-200 hover:opacity-70 ${
             isAssistantOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
         >
           <SparkleIcon />
-          <span className="leading-5 tracking-[-0.15px]">Assistant</span>
+          <span>Assistant</span>
         </button>
         <div className="ml-auto">
           <PermissionsFilterMenu
@@ -1508,7 +1508,7 @@ function CustomizeRoleModal({
 
                 {/* Combined Can / Cannot container */}
                 <div className={`${isV2 ? 'bg-[#F5F6F8] rounded-lg p-4' : ''} flex flex-col`}>
-                  <div className={`h-px mb-4 ${isV2 ? 'bg-[#D8DEE4]' : 'bg-[#EBEEF1]'}`} />
+                  <div className="h-px mb-4 bg-[#D8DEE4]" />
 
                   {/* Note */}
                   <p className="text-[13px] text-[#596171] leading-[19px] pb-4">
@@ -1547,7 +1547,7 @@ function CustomizeRoleModal({
                     </ul>
                   </div>
 
-                  <div className={`h-px ${isV2 ? 'bg-[#D8DEE4]' : 'bg-[#EBEEF1]'}`} />
+                  <div className="h-px bg-[#D8DEE4]" />
 
                 </div>
 
@@ -1685,17 +1685,21 @@ function CreateRoleContent({
     return () => ro.disconnect();
   }, []);
 
-  // Capture initial permission state for stable sort order
-  const initialAccessRef = useRef<Record<string, string>>(initialState?.permissionAccess ? { ...initialState.permissionAccess } : { dashboard_baseline: "read" });
+  // Snapshot of permission access used for stable sort order.
+  // Unlike a ref, state triggers a re-render (and thus re-sort) when a new template is selected,
+  // while individual permission toggles intentionally leave it unchanged to keep the list stable.
+  const [sortSnapshot, setSortSnapshot] = useState<Record<string, string>>(
+    initialState?.permissionAccess ? { ...initialState.permissionAccess } : { dashboard_baseline: "read" }
+  );
 
   // Required permission constant
   const REQUIRED_PERMISSION = "dashboard_baseline";
 
-  // Focus role name input on mount
+  // Focus role name input on mount, after the modal open animation completes (~150ms)
   useEffect(() => {
     setTimeout(() => {
       roleNameInputRef.current?.focus();
-    }, 100);
+    }, 200);
   }, []);
 
   // Handle group toggle with auto-switch logic
@@ -1735,7 +1739,7 @@ function CreateRoleContent({
     }
     
     setPermissionAccess(accessMap);
-    initialAccessRef.current = { ...accessMap };
+    setSortSnapshot({ ...accessMap });
     setPendingAccess({});
     
     // Set description from role details
@@ -1751,7 +1755,7 @@ function CreateRoleContent({
     setRoleName("");
     setCustomDescription("");
     setPermissionAccess(resetAccess);
-    initialAccessRef.current = { ...resetAccess };
+    setSortSnapshot({ ...resetAccess });
     setPendingAccess({});
     setSearchQuery("");
     
@@ -1828,18 +1832,18 @@ function CreateRoleContent({
   const filteredAll = filterBySearch(allPermissions);
   const groupedAll = groupPerms(filteredAll);
 
-  // Sort groups and permissions: active items first (based on initial state, frozen after load)
+  // Sort groups and permissions: active items first (based on sortSnapshot, which updates on template switch)
   const sortedGroupEntries = Object.entries(groupedAll).sort(([aGroup, aPerms], [bGroup, bPerms]) => {
-    const aHasActive = aPerms.some(p => p.apiName in initialAccessRef.current) ? 0 : 1;
-    const bHasActive = bPerms.some(p => p.apiName in initialAccessRef.current) ? 0 : 1;
+    const aHasActive = aPerms.some(p => p.apiName in sortSnapshot) ? 0 : 1;
+    const bHasActive = bPerms.some(p => p.apiName in sortSnapshot) ? 0 : 1;
     if (aHasActive !== bHasActive) return aHasActive - bHasActive;
     return aGroup.localeCompare(bGroup);
   });
 
   const sortPermsInGroup = (perms: Permission[]) => {
     return [...perms].sort((a, b) => {
-      const aActive = a.apiName in initialAccessRef.current ? 0 : 1;
-      const bActive = b.apiName in initialAccessRef.current ? 0 : 1;
+      const aActive = a.apiName in sortSnapshot ? 0 : 1;
+      const bActive = b.apiName in sortSnapshot ? 0 : 1;
       if (aActive !== bActive) return aActive - bActive;
       return a.displayName.localeCompare(b.displayName);
     });
@@ -1980,8 +1984,8 @@ function CreateRoleContent({
                     onClick={() => baseRolePopover.toggle()}
                     className="w-full flex items-center justify-between gap-2 px-2 py-1.5 text-[13px] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white hover:bg-[#F5F6F8] transition-colors shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
                   >
-                    <span className={selectedBaseRole ? "text-[#353A44]" : "text-[#818DA0]"}>
-                      {selectedBaseRole ? selectedBaseRole.name : "Choose an option"}
+                    <span className="text-[#353A44]">
+                      {selectedBaseRole ? selectedBaseRole.name : "None"}
                     </span>
                     <ArrowUpDownIcon size={12} />
                   </button>
@@ -1993,6 +1997,21 @@ function CreateRoleContent({
                         onClick={() => baseRolePopover.close()} 
                       />
                       <div className={`absolute top-full left-0 right-0 mt-1 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_15px_35px_rgba(48,49,61,0.08),0_5px_15px_rgba(0,0,0,0.12)] z-20 max-h-[300px] overflow-y-auto p-1 ${baseRolePopover.animationClass}`} style={{ "--popover-origin": "top left" } as React.CSSProperties}>
+                        <button
+                          onClick={() => {
+                            setSelectedBaseRole(null);
+                            const noneAccess = { [REQUIRED_PERMISSION]: "read" };
+                            setPermissionAccess(noneAccess);
+                            setSortSnapshot({ ...noneAccess });
+                            baseRolePopover.close();
+                          }}
+                          className={`w-full flex items-center justify-between gap-3 px-2.5 py-1.5 text-[13px] leading-[19px] tracking-[-0.15px] text-[#353A44] rounded transition-colors ${
+                            !selectedBaseRole ? "bg-[#F5F6F8]" : "hover:bg-[#F5F6F8]"
+                          }`}
+                        >
+                          <span className={!selectedBaseRole ? "font-semibold" : ""}>None</span>
+                          {!selectedBaseRole && <CheckCircleFilledIcon size={12} />}
+                        </button>
                         {allRoles.map((role) => (
                           <button
                             key={role.id}
@@ -2015,12 +2034,15 @@ function CreateRoleContent({
 
               {/* Role name input */}
               <div className="flex flex-col gap-1">
+                <label className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
+                  Role name
+                </label>
                 <input
                   ref={roleNameInputRef}
                   type="text"
                   value={roleName}
                   onChange={(e) => setRoleName(e.target.value)}
-                  placeholder="Role name"
+                  placeholder="Payment support"
                   className="w-full px-2 py-1.5 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white outline-none placeholder:text-[#818DA0] input-focus-ring"
                 />
               </div>
@@ -2040,7 +2062,7 @@ function CreateRoleContent({
 
               {/* Combined Can / Cannot container */}
               <div className="flex flex-col">
-                <div className={`h-px mb-4 ${isV2 ? 'bg-[#D8DEE4]' : 'bg-[#EBEEF1]'}`} />
+                <div className="h-px mb-4 bg-[#D8DEE4]" />
 
                 {/* Note */}
                 <p className="text-[13px] text-[#596171] leading-[19px] pb-4">
@@ -2093,7 +2115,7 @@ function CreateRoleContent({
                   )}
                 </div>
 
-                <div className={`h-px ${isV2 ? 'bg-[#D8DEE4]' : 'bg-[#EBEEF1]'}`} />
+                <div className="h-px bg-[#D8DEE4]" />
               </div>
 
               {/* Risk Assessment */}
