@@ -534,15 +534,19 @@ export function BaseGroupCard({
 
   const chevron = <ChevronDown className={`${isCompact ? 'w-3.5 h-3.5' : 'w-4 h-4'} text-[#474E5A] flex-shrink-0 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />;
 
+  const headerDivider = lightDividers ? 'after:bg-[#EBEEF1]' : 'after:bg-[#D8DEE4]';
   const headerPadding = isCompact
-    ? (noDividers ? 'p-4' : `p-3 border-b ${dividerBorder}`)
+    ? (noDividers ? 'p-4' : `p-3 after:content-[''] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px ${headerDivider}`)
     : 'py-4 px-4';
+
+  const insetDividerBase = "[&>*:not(:last-child)]:relative [&>*:not(:last-child)]:after:content-[''] [&>*:not(:last-child)]:after:absolute [&>*:not(:last-child)]:after:bottom-0 [&>*:not(:last-child)]:after:left-3 [&>*:not(:last-child)]:after:right-3 [&>*:not(:last-child)]:after:h-px";
+  const insetDividerColor = lightDividers ? '[&>*:not(:last-child)]:after:bg-[#EBEEF1]' : '[&>*:not(:last-child)]:after:bg-[#D8DEE4]';
 
   const childrenClasses = isCompact
     ? (noDividers
         ? 'pl-4 pb-2'
-        : `divide-y ${lightDividers ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'} pl-3 pb-2`)
-    : `divide-y ${lightDividers ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'} mx-5 pb-2 border-t ${dividerBorder}`;
+        : `${insetDividerBase} ${insetDividerColor} pl-3 pb-2`)
+    : `${insetDividerBase} ${insetDividerColor} mx-5 pb-2 border-t ${dividerBorder}`;
 
   return (
     <div className={`${cardBg} ${radiusClass} shrink-0 flex flex-col`}>
@@ -786,26 +790,26 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
           })()}
           {!isGrouped && alphabeticalPermissions && (
             <div className={isCompactStyle ? "flex flex-col" : "flex flex-col gap-2"}>
-              <div className={`flex items-center gap-2 ${useDividerStyle ? 'p-3 border-b ' + (lightDividerStyle ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]') : (useNoDividerStyle ? 'p-4' : '')}`}>
+              <div className={`flex items-center gap-2 ${useDividerStyle ? `relative p-3 after:content-[''] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px ${lightDividerStyle ? 'after:bg-[#EBEEF1]' : 'after:bg-[#D8DEE4]'}` : (useNoDividerStyle ? 'p-4' : '')}`}>
                 <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">All permissions</h3>
                 <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${invertColors ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
                   {showAll ? `${alphabeticalPermissions.filter(p => activeApiNames.has(p.apiName)).length} of ${alphabeticalPermissions.length}` : alphabeticalPermissions.length}
                 </span>
               </div>
-              <div className={useDividerStyle ? `flex flex-col divide-y pl-3 ${lightDividerStyle ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : (useNoDividerStyle ? 'flex flex-col pl-4' : '')}>
+              <div className={useDividerStyle ? `flex flex-col pl-3 [&>*:not(:last-child)]:relative [&>*:not(:last-child)]:after:content-[''] [&>*:not(:last-child)]:after:absolute [&>*:not(:last-child)]:after:bottom-0 [&>*:not(:last-child)]:after:left-3 [&>*:not(:last-child)]:after:right-3 [&>*:not(:last-child)]:after:h-px ${lightDividerStyle ? '[&>*:not(:last-child)]:after:bg-[#EBEEF1]' : '[&>*:not(:last-child)]:after:bg-[#D8DEE4]'}` : (useNoDividerStyle ? 'flex flex-col pl-4' : '')}>
                 {alphabeticalPermissions.map((p) => <PermissionItem key={p.apiName} permission={p} roleId={roleIds[0] || ""} showTaskCategories={true} isInactive={showAll ? !activeApiNames.has(p.apiName) : false} invertColors={invertColors} useDividers={useDividerStyle} noDividers={useNoDividerStyle} lightDividers={lightDividerStyle} />)}
               </div>
             </div>
           )}
           {!isGrouped && groupedPermissions && Object.entries(groupedPermissions).sort(([a], [b]) => a.localeCompare(b)).map(([groupName, perms]) => (
             <div key={groupName} className={isCompactStyle ? "flex flex-col" : "flex flex-col gap-2"}>
-              <div className={`flex items-center gap-2 ${useDividerStyle ? 'p-3 border-b ' + (lightDividerStyle ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]') : (useNoDividerStyle ? 'p-4' : '')}`}>
+              <div className={`flex items-center gap-2 ${useDividerStyle ? `relative p-3 after:content-[''] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px ${lightDividerStyle ? 'after:bg-[#EBEEF1]' : 'after:bg-[#D8DEE4]'}` : (useNoDividerStyle ? 'p-4' : '')}`}>
                 <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">{groupName}</h3>
                 <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${invertColors ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
                   {showAll ? `${perms.filter(p => activeApiNames.has(p.apiName)).length} of ${perms.length}` : perms.length}
                 </span>
               </div>
-              <div className={useDividerStyle ? `flex flex-col divide-y pl-3 ${lightDividerStyle ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : (useNoDividerStyle ? 'flex flex-col pl-4' : 'flex flex-col gap-2')}>
+              <div className={useDividerStyle ? `flex flex-col pl-3 [&>*:not(:last-child)]:relative [&>*:not(:last-child)]:after:content-[''] [&>*:not(:last-child)]:after:absolute [&>*:not(:last-child)]:after:bottom-0 [&>*:not(:last-child)]:after:left-3 [&>*:not(:last-child)]:after:right-3 [&>*:not(:last-child)]:after:h-px ${lightDividerStyle ? '[&>*:not(:last-child)]:after:bg-[#EBEEF1]' : '[&>*:not(:last-child)]:after:bg-[#D8DEE4]'}` : (useNoDividerStyle ? 'flex flex-col pl-4' : 'flex flex-col gap-2')}>
                 {perms.map((p) => <PermissionItem key={p.apiName} permission={p} roleId={roleIds[0] || ""} showTaskCategories={false} currentGroup={groupName} groupBy={groupBy} isInactive={showAll ? !activeApiNames.has(p.apiName) : false} invertColors={invertColors} useDividers={useDividerStyle} noDividers={useNoDividerStyle} lightDividers={lightDividerStyle} />)}
               </div>
             </div>

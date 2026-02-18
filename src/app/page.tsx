@@ -896,7 +896,7 @@ function ModalPermissionsPanel({
             sortedGroupEntries.map(([group, perms]) => (
               <div key={group || "all"} className={(isV3 || isV4 || isV5) ? "flex flex-col" : (isAlphabetical ? "" : "mb-3")}>
                 {!isAlphabetical && group && (
-                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `p-3 border-b ${!isV2 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : (isV5 ? 'p-4' : 'mb-2')}`}>
+                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `relative p-3 after:content-[''] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px ${!isV2 ? 'after:bg-[#EBEEF1]' : 'after:bg-[#D8DEE4]'}` : (isV5 ? 'p-4' : 'mb-2')}`}>
                     <Checkbox
                       checked={getGroupCheckState(perms) === "all"}
                       indeterminate={getGroupCheckState(perms) === "some"}
@@ -910,7 +910,7 @@ function ModalPermissionsPanel({
                     </span>
                   </div>
                 )}
-                <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-3 ${!isV2 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : (isV5 ? 'flex flex-col pl-4' : '')}>
+                <div className={(isV3 || isV4) ? `flex flex-col pl-3 [&>*:not(:last-child)]:relative [&>*:not(:last-child)]:after:content-[''] [&>*:not(:last-child)]:after:absolute [&>*:not(:last-child)]:after:bottom-0 [&>*:not(:last-child)]:after:left-3 [&>*:not(:last-child)]:after:right-3 [&>*:not(:last-child)]:after:h-px ${!isV2 ? '[&>*:not(:last-child)]:after:bg-[#EBEEF1]' : '[&>*:not(:last-child)]:after:bg-[#D8DEE4]'}` : (isV5 ? 'flex flex-col pl-4' : '')}>
                   {sortPermsInGroup(perms).map(perm => {
                     const isChecked = perm.apiName in permissionAccess;
                     return (
@@ -3261,7 +3261,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
               {/* Ungrouped: Alphabetical (flat list) - show task categories as tags */}
               {!isGrouped && alphabeticalPermissions && (
                 <div className={(isV3 || isV4 || isV5) ? "flex flex-col" : "flex flex-col gap-2"}>
-                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `p-3 border-b ${!isV2 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : (isV5 ? 'p-4' : '')}`}>
+                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `relative p-3 after:content-[''] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px ${!isV2 ? 'after:bg-[#EBEEF1]' : 'after:bg-[#D8DEE4]'}` : (isV5 ? 'p-4' : '')}`}>
                     <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                       All permissions
                     </h3>
@@ -3271,7 +3271,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                         : alphabeticalPermissions.length}
                     </span>
                   </div>
-                  <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-3 ${!isV2 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : (isV5 ? 'flex flex-col pl-4' : '')}>
+                  <div className={(isV3 || isV4) ? `flex flex-col pl-3 [&>*:not(:last-child)]:relative [&>*:not(:last-child)]:after:content-[''] [&>*:not(:last-child)]:after:absolute [&>*:not(:last-child)]:after:bottom-0 [&>*:not(:last-child)]:after:left-3 [&>*:not(:last-child)]:after:right-3 [&>*:not(:last-child)]:after:h-px ${!isV2 ? '[&>*:not(:last-child)]:after:bg-[#EBEEF1]' : '[&>*:not(:last-child)]:after:bg-[#D8DEE4]'}` : (isV5 ? 'flex flex-col pl-4' : '')}>
                     {alphabeticalPermissions.map((permission) => (
                       <PermissionItem
                         key={permission.apiName}
@@ -3302,7 +3302,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                 })
                 .map(([groupName, perms]) => (
                   <div key={groupName} className={(isV3 || isV4 || isV5) ? "flex flex-col" : "flex flex-col gap-2"}>
-                    <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `p-3 border-b ${!isV2 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : (isV5 ? 'p-4' : '')}`}>
+                    <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `relative p-3 after:content-[''] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px ${!isV2 ? 'after:bg-[#EBEEF1]' : 'after:bg-[#D8DEE4]'}` : (isV5 ? 'p-4' : '')}`}>
                       <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                         {groupName}
                       </h3>
@@ -3312,7 +3312,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                           : perms.filter(p => activeApiNames.has(p.apiName)).length}
                       </span>
                     </div>
-                    <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-3 ${!isV2 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : (isV5 ? 'flex flex-col pl-4' : 'flex flex-col gap-2')}>
+                    <div className={(isV3 || isV4) ? `flex flex-col pl-3 [&>*:not(:last-child)]:relative [&>*:not(:last-child)]:after:content-[''] [&>*:not(:last-child)]:after:absolute [&>*:not(:last-child)]:after:bottom-0 [&>*:not(:last-child)]:after:left-3 [&>*:not(:last-child)]:after:right-3 [&>*:not(:last-child)]:after:h-px ${!isV2 ? '[&>*:not(:last-child)]:after:bg-[#EBEEF1]' : '[&>*:not(:last-child)]:after:bg-[#D8DEE4]'}` : (isV5 ? 'flex flex-col pl-4' : 'flex flex-col gap-2')}>
                       {perms.map((permission) => (
                         <PermissionItem
                           key={permission.apiName}
