@@ -1,10 +1,9 @@
-const isProd = process.env.NODE_ENV === 'production';
-const basePath = isProd ? '/uvp-v2' : '';
+const basePath = process.env.BASE_PATH || '';
 
 const nextConfig = {
   output: 'export',
   basePath,
-  assetPrefix: isProd ? '/uvp-v2/' : '',
+  assetPrefix: basePath ? `${basePath}/` : '',
   env: {
     NEXT_PUBLIC_BASE_PATH: basePath,
   },

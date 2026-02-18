@@ -1,7 +1,0 @@
-{
-  "rewrites": [
-    { "source": "/uvp-v2/_next/:path*", "destination": "/_next/:path*" },
-    { "source": "/uvp-v2/:path*", "destination": "/:path*" },
-    { "source": "/uvp-v2", "destination": "/" }
-  ]
-}
