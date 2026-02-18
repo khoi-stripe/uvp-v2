@@ -648,6 +648,7 @@ function CustomizeGroupCard({
   isLast = false,
   invertColors = false,
   useDividers = false,
+  noDividers = false,
   lightDividers = false,
 }: {
   groupName: string;
@@ -663,6 +664,7 @@ function CustomizeGroupCard({
   isLast?: boolean;
   invertColors?: boolean;
   useDividers?: boolean;
+  noDividers?: boolean;
   lightDividers?: boolean;
 }) {
   const REQUIRED_PERMISSION = "dashboard_baseline";
@@ -677,6 +679,7 @@ function CustomizeGroupCard({
       defaultExpanded={defaultExpanded}
       invertColors={invertColors}
       useDividers={useDividers}
+      noDividers={noDividers}
       lightDividers={lightDividers}
       headerLeft={
         <Checkbox
@@ -697,7 +700,7 @@ function CustomizeGroupCard({
           <div
             key={permission.apiName}
             onClick={() => !isRequired && onTogglePermission(permission.apiName)}
-            className={`relative flex items-start gap-4 px-2 py-3 transition-all duration-150 before:absolute before:inset-0 before:rounded before:transition-colors ${
+            className={`relative flex items-start gap-4 px-2 py-3 transition-all duration-150 before:absolute before:inset-0 before:rounded-[8px] before:transition-colors ${
               isRequired ? 'cursor-default' : 'hover:before:bg-[#EBEEF1] cursor-pointer'
             }`}
           >
@@ -798,12 +801,13 @@ function ModalPermissionsPanel({
   pendingAccess: Record<string, string>;
   updatePendingAccess: (apiName: string, access: string) => void;
   hasResults: boolean;
-  layoutVersion?: "v1" | "v2" | "v3" | "v4";
+  layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5";
 }) {
   const REQUIRED_PERMISSION = "dashboard_baseline";
   const isV2 = layoutVersion === "v2";
   const isV3 = layoutVersion === "v3";
   const isV4 = layoutVersion === "v4";
+  const isV5 = layoutVersion === "v5";
 
   return (
     <div
@@ -865,7 +869,7 @@ function ModalPermissionsPanel({
             {selectedCount} of {totalCount} selected
           </span>
         </div>
-        <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isV3 || isV4 ? "gap-0" : isGrouped ? "gap-1" : "gap-2"}`}>
+        <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isV3 || isV4 || isV5 ? "gap-0" : isGrouped ? "gap-1" : "gap-2"}`}>
           {isGrouped ? (
             /* Grouped view: CustomizeGroupCard for each group */
             sortedGroupEntries.map(([group, perms], idx) => (
@@ -883,16 +887,16 @@ function ModalPermissionsPanel({
                 isLast={idx === sortedGroupEntries.length - 1}
                 invertColors={isV2}
                 useDividers={isV3 || isV4}
-
+                noDividers={isV5}
                 lightDividers={!isV2}
               />
             ))
           ) : (
             /* Ungrouped view: flat list with optional section headers */
             sortedGroupEntries.map(([group, perms]) => (
-              <div key={group || "all"} className={(isV3 || isV4) ? "flex flex-col" : (isAlphabetical ? "" : "mb-3")}>
+              <div key={group || "all"} className={(isV3 || isV4 || isV5) ? "flex flex-col" : (isAlphabetical ? "" : "mb-3")}>
                 {!isAlphabetical && group && (
-                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `p-3 border-b ${!isV2 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : 'mb-2'}`}>
+                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `p-3 border-b ${!isV2 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : (isV5 ? 'p-4' : 'mb-2')}`}>
                     <Checkbox
                       checked={getGroupCheckState(perms) === "all"}
                       indeterminate={getGroupCheckState(perms) === "some"}
@@ -906,11 +910,11 @@ function ModalPermissionsPanel({
                     </span>
                   </div>
                 )}
-                <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-3 ${!isV2 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : ''}>
+                <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-3 ${!isV2 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : (isV5 ? 'flex flex-col pl-4' : '')}>
                   {sortPermsInGroup(perms).map(perm => {
                     const isChecked = perm.apiName in permissionAccess;
                     return (
-                      <div key={perm.apiName} className={(isV3 || isV4) ? '' : 'mb-2'}>
+                      <div key={perm.apiName} className={(isV3 || isV4 || isV5) ? '' : 'mb-2'}>
                         <PermissionCard
                           permission={perm}
                           showCheckbox
@@ -925,7 +929,7 @@ function ModalPermissionsPanel({
                           onPendingAccessChange={!isChecked ? (access) => updatePendingAccess(perm.apiName, access) : undefined}
                           invertColors={isV2}
                           useDividers={isV3 || isV4}
-
+                          noDividers={isV5}
                           lightDividers={!isV2}
                         />
                       </div>
@@ -968,12 +972,13 @@ function CustomizeRoleModal({
   mode?: "create" | "edit";
   onTestInSandbox?: (role: Role, modalState: { roleName: string; customDescription: string; permissionAccess: Record<string, string> }) => void;
   initialState?: { roleName: string; customDescription: string; permissionAccess: Record<string, string> };
-  layoutVersion?: "v1" | "v2" | "v3" | "v4";
+  layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5";
 }) {
   const isEditMode = mode === "edit";
   const isV2 = layoutVersion === "v2";
   const isV3 = layoutVersion === "v3";
   const isV4 = layoutVersion === "v4";
+  const isV5 = layoutVersion === "v5";
   const allPermissions = getAllPermissions(); // ~50 consolidated permissions
   
   const [roleName, setRoleName] = useState(isEditMode ? baseRole.name : `${baseRole.name} (copy)`);
@@ -1649,7 +1654,7 @@ function CreateRoleContent({
   initialGroupBy: GroupByOption;
   onTestInSandbox?: (role: Role, modalState: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null }) => void;
   initialState?: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null };
-  layoutVersion?: "v1" | "v2" | "v3" | "v4";
+  layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5";
   showSandbox?: boolean;
 }) {
   const allPermissions = getAllPermissions();
@@ -2200,7 +2205,7 @@ function CreateRoleModal({
   initialGroupBy: GroupByOption;
   onTestInSandbox?: (role: Role, modalState: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null }) => void;
   initialState?: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null };
-  layoutVersion?: "v1" | "v2" | "v3" | "v4";
+  layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5";
 }) {
   const [isClosing, setIsClosing] = useState(false);
 
@@ -2301,7 +2306,7 @@ function Topbar() {
 }
 
 // Side Navigation Component
-function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void; use14px: boolean; onUse14pxToggle: (v: boolean) => void; searchWhiteBg: boolean; onSearchWhiteBgToggle: (v: boolean) => void; singleRoleSelect: boolean; onSingleRoleSelectToggle: (v: boolean) => void; compactTabMode: boolean; onCompactTabModeToggle: (v: boolean) => void; layoutVersion: "v1" | "v2" | "v3" | "v4"; onLayoutVersionChange: (v: "v1" | "v2" | "v3" | "v4") => void } }) {
+function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void; use14px: boolean; onUse14pxToggle: (v: boolean) => void; searchWhiteBg: boolean; onSearchWhiteBgToggle: (v: boolean) => void; singleRoleSelect: boolean; onSingleRoleSelectToggle: (v: boolean) => void; compactTabMode: boolean; onCompactTabModeToggle: (v: boolean) => void; layoutVersion: "v1" | "v2" | "v3" | "v4" | "v5"; onLayoutVersionChange: (v: "v1" | "v2" | "v3" | "v4" | "v5") => void } }) {
   const popover = usePopover();
 
   return (
@@ -2398,7 +2403,7 @@ function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boo
                   <div className="flex items-center justify-between gap-6 px-2 py-1.5">
                     <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Layout</span>
                     <div className="flex bg-[#F5F6F8] rounded-md p-0.5 gap-0.5">
-                      {(["v1", "v2", "v3", "v4"] as const).map((v) => (
+                      {(["v1", "v2", "v3", "v4", "v5"] as const).map((v) => (
                         <button
                           key={v}
                           onClick={() => protoControls.onLayoutVersionChange(v)}
@@ -2748,7 +2753,7 @@ function SandboxView({
 function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = "v2", customRoles, setCustomRoles, compactTabMode = false }: {
   sandboxMode: SandboxModeState;
   setSandboxMode: React.Dispatch<React.SetStateAction<SandboxModeState>>;
-  layoutVersion?: "v1" | "v2" | "v3" | "v4";
+  layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5";
   customRoles: Role[];
   setCustomRoles: React.Dispatch<React.SetStateAction<Role[]>>;
   compactTabMode?: boolean;
@@ -2757,6 +2762,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
   const isV2 = layoutVersion === "v2" || layoutVersion === "v3";
   const isV3 = layoutVersion === "v3";
   const isV4 = layoutVersion === "v4";
+  const isV5 = layoutVersion === "v5";
   const [selectedRole, setSelectedRole] = useState<Role>(allRoles[0]);
   // Only one category can be expanded at a time (accordion behavior)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(roleCategories[0]?.name || null);
@@ -3211,7 +3217,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
             </div>
 
             {/* Permissions list */}
-            <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isV3 || isV4 ? "gap-0" : isGrouped ? "gap-1" : "gap-2"}`}>
+            <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${isV3 || isV4 || isV5 ? "gap-0" : isGrouped ? "gap-1" : "gap-2"}`}>
               {/* Grouped view: collapsible GroupCards */}
               {isGrouped && groupedPermissions && (() => {
                 const entries = Object.entries(groupedPermissions).sort(([a], [b]) => a.localeCompare(b));
@@ -3245,6 +3251,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                     showAll={showAll}
                     invertColors={isV2}
                     useDividers={isV3 || isV4}
+                    noDividers={isV5}
                     lightDividers={!isV2}
                   />
                 ));
@@ -3252,8 +3259,8 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
 
               {/* Ungrouped: Alphabetical (flat list) - show task categories as tags */}
               {!isGrouped && alphabeticalPermissions && (
-                <div className={(isV3 || isV4) ? "flex flex-col" : "flex flex-col gap-2"}>
-                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `p-3 border-b ${!isV2 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : ''}`}>
+                <div className={(isV3 || isV4 || isV5) ? "flex flex-col" : "flex flex-col gap-2"}>
+                  <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `p-3 border-b ${!isV2 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : (isV5 ? 'p-4' : '')}`}>
                     <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                       All permissions
                     </h3>
@@ -3263,7 +3270,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                         : alphabeticalPermissions.length}
                     </span>
                   </div>
-                  <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-3 ${!isV2 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : ''}>
+                  <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-3 ${!isV2 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : (isV5 ? 'flex flex-col pl-4' : '')}>
                     {alphabeticalPermissions.map((permission) => (
                       <PermissionItem
                         key={permission.apiName}
@@ -3274,7 +3281,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                         isInactive={showAll ? !activeApiNames.has(permission.apiName) : false}
                         invertColors={isV2}
                         useDividers={isV3 || isV4}
-
+                        noDividers={isV5}
                         lightDividers={!isV2}
                       />
                     ))}
@@ -3293,8 +3300,8 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                   return a.localeCompare(b);
                 })
                 .map(([groupName, perms]) => (
-                  <div key={groupName} className={(isV3 || isV4) ? "flex flex-col" : "flex flex-col gap-2"}>
-                    <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `p-3 border-b ${!isV2 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : ''}`}>
+                  <div key={groupName} className={(isV3 || isV4 || isV5) ? "flex flex-col" : "flex flex-col gap-2"}>
+                    <div className={`flex items-center gap-2 ${(isV3 || isV4) ? `p-3 border-b ${!isV2 ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]'}` : (isV5 ? 'p-4' : '')}`}>
                       <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                         {groupName}
                       </h3>
@@ -3304,7 +3311,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                           : perms.filter(p => activeApiNames.has(p.apiName)).length}
                       </span>
                     </div>
-                    <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-3 ${!isV2 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : 'flex flex-col gap-2'}>
+                    <div className={(isV3 || isV4) ? `flex flex-col divide-y pl-3 ${!isV2 ? 'divide-[#EBEEF1]' : 'divide-[#D8DEE4]'}` : (isV5 ? 'flex flex-col pl-4' : 'flex flex-col gap-2')}>
                       {perms.map((permission) => (
                         <PermissionItem
                           key={permission.apiName}
@@ -3317,7 +3324,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                           isInactive={showAll ? !activeApiNames.has(permission.apiName) : false}
                           invertColors={isV2}
                           useDividers={isV3 || isV4}
-
+                          noDividers={isV5}
                           lightDividers={!isV2}
                         />
                       ))}
@@ -3434,7 +3441,7 @@ const MOCK_ACCOUNTS = [
 const ACCOUNT_GROUPS = ["All", ...Array.from(new Set(MOCK_ACCOUNTS.map(a => a.group)))];
 const ALL_ACCOUNT_IDS = new Set(MOCK_ACCOUNTS.map(a => a.id));
 
-function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", customRoles = [], singleRoleSelect = false, setCustomRoles }: { isOpen: boolean; onClose: () => void; onComplete?: () => void; layoutVersion?: "v1" | "v2" | "v3" | "v4"; customRoles?: Role[]; singleRoleSelect?: boolean; setCustomRoles?: React.Dispatch<React.SetStateAction<Role[]>> }) {
+function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", customRoles = [], singleRoleSelect = false, setCustomRoles }: { isOpen: boolean; onClose: () => void; onComplete?: () => void; layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5"; customRoles?: Role[]; singleRoleSelect?: boolean; setCustomRoles?: React.Dispatch<React.SetStateAction<Role[]>> }) {
   const [step, setStep] = useState(1);
   const [emails, setEmails] = useState<string[]>([]);
   const [currentInput, setCurrentInput] = useState("");
@@ -4206,14 +4213,14 @@ function TeamAndSecurityPageInner() {
   // --- URL-driven prototype config ---
   // Compact encoding: ?t=team&l=v4&p=abcd
   //   t = tab (team|roles, default roles)
-  //   l = layout version (v1-v4, default v4)
+  //   l = layout version (v1-v5, default v4)
   //   p = proto flags string, each char = a non-default flag:
   //       Uppercase = default-ON toggled OFF: A = addMember off, W = whiteBg off, S = singleRole off
   //       Lowercase = default-OFF toggled ON: f = 14px font on, c = compactTabMode on
   const initFromUrl = useCallback(() => {
     const lParam = searchParams.get("l");
-    const validLayouts = ["v1", "v2", "v3", "v4"] as const;
-    const layout = validLayouts.includes(lParam as any) ? (lParam as "v1"|"v2"|"v3"|"v4") : "v4";
+    const validLayouts = ["v1", "v2", "v3", "v4", "v5"] as const;
+    const layout = validLayouts.includes(lParam as any) ? (lParam as "v1"|"v2"|"v3"|"v4"|"v5") : "v4";
     const flags = searchParams.get("p") || "";
     return {
       layout,
@@ -4231,7 +4238,7 @@ function TeamAndSecurityPageInner() {
   const [teamSecurityEnabled, setTeamSecurityEnabled] = useState(init.addMember);
   const [use14px, setUse14px] = useState(init.font14);
   const [searchWhiteBg, setSearchWhiteBg] = useState(init.whiteBg);
-  const [layoutVersion, setLayoutVersion] = useState<"v1" | "v2" | "v3" | "v4">(init.layout);
+  const [layoutVersion, setLayoutVersion] = useState<"v1" | "v2" | "v3" | "v4" | "v5">(init.layout);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Custom roles state with localStorage persistence (lifted to page level for sharing with AddMemberModal)
