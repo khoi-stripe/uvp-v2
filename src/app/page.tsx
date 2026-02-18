@@ -2892,11 +2892,11 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
         {/* Compact role selector (shown when sidebar is collapsed) */}
         {compactRoles && (
           <div className="flex items-end gap-3 flex-shrink-0">
-            <div className="relative flex-1 min-w-0 flex flex-col gap-1">
+            <div className="relative flex flex-col gap-1">
               <label className="text-[14px] font-semibold text-[#596171] leading-5 tracking-[-0.15px]">Roles</label>
               <button
                 onClick={() => roleSelectorPopover.toggle()}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] border border-[#D8DEE4] rounded-[6px] bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)] hover:bg-[#F5F6F8] transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-[14px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] border border-[#D8DEE4] rounded-[6px] bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)] hover:bg-[#F5F6F8] transition-colors"
                 style={{ fontFeatureSettings: "'lnum', 'pnum'" }}
               >
                 <span className="flex-1 min-w-0 text-left truncate">{selectedRole.name}</span>
@@ -2906,7 +2906,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
               {roleSelectorPopover.isVisible && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => roleSelectorPopover.close()} />
-                  <div className={`absolute top-full left-0 right-0 mt-1 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_5px_15px_rgba(0,0,0,0.12),0_15px_35px_rgba(48,49,61,0.08)] z-20 overflow-hidden ${roleSelectorPopover.animationClass}`}>
+                  <div className={`absolute top-full left-0 mt-1 min-w-full w-max max-w-[320px] bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_5px_15px_rgba(0,0,0,0.12),0_15px_35px_rgba(48,49,61,0.08)] z-20 overflow-hidden ${roleSelectorPopover.animationClass}`}>
                     <div className="max-h-[320px] overflow-y-auto py-1">
                       {allCategories.map((category, catIndex) => (
                         <div key={category.name}>
@@ -2939,6 +2939,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                 </>
               )}
             </div>
+            <div className="flex-1" />
             <button
               onClick={() => { setModalMode("create"); setIsCreateModalOpen(true); }}
               className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold text-white leading-5 tracking-[-0.15px] rounded-[6px] bg-[#635BFF] hover:bg-[#5851DF] transition-colors shadow-[0px_1px_1px_0px_rgba(47,14,99,0.32)] flex-shrink-0"
