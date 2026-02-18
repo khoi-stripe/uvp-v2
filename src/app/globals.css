@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+@theme {
+  /* Sail semantic color tokens */
+  --color-surface: #ffffff;
+  --color-offset: #F5F6F8;
+  --color-border: #D8DEE4;
+  --color-default: #353A44;
+  --color-subdued: #596171;
+  --color-brand: #533AFD;
+  --color-blurple: #635BFF;
+  --color-icon-default: #474E5A;
+  --color-icon-subdued: #6C7688;
+  --color-icon-brand: #675DFF;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;

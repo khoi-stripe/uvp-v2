@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback, Suspense } from "react";
+import { Icon } from "@/icons/SailIcons";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, ChevronDown, MoreHorizontal, Search, X } from "lucide-react";
 import {
@@ -2310,6 +2311,203 @@ function NavItem({ hasIcon = true }: { hasIcon?: boolean }) {
   );
 }
 
+// ─── Real Sail dashboard chrome ──────────────────────────────────────────────
+
+type ProtoControlsType = {
+  teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void;
+  use14px: boolean; onUse14pxToggle: (v: boolean) => void;
+  searchWhiteBg: boolean; onSearchWhiteBgToggle: (v: boolean) => void;
+  singleRoleSelect: boolean; onSingleRoleSelectToggle: (v: boolean) => void;
+  compactTabMode: boolean; onCompactTabModeToggle: (v: boolean) => void;
+  reduceCounts: boolean; onReduceCountsToggle: (v: boolean) => void;
+  wireframe: boolean; onWireframeToggle: (v: boolean) => void;
+  layoutVersion: "v1" | "v2" | "v3" | "v4" | "v5"; onLayoutVersionChange: (v: "v1" | "v2" | "v3" | "v4" | "v5") => void;
+};
+
+function ProtoControlsPopover({ protoControls }: { protoControls: ProtoControlsType }) {
+  const popover = usePopover();
+  return (
+    <div className="relative">
+      <button onClick={() => popover.toggle()} className="w-5 h-5 rounded-full bg-[#EBEEF1] hover:bg-[#D8DEE4] transition-colors cursor-pointer flex items-center justify-center" title="Prototype controls">
+        <ControlIcon className="w-3 h-3 text-[#596171]" />
+      </button>
+      {popover.isVisible && (
+        <PopoverBackdrop onClose={() => popover.close()}>
+          <div className={`absolute bottom-full left-0 mb-2 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_5px_15px_rgba(0,0,0,0.12),0_15px_35px_rgba(48,49,61,0.08)] z-20 whitespace-nowrap overflow-hidden ${popover.animationClass}`}>
+            <div className="p-2 flex flex-col min-w-[260px]">
+              <div className="px-2 py-1.5">
+                <span className="text-[12px] font-semibold text-[#818DA0] leading-4 tracking-[-0.024px] uppercase">Prototype controls</span>
+              </div>
+              <div className="h-px bg-[#EBEEF1] my-1" />
+              {([
+                { label: "Enable add member", key: "teamSecurityEnabled", toggle: "onTeamSecurityToggle" },
+                { label: "Use 14px type", key: "use14px", toggle: "onUse14pxToggle" },
+                { label: "White search fields", key: "searchWhiteBg", toggle: "onSearchWhiteBgToggle" },
+                { label: "Single role select", key: "singleRoleSelect", toggle: "onSingleRoleSelectToggle" },
+                { label: "Hide permissions by default", key: "compactTabMode", toggle: "onCompactTabModeToggle" },
+                { label: "Reduce counts", key: "reduceCounts", toggle: "onReduceCountsToggle" },
+                { label: "Wireframe chrome", key: "wireframe", toggle: "onWireframeToggle" },
+              ] as const).map(({ label, key, toggle }) => (
+                <div key={key} className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => (protoControls[toggle] as (v: boolean) => void)(!protoControls[key])}>
+                  <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">{label}</span>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <ToggleSwitch checked={protoControls[key] as boolean} onChange={(protoControls[toggle] as (v: boolean) => void)} />
+                  </div>
+                </div>
+              ))}
+              <div className="h-px bg-[#EBEEF1] my-1" />
+              <div className="flex items-center justify-between gap-6 px-2 py-1.5">
+                <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Layout</span>
+                <div className="flex bg-[#F5F6F8] rounded-md p-0.5 gap-0.5">
+                  {(["v1", "v2", "v3", "v4", "v5"] as const).map((v) => (
+                    <button key={v} onClick={() => protoControls.onLayoutVersionChange(v)}
+                      className={`px-2 py-0.5 text-[12px] font-semibold leading-4 rounded-[4px] transition-colors ${protoControls.layoutVersion === v ? "bg-white text-[#353A44] shadow-[0_1px_2px_rgba(0,0,0,0.1)]" : "text-[#596171] hover:text-[#353A44]"}`}>
+                      {v}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </PopoverBackdrop>
+      )}
+    </div>
+  );
+}
+
+function RealHeader() {
+  return (
+    <header className="bg-white border-b border-[#D8DEE4] flex items-center justify-between h-[60px] px-8 flex-shrink-0">
+      {/* Search */}
+      <div className="flex-1 max-w-[500px]">
+        <div className="flex items-center gap-2 px-3 py-2 bg-[#F5F6F8] rounded-lg cursor-pointer hover:bg-[#EBEEF1] transition-colors">
+          <Icon name="search" size="small" fill="currentColor" className="text-[#596171] flex-shrink-0" />
+          <span className="text-sm text-[#596171]">Search</span>
+        </div>
+      </div>
+      {/* Actions */}
+      <div className="flex items-center gap-2">
+        {(["apps", "notifications", "settings"] as const).map((name) => (
+          <button key={name} className="w-8 h-8 rounded-full flex items-center justify-center text-[#474E5A] hover:bg-[#F5F6F8] transition-colors">
+            <Icon name={name} size="small" fill="currentColor" />
+          </button>
+        ))}
+        <button className="w-8 h-8 rounded-full flex items-center justify-center text-[#533AFD] hover:bg-[#F5F6F8] transition-colors">
+          <Icon name="addCircleFilled" size="medium" fill="currentColor" />
+        </button>
+      </div>
+    </header>
+  );
+}
+
+function RealSideNav({ protoControls }: { protoControls?: ProtoControlsType }) {
+  const [expandedSection, setExpandedSection] = useState<string | null>('connect');
+
+  const NavItemReal = ({ iconName, label, active = false }: { iconName: string; label: string; active?: boolean }) => (
+    <div className={`flex items-center gap-2 h-[30px] px-1 rounded-md cursor-pointer hover:bg-[#F5F6F8] transition-colors ${active ? 'bg-[#F5F6F8]' : ''}`}>
+      <div className={`w-6 h-6 flex items-center justify-center ${active ? 'text-[#533AFD]' : 'text-[#596171]'}`}>
+        <Icon name={iconName} size="small" fill="currentColor" />
+      </div>
+      <span className={`text-sm flex-1 ${active ? 'text-[#533AFD] font-medium' : 'text-[#353A44]'}`}>{label}</span>
+    </div>
+  );
+
+  const SubNavItemReal = ({ label, active = false }: { label: string; active?: boolean }) => (
+    <div className={`flex items-center gap-2 h-[30px] px-1 rounded-md cursor-pointer hover:bg-[#F5F6F8] transition-colors`}>
+      <div className="w-6 h-6 flex-shrink-0" />
+      <span className={`text-sm ${active ? 'text-[#533AFD] font-medium' : 'text-[#353A44]'}`}>{label}</span>
+    </div>
+  );
+
+  const ExpandableItem = ({ iconName, label, sectionId, children }: { iconName: string; label: string; sectionId: string; children: React.ReactNode }) => {
+    const isExpanded = expandedSection === sectionId;
+    return (
+      <div>
+        <div className="flex items-center gap-2 h-[30px] px-1 rounded-md hover:bg-[#F5F6F8] cursor-pointer transition-colors" onClick={() => setExpandedSection(isExpanded ? null : sectionId)}>
+          <div className="w-6 h-6 flex items-center justify-center text-[#596171]">
+            <Icon name={iconName} size="small" fill="currentColor" />
+          </div>
+          <span className="text-sm text-[#353A44] flex-1">{label}</span>
+          <div className="w-6 h-6 flex items-center justify-center text-[#596171]">
+            <Icon name="chevronDown" size="xxsmall" fill="currentColor" className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+          </div>
+        </div>
+        <div className={`grid transition-[grid-template-rows] duration-200 ${isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+          <div className="overflow-hidden"><div className="pb-1">{children}</div></div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <aside className="w-[240px] h-full flex flex-col bg-white border-r border-[#D8DEE4] flex-shrink-0">
+      {/* Account */}
+      <div className="h-[60px] px-5 flex items-center border-b border-[#D8DEE4]">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 bg-[#F5F6F8] rounded flex items-center justify-center">
+            <OrgIcon />
+          </div>
+          <span className="font-semibold text-[#353A44] text-sm">Acme, Inc.</span>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <div className="flex-1 px-5 py-5 flex flex-col gap-7 overflow-y-auto">
+        <div className="flex flex-col">
+          <NavItemReal iconName="home" label="Home" />
+          <NavItemReal iconName="balance" label="Balances" />
+          <NavItemReal iconName="arrowsLoop" label="Transactions" />
+          <NavItemReal iconName="person" label="Directory" />
+          <NavItemReal iconName="product" label="Product catalog" />
+        </div>
+        <div className="flex flex-col gap-2">
+          <div className="h-[26px] flex items-center">
+            <span className="text-xs text-[#596171] uppercase tracking-wider">Products</span>
+          </div>
+          <div className="flex flex-col">
+            <ExpandableItem iconName="platform" label="Connect" sectionId="connect">
+              <SubNavItemReal label="Overview" />
+              <SubNavItemReal label="Connected accounts" />
+              <SubNavItemReal label="Accounts to review" />
+              <SubNavItemReal label="Embedded finance" />
+              <SubNavItemReal label="Capital" />
+            </ExpandableItem>
+            <ExpandableItem iconName="wallet" label="Payments" sectionId="payments">
+              <SubNavItemReal label="Analytics" />
+              <SubNavItemReal label="Disputes" />
+              <SubNavItemReal label="Radar" />
+              <SubNavItemReal label="Payment Links" />
+              <SubNavItemReal label="Terminal" />
+            </ExpandableItem>
+            <ExpandableItem iconName="invoice" label="Billing" sectionId="billing">
+              <SubNavItemReal label="Overview" />
+              <SubNavItemReal label="Subscriptions" />
+              <SubNavItemReal label="Invoices" />
+              <SubNavItemReal label="Usage-based" />
+              <SubNavItemReal label="Revenue recovery" />
+            </ExpandableItem>
+            <ExpandableItem iconName="barChart" label="Reporting" sectionId="reporting">
+              <SubNavItemReal label="Reports" />
+              <SubNavItemReal label="Sigma" />
+              <SubNavItemReal label="Revenue Recognition" />
+              <SubNavItemReal label="Data management" />
+            </ExpandableItem>
+            <NavItemReal iconName="more" label="More" />
+          </div>
+        </div>
+      </div>
+
+      {/* Settings (active) + proto controls */}
+      <div className="px-5 py-4 border-t border-[#D8DEE4] flex items-center justify-between">
+        <NavItemReal iconName="settings" label="Settings" active={true} />
+        {protoControls && <ProtoControlsPopover protoControls={protoControls} />}
+      </div>
+    </aside>
+  );
+}
+
+// ─── Wireframe chrome ─────────────────────────────────────────────────────────
+
 // Global Top Bar Component
 function Topbar() {
   return (
@@ -2328,10 +2526,8 @@ function Topbar() {
   );
 }
 
-// Side Navigation Component
-function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boolean; onTeamSecurityToggle: (v: boolean) => void; use14px: boolean; onUse14pxToggle: (v: boolean) => void; searchWhiteBg: boolean; onSearchWhiteBgToggle: (v: boolean) => void; singleRoleSelect: boolean; onSingleRoleSelectToggle: (v: boolean) => void; compactTabMode: boolean; onCompactTabModeToggle: (v: boolean) => void; reduceCounts: boolean; onReduceCountsToggle: (v: boolean) => void; layoutVersion: "v1" | "v2" | "v3" | "v4" | "v5"; onLayoutVersionChange: (v: "v1" | "v2" | "v3" | "v4" | "v5") => void } }) {
-  const popover = usePopover();
-
+// Side Navigation Component (wireframe)
+function SideNav({ protoControls }: { protoControls?: ProtoControlsType }) {
   return (
     <aside className="w-[240px] h-full flex flex-col justify-between px-5 py-4 bg-white border-r border-[rgba(0,39,77,0.08)] flex-shrink-0">
       {/* Top section */}
@@ -2380,78 +2576,7 @@ function SideNav({ protoControls }: { protoControls?: { teamSecurityEnabled: boo
 
       {/* Bottom: proto controls or plain nav item */}
       {protoControls ? (
-        <div className="relative">
-          <button onClick={() => popover.toggle()} className="w-5 h-5 rounded-full bg-[#EBEEF1] hover:bg-[#D8DEE4] transition-colors cursor-pointer flex items-center justify-center" title="Prototype controls">
-            <ControlIcon className="w-3 h-3 text-[#596171]" />
-          </button>
-          {popover.isVisible && (
-            <PopoverBackdrop onClose={() => popover.close()}>
-              <div className={`absolute bottom-full left-0 mb-2 bg-white border border-[#D8DEE4] rounded-[8px] shadow-[0_5px_15px_rgba(0,0,0,0.12),0_15px_35px_rgba(48,49,61,0.08)] z-20 whitespace-nowrap overflow-hidden ${popover.animationClass}`}>
-                <div className="p-2 flex flex-col min-w-[260px]">
-                  <div className="px-2 py-1.5">
-                    <span className="text-[12px] font-semibold text-[#818DA0] leading-4 tracking-[-0.024px] uppercase">Prototype controls</span>
-                  </div>
-                  <div className="h-px bg-[#EBEEF1] my-1" />
-                  <div className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => protoControls.onTeamSecurityToggle(!protoControls.teamSecurityEnabled)}>
-                    <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Enable add member</span>
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <ToggleSwitch checked={protoControls.teamSecurityEnabled} onChange={protoControls.onTeamSecurityToggle} />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => protoControls.onUse14pxToggle(!protoControls.use14px)}>
-                    <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Use 14px type</span>
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <ToggleSwitch checked={protoControls.use14px} onChange={protoControls.onUse14pxToggle} />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => protoControls.onSearchWhiteBgToggle(!protoControls.searchWhiteBg)}>
-                    <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">White search fields</span>
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <ToggleSwitch checked={protoControls.searchWhiteBg} onChange={protoControls.onSearchWhiteBgToggle} />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => protoControls.onSingleRoleSelectToggle(!protoControls.singleRoleSelect)}>
-                    <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Single role select</span>
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <ToggleSwitch checked={protoControls.singleRoleSelect} onChange={protoControls.onSingleRoleSelectToggle} />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => protoControls.onCompactTabModeToggle(!protoControls.compactTabMode)}>
-                    <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Hide permissions by default</span>
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <ToggleSwitch checked={protoControls.compactTabMode} onChange={protoControls.onCompactTabModeToggle} />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-6 px-2 py-1.5 cursor-pointer" onClick={() => protoControls.onReduceCountsToggle(!protoControls.reduceCounts)}>
-                    <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Reduce counts</span>
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <ToggleSwitch checked={protoControls.reduceCounts} onChange={protoControls.onReduceCountsToggle} />
-                    </div>
-                  </div>
-                  <div className="h-px bg-[#EBEEF1] my-1" />
-                  <div className="flex items-center justify-between gap-6 px-2 py-1.5">
-                    <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Layout</span>
-                    <div className="flex bg-[#F5F6F8] rounded-md p-0.5 gap-0.5">
-                      {(["v1", "v2", "v3", "v4", "v5"] as const).map((v) => (
-                        <button
-                          key={v}
-                          onClick={() => protoControls.onLayoutVersionChange(v)}
-                          className={`px-2 py-0.5 text-[12px] font-semibold leading-4 rounded-[4px] transition-colors ${
-                            protoControls.layoutVersion === v
-                              ? "bg-white text-[#353A44] shadow-[0_1px_2px_rgba(0,0,0,0.1)]"
-                              : "text-[#596171] hover:text-[#353A44]"
-                          }`}
-                        >
-                          {v}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </PopoverBackdrop>
-          )}
-        </div>
+        <ProtoControlsPopover protoControls={protoControls} />
       ) : (
         <NavItem />
       )}
@@ -4258,7 +4383,7 @@ function TeamAndSecurityPageInner() {
   //   l = layout version (v1-v5, default v3)
   //   p = proto flags string, each char = a non-default flag:
   //       Uppercase = default-ON toggled OFF: A = addMember off, W = whiteBg off, S = singleRole off, R = reduceCounts off
-  //       Lowercase = default-OFF toggled ON: f = 14px font on, c = compactTabMode on
+  //       Lowercase = default-OFF toggled ON: f = 14px font on, c = compactTabMode on, w = wireframe on
   const initFromUrl = useCallback(() => {
     const lParam = searchParams.get("l");
     const validLayouts = ["v1", "v2", "v3", "v4", "v5"] as const;
@@ -4272,6 +4397,7 @@ function TeamAndSecurityPageInner() {
       singleRole: !flags.includes("S"),
       compactTab: flags.includes("c"),
       reduceCounts: !flags.includes("R"),
+      wireframe: flags.includes("w"),
     };
   }, [searchParams]);
 
@@ -4307,6 +4433,7 @@ function TeamAndSecurityPageInner() {
   const [singleRoleSelect, setSingleRoleSelect] = useState(init.singleRole);
   const [compactTabMode, setCompactTabMode] = useState(init.compactTab);
   const [reduceCounts, setReduceCounts] = useState(init.reduceCounts ?? true);
+  const [wireframe, setWireframe] = useState(init.wireframe);
 
   // Sync proto controls to URL (only non-default values, compact encoding)
   const setActiveTab = useCallback((tab: "team" | "roles") => {
@@ -4326,11 +4453,12 @@ function TeamAndSecurityPageInner() {
     if (!singleRoleSelect) flags += "S";
     if (compactTabMode) flags += "c";
     if (!reduceCounts) flags += "R";
+    if (wireframe) flags += "w";
     if (flags) params.set("p", flags);
     const qs = params.toString();
     const newUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
     window.history.replaceState(null, '', newUrl);
-  }, [activeTab, layoutVersion, teamSecurityEnabled, use14px, searchWhiteBg, singleRoleSelect, compactTabMode, reduceCounts]);
+  }, [activeTab, layoutVersion, teamSecurityEnabled, use14px, searchWhiteBg, singleRoleSelect, compactTabMode, reduceCounts, wireframe]);
   
   // Sandbox mode state - lifted to page level for full-screen takeover
   const [sandboxMode, setSandboxMode] = useState<SandboxModeState>({
@@ -4361,12 +4489,26 @@ function TeamAndSecurityPageInner() {
     );
   }
 
+  const protoControls: ProtoControlsType = {
+    teamSecurityEnabled, onTeamSecurityToggle: setTeamSecurityEnabled,
+    use14px, onUse14pxToggle: setUse14px,
+    searchWhiteBg, onSearchWhiteBgToggle: setSearchWhiteBg,
+    singleRoleSelect, onSingleRoleSelectToggle: setSingleRoleSelect,
+    compactTabMode, onCompactTabModeToggle: setCompactTabMode,
+    reduceCounts, onReduceCountsToggle: setReduceCounts,
+    wireframe, onWireframeToggle: setWireframe,
+    layoutVersion, onLayoutVersionChange: setLayoutVersion,
+  };
+
   return (
     <div className={`h-screen flex bg-white ${use14px ? 'use-14px' : ''} ${searchWhiteBg ? 'search-white-bg' : ''}`}>
-      <SideNav protoControls={{ teamSecurityEnabled, onTeamSecurityToggle: setTeamSecurityEnabled, use14px, onUse14pxToggle: setUse14px, searchWhiteBg, onSearchWhiteBgToggle: setSearchWhiteBg, singleRoleSelect, onSingleRoleSelectToggle: setSingleRoleSelect, compactTabMode, onCompactTabModeToggle: setCompactTabMode, reduceCounts, onReduceCountsToggle: setReduceCounts, layoutVersion, onLayoutVersionChange: setLayoutVersion }} />
+      {wireframe
+        ? <SideNav protoControls={protoControls} />
+        : <RealSideNav protoControls={protoControls} />
+      }
 
-      <div className="flex-1 flex flex-col px-8 pb-6 overflow-hidden">
-        <Topbar />
+      <div className={`flex-1 flex flex-col overflow-hidden ${wireframe ? 'px-8 pb-6' : 'px-8 pb-6'}`}>
+        {wireframe ? <Topbar /> : <RealHeader />}
 
         <div className={`flex-1 min-h-0 flex flex-col gap-6 pt-5 max-w-[1400px] mx-auto w-full ${activeTab === "roles" ? 'overflow-hidden' : 'overflow-auto'}`}>
           {/* Header: breadcrumb + title + tabs */}
