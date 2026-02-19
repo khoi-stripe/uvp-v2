@@ -3054,10 +3054,15 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
   // Responsive: collapse roles sidebar into selector when container is narrow AND permissions are shown
   const panelContainerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(Infinity);
-  const [showPermissionsPanel, setShowPermissionsPanel] = useState(false);
+  // v6: panel starts open (visible by default), can be closed via X, reopened via inline link
+  const [showPermissionsPanel, setShowPermissionsPanel] = useState(layoutVersion === "v6");
   const useTabLayout = compactTabMode;
-  // v6: panel is toggleable via inline "View permissions" link + X close button (no eye-toggle in header)
+  // v6: "View permissions" link is always a button (to reopen); eye-toggle only for compactTabMode layouts
   const useTogglePanel = useTabLayout || isV6;
+  // When switching to/from v6, reset panel state
+  useEffect(() => {
+    setShowPermissionsPanel(isV6);
+  }, [isV6]);
   const compactRoles = showPermissionsPanel && containerWidth < 900;
   const roleSelectorPopover = usePopover();
   useEffect(() => {
@@ -3500,7 +3505,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
           {/* Permissions Panel */}
           {/* Baseline alignment: pt-6 (24px) for the 16px title; in v1 container's p-2 (8px) + p-4 (16px) = 24px */}
           <div
-            className={`flex flex-col overflow-hidden transition-[flex,opacity] duration-500 ${(!useTogglePanel || showPermissionsPanel) ? 'flex-1 min-w-0 opacity-100' : 'flex-[0] w-0 opacity-0 pointer-events-none'}`}
+            className={`flex flex-col overflow-hidden transition-[flex,opacity] duration-500 ${(isV6 ? showPermissionsPanel : (!useTabLayout || showPermissionsPanel)) ? 'flex-1 min-w-0 opacity-100' : 'flex-[0] w-0 opacity-0 pointer-events-none'}`}
             style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.2, 0.64, 1)' }}
           >
           <main className={`flex-1 min-w-0 min-h-0 flex flex-col gap-4 rounded-lg overflow-hidden ${useInvertedColors ? 'bg-[#F5F6F8] pt-6 px-4 pb-4' : 'p-4 bg-white'}`}>
