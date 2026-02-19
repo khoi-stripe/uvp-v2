@@ -23,6 +23,7 @@ import {
   PermissionsFilterMenu,
   DrawerPermissionsPanel as SharedDrawerPermissionsPanel,
   useToast,
+  RadioButton,
 } from "@/components/shared";
 
 // Animated ticker number component
@@ -4320,10 +4321,7 @@ function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", cus
                                       <div key={role.id} data-role-id={role.id} onClick={() => toggleRole(role.id)} className={`relative flex items-center gap-3 py-3 pl-4 pr-2 cursor-pointer ${roleIdx > 0 ? 'border-t border-[#EBEEF1]' : ''} before:absolute before:inset-0 before:transition-colors hover:before:bg-[#F5F6F8]`}>
                                         {singleRoleSelect ? (
                                           /* Radio button for single-select */
-                                          <div
-                                            className={`relative z-10 w-[14px] h-[14px] rounded-full border flex-shrink-0 flex items-center justify-center transition-colors ${isSelected ? 'border-[#675DFF] bg-white shadow-[0_1px_1px_rgba(10,33,86,0.16)]' : 'border-[#D8DEE4] bg-white shadow-[0_1px_1px_rgba(33,37,44,0.16)]'}`}>
-                                            {isSelected && <div className="w-[8px] h-[8px] rounded-full bg-[#675DFF]" />}
-                                          </div>
+                                          <RadioButton checked={isSelected} className="relative z-10" />
                                         ) : (
                                           /* Checkbox for multi-select */
                                           <div

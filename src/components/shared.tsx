@@ -989,3 +989,36 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     </ToastContext.Provider>
   );
 }
+
+// ===== Radio Button =====
+export function RadioButton({
+  checked = false,
+  disabled = false,
+  focused = false,
+  className,
+}: {
+  checked?: boolean;
+  disabled?: boolean;
+  focused?: boolean;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`relative w-[14px] h-[14px] rounded-full flex-shrink-0 flex items-center justify-center transition-colors
+        ${checked
+          ? 'bg-[#675DFF] border border-[#675DFF] shadow-[0_1px_1px_rgba(10,33,86,0.16)]'
+          : 'bg-white border border-[#D8DEE4] shadow-[0_1px_1px_rgba(33,37,44,0.16)]'}
+        ${focused ? 'shadow-[0_0_0_4px_rgba(1,150,237,0.36)]' : ''}
+        ${className ?? ''}`}
+    >
+      {/* Disabled overlay */}
+      {disabled && (
+        <div className={`absolute inset-[-1px] rounded-full border border-[#D8DEE4] ${checked ? 'bg-[#D8DEE4]' : 'bg-[#EBEEF1]'}`} />
+      )}
+      {/* Inner dot when checked */}
+      {checked && (
+        <div className="w-[6px] h-[6px] rounded-full bg-white relative z-10" />
+      )}
+    </div>
+  );
+}
