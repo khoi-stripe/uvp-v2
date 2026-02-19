@@ -549,7 +549,7 @@ export function BaseGroupCard({
     : `${insetDividerBase} ${insetDividerColor} mx-5 pb-2 border-t ${dividerBorder}`;
 
   return (
-    <div className={`${cardBg} ${radiusClass} shrink-0 flex flex-col`}>
+    <div className={`${cardBg} ${radiusClass} shrink-0 flex flex-col overflow-hidden`}>
       {headerLeft ? (
         <div className={`relative flex items-center gap-4 ${headerPadding} before:absolute before:inset-0 before:rounded-[8px] before:bg-transparent before:transition-colors before:duration-200 ${hoverBg}`}>
           <div className="relative z-10">{headerLeft}</div>
