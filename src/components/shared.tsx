@@ -519,7 +519,7 @@ export function BaseGroupCard({
   const dividerBorder = lightDividers ? 'border-[#EBEEF1]' : 'border-[#D8DEE4]';
 
   const cardBg = isCompact ? (invertColors ? "bg-[#F5F6F8]" : "") : (invertColors ? "bg-white" : "bg-[#F5F6F8]");
-  const badgeBg = (isCompact !== invertColors) ? "bg-[#F5F6F8]" : "bg-white";
+  const badgeBg = (isCompact !== invertColors) ? "bg-white" : "bg-[#F5F6F8]";
   const hoverBg = isCompact ? (invertColors ? 'hover:before:bg-white' : 'hover:before:bg-[#F5F6F8]') : (invertColors ? 'hover:before:bg-[#F5F6F8]' : 'hover:before:bg-white');
 
   const titleContent = (
@@ -725,7 +725,7 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
       <div className="flex items-center gap-2 flex-shrink-0 min-h-[28px]">
         <h2 className="text-[14px] font-bold text-[#353A44] leading-5">Permissions</h2>
         {hasRoles && (
-          <span className={`${invertColors ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center`}>
+          <span className={`${invertColors ? 'bg-[#F5F6F8]' : 'bg-white'} text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center`}>
             {showAll
               ? (searchQuery ? `${filteredPermissions.filter(p => activeApiNames.has(p.apiName)).length} of ${filteredPermissions.length}` : `${rolePermissions.length} of ${getAllPermissions().length}`)
               : (searchQuery ? `${filteredPermissions.length}/${rolePermissions.length}` : rolePermissions.length)}
@@ -790,7 +790,7 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
             <div className={isCompactStyle ? "flex flex-col" : "flex flex-col gap-2"}>
               <div className={`flex items-center gap-2 ${useDividerStyle ? `relative p-3 after:content-[''] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px ${lightDividerStyle ? 'after:bg-[#EBEEF1]' : 'after:bg-[#D8DEE4]'}` : (useNoDividerStyle ? 'p-4' : '')}`}>
                 <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">All permissions</h3>
-                <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${invertColors ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
+                <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${invertColors ? 'bg-[#F5F6F8]' : 'bg-white'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
                   {showAll ? `${alphabeticalPermissions.filter(p => activeApiNames.has(p.apiName)).length} of ${alphabeticalPermissions.length}` : alphabeticalPermissions.length}
                 </span>
               </div>
@@ -803,7 +803,7 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
             <div key={groupName} className={isCompactStyle ? "flex flex-col" : "flex flex-col gap-2"}>
               <div className={`flex items-center gap-2 ${useDividerStyle ? `relative p-3 after:content-[''] after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px ${lightDividerStyle ? 'after:bg-[#EBEEF1]' : 'after:bg-[#D8DEE4]'}` : (useNoDividerStyle ? 'p-4' : '')}`}>
                 <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">{groupName}</h3>
-                <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${invertColors ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
+                <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${invertColors ? 'bg-[#F5F6F8]' : 'bg-white'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
                   {showAll ? `${perms.filter(p => activeApiNames.has(p.apiName)).length} of ${perms.length}` : perms.length}
                 </span>
               </div>

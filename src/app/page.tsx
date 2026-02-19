@@ -458,7 +458,7 @@ function RoleMenu({
     <div className="relative">
       <button
         onClick={() => popover.toggle()}
-        className="p-1 rounded-md hover:bg-[#EBEEF1] transition-colors"
+        className="p-1 rounded-md hover:bg-[#F5F6F8] transition-colors"
       >
         <MoreHorizontal className="w-5 h-5 text-[#474E5A]" />
       </button>
@@ -909,7 +909,7 @@ function ModalPermissionsPanel({
                     <span className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                       {group}
                     </span>
-                    <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${isV2 ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
+                    <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${isV2 ? 'bg-[#F5F6F8]' : 'bg-white'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
                       {perms.filter(p => p.apiName in permissionAccess).length} of {perms.length}
                     </span>
                   </div>
@@ -1407,18 +1407,11 @@ function CustomizeRoleModal({
 
         {/* Content */}
         <div className="flex-1 flex flex-col gap-4 px-8 overflow-hidden">
-          {/* Title with Revert button */}
+          {/* Title */}
           <div className="flex items-center gap-4">
             <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
               {isEditMode ? "Edit role" : "Duplicate and customize role"}
             </h2>
-            <button
-              onClick={handleRevert}
-              className="flex items-center gap-1.5 px-3 py-1 text-[13px] font-medium text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
-            >
-              <RevertIcon />
-              Revert
-            </button>
           </div>
 
           {/* Main content area */}
@@ -1629,10 +1622,9 @@ function CustomizeRoleModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 px-8 py-6">
+        <div className="flex items-center gap-2 px-8 py-6">
           <button
             onClick={() => {
-              // Create a preview role with current permissions to test
               const previewRole: Role = {
                 id: isEditMode ? baseRole.id : `custom_${Date.now()}`,
                 name: roleName,
@@ -1651,6 +1643,13 @@ function CustomizeRoleModal({
           >
             <SandboxIcon />
             Test in sandbox
+          </button>
+          <div className="flex-1" />
+          <button
+            onClick={handleRevert}
+            className="px-3 py-1.5 text-[13px] font-medium text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
+          >
+            Revert changes
           </button>
           <button
             onClick={handleSave}
@@ -2002,6 +2001,8 @@ function CreateRoleContent({
             {/* Left column - Role info (1/3 width) */}
             {(!(isAssistantOpen && createModalNarrow) || createModalTab === "role") && (
             <div className="flex-1 flex flex-col gap-6 px-4 py-[13px] overflow-y-auto min-w-0">
+              {/* Start from existing role, Role name, Description */}
+              <div className="flex flex-col gap-4">
               {/* Start from existing role dropdown */}
               <div className="flex flex-col gap-2">
                 <label className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
@@ -2087,6 +2088,7 @@ function CreateRoleContent({
                   className="w-full px-2 py-1.5 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white outline-none resize-y placeholder:text-[#818DA0] input-focus-ring"
                 />
               </div>
+              </div>{/* end fields group */}
 
               {/* Combined Can / Cannot container */}
               <div className="flex flex-col gap-4">
@@ -2219,7 +2221,7 @@ function CreateRoleContent({
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-end gap-2 px-8 py-6">
+      <div className="flex items-center gap-2 px-8 py-6">
         {showSandbox && onTestInSandbox && (
           <button
             onClick={() => {
@@ -2252,6 +2254,13 @@ function CreateRoleContent({
             Back
           </button>
         )}
+        <div className="flex-1" />
+        <button
+          onClick={handleReset}
+          className="px-3 py-1.5 text-[13px] font-medium text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
+        >
+          Revert changes
+        </button>
         <button
           onClick={handleSave}
           className="px-4 py-1.5 bg-[#675DFF] text-white text-[13px] font-semibold leading-[19px] tracking-[-0.15px] rounded-md hover:bg-[#5851DB] transition-colors shadow-[0px_1px_1px_0px_rgba(47,14,99,0.32)]"
@@ -3020,7 +3029,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
   mergedCanCannot?: boolean;
 }) {
   const { showToast } = useToast();
-  // v2 and v3 share inverted color scheme (gray bg, white badges) in the roles view
+  // v2 and v3 share inverted color scheme (gray bg, gray badges) in the roles view
   const useInvertedColors = layoutVersion === "v2" || layoutVersion === "v3";
   const isV2Only = layoutVersion === "v2";
   const isV3 = layoutVersion === "v3";
@@ -3212,7 +3221,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
               className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] rounded-[6px] bg-white border border-[#D8DEE4] hover:bg-[#F5F6F8] transition-colors shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)] flex-shrink-0"
             >
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0"><path d="M6 1V11M1 6H11" stroke="#353A44" strokeWidth="1.5" strokeLinecap="round"/></svg>
-              Create role
+              Create or customize role
             </button>
           </div>
         )}
@@ -3312,7 +3321,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
               className="w-full flex items-center gap-1.5 px-2 py-2 text-left hover:bg-[#F5F6F8] transition-colors rounded-md mt-1"
             >
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0"><path d="M6 1V11M1 6H11" stroke="#635BFF" strokeWidth="1.5" strokeLinecap="round"/></svg>
-              <span className="text-[13px] font-semibold text-[#635BFF] leading-[19px] tracking-[-0.15px]">Create role</span>
+              <span className="text-[13px] font-semibold text-[#635BFF] leading-[19px] tracking-[-0.15px]">Create or customize role</span>
             </button>
           </div>
         </aside>
@@ -3493,7 +3502,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
             {/* Header */}
             <div className="flex items-baseline gap-2">
               <h2 className="text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Permissions</h2>
-              <span className={`${useInvertedColors ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center`}>
+              <span className={`${useInvertedColors ? 'bg-[#F5F6F8]' : 'bg-white'} text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center`}>
                 {showAll
                   ? (searchQuery
                     ? `${filteredPermissions.filter(p => activeApiNames.has(p.apiName)).length} of ${filteredPermissions.length}`
@@ -3589,7 +3598,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                     <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                       All permissions
                     </h3>
-                    <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${useInvertedColors ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
+                    <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${useInvertedColors ? 'bg-[#F5F6F8]' : 'bg-white'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
                       {showAll
                         ? `${alphabeticalPermissions.filter(p => activeApiNames.has(p.apiName)).length} of ${alphabeticalPermissions.length}`
                         : alphabeticalPermissions.length}
@@ -3630,7 +3639,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                       <h3 className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
                         {groupName}
                       </h3>
-                      <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${useInvertedColors ? 'bg-white' : 'bg-[#F5F6F8]'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
+                      <span className={`inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 ${useInvertedColors ? 'bg-[#F5F6F8]' : 'bg-white'} text-[10px] font-semibold text-[#596171] leading-4 rounded-full text-center`}>
                         {showAll
                           ? `${perms.filter(p => activeApiNames.has(p.apiName)).length} of ${perms.length}`
                           : perms.filter(p => activeApiNames.has(p.apiName)).length}
@@ -4688,7 +4697,7 @@ function TeamAndSecurityPageInner() {
 
         <div className={`flex-1 min-h-0 flex flex-col gap-6 pt-5 max-w-[1400px] mx-auto w-full ${activeTab === "roles" ? 'overflow-hidden' : 'overflow-auto'}`}>
           {/* Header: breadcrumb + title + tabs */}
-          <div className="flex flex-col gap-2 shrink-0 w-full">
+          <div className="flex flex-col gap-1 shrink-0 w-full">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <span className="text-[12px] font-semibold text-[#533AFD] leading-4 tracking-[-0.02px]">Organization settings</span>
