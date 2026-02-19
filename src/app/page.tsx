@@ -4226,22 +4226,18 @@ function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", cus
                 <div className="flex-1 min-w-0 flex flex-col gap-2 min-h-0 pt-[18px]" style={rolesMaxWidth != null ? { maxWidth: rolesMaxWidth } : undefined}>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <span className="flex-1 text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Roles</span>
-                    <button
-                      onClick={() => setShowPermissions(v => !v)}
-                      className="flex items-center gap-1.5 text-[13px] text-[#635BFF] p-1 -m-1 rounded-md"
-                    >
-                      {showPermissions ? (
-                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path fillRule="evenodd" clipRule="evenodd" d="M14.5303 2.53033C14.8232 2.23744 14.8232 1.76256 14.5303 1.46967C14.2374 1.17678 13.7626 1.17678 13.4697 1.46967L12.1045 2.83488C10.8712 2.17214 9.44492 1.75 8 1.75C5.99343 1.75 4.02285 2.5641 2.55506 3.70615C1.11359 4.82771 0 6.39643 0 8C0 9.60357 1.11359 11.1723 2.55506 12.2939C2.572 12.307 2.58901 12.3202 2.60608 12.3333L1.46967 13.4697C1.17678 13.7626 1.17678 14.2374 1.46967 14.5303C1.76256 14.8232 2.23744 14.8232 2.53033 14.5303L3.89554 13.1651C5.12884 13.8279 6.55508 14.25 8 14.25C10.0066 14.25 11.9771 13.4359 13.4449 12.2939C14.8864 11.1723 16 9.60357 16 8C16 6.39643 14.8864 4.82771 13.4449 3.70615C13.428 3.69297 13.411 3.67983 13.3939 3.66674L14.5303 2.53033ZM10.9875 3.95179C10.0504 3.5138 9.01807 3.25 8 3.25C6.38157 3.25 4.72715 3.91667 3.47619 4.89001C2.19891 5.88383 1.5 7.06511 1.5 8C1.5 8.93489 2.19891 10.1162 3.47619 11.11C3.54227 11.1614 3.60947 11.212 3.67773 11.2616L5.05255 9.88679C4.70339 9.34227 4.50049 8.69413 4.50049 7.99951C4.50049 6.06651 6.06749 4.49951 8.00049 4.49951C8.69488 4.49951 9.34316 4.70236 9.88778 5.05156L10.9875 3.95179ZM8.78172 6.15762C8.5419 6.05575 8.27807 5.99951 8.00049 5.99951C6.89592 5.99951 6.00049 6.89494 6.00049 7.99951C6.00049 8.27696 6.05671 8.54084 6.1586 8.78074L8.78172 6.15762ZM5.01245 12.0482L12.3223 4.73839C12.3905 4.78804 12.4577 4.83859 12.5238 4.89001C13.8011 5.88383 14.5 7.06511 14.5 8C14.5 8.93489 13.8011 10.1162 12.5238 11.11C11.2729 12.0833 9.61843 12.75 8 12.75C6.98193 12.75 5.94962 12.4862 5.01245 12.0482Z" fill="currentColor"/>
-                        </svg>
-                      ) : (
+                    {!showPermissions && (
+                      <button
+                        onClick={() => setShowPermissions(true)}
+                        className="flex items-center gap-1.5 text-[13px] text-[#635BFF] p-1 -m-1 rounded-md"
+                      >
                         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path fillRule="evenodd" clipRule="evenodd" d="M8.00049 5.99951C6.89592 5.99951 6.00049 6.89494 6.00049 7.99951C6.00049 9.10408 6.89592 9.99951 8.00049 9.99951C9.10506 9.99951 10.0005 9.10408 10.0005 7.99951C10.0005 6.89494 9.10506 5.99951 8.00049 5.99951ZM4.50049 7.99951C4.50049 6.06652 6.06749 4.49951 8.00049 4.49951C9.93349 4.49951 11.5005 6.06652 11.5005 7.99951C11.5005 9.93251 9.93349 11.4995 8.00049 11.4995C6.06749 11.4995 4.50049 9.93251 4.50049 7.99951Z" fill="currentColor"/>
                           <path fillRule="evenodd" clipRule="evenodd" d="M3.47619 4.89001C2.19891 5.88383 1.5 7.06511 1.5 8C1.5 8.93489 2.19891 10.1162 3.47619 11.11C4.72715 12.0833 6.38157 12.75 8 12.75C9.61843 12.75 11.2729 12.0833 12.5238 11.11C13.8011 10.1162 14.5 8.93489 14.5 8C14.5 7.06511 13.8011 5.88383 12.5238 4.89001C11.2729 3.91667 9.61843 3.25 8 3.25C6.38157 3.25 4.72715 3.91667 3.47619 4.89001ZM2.55506 3.70615C4.02285 2.5641 5.99343 1.75 8 1.75C10.0066 1.75 11.9771 2.5641 13.4449 3.70615C14.8864 4.82771 16 6.39643 16 8C16 9.60357 14.8864 11.1723 13.4449 12.2939C11.9771 13.4359 10.0066 14.25 8 14.25C5.99343 14.25 4.02285 13.4359 2.55506 12.2939C1.11359 11.1723 0 9.60357 0 8C0 6.39643 1.11359 4.82771 2.55506 3.70615Z" fill="currentColor"/>
                         </svg>
-                      )}
-                      <span>{showPermissions ? 'Hide role permissions' : 'View role permissions'}</span>
-                    </button>
+                        <span>View role permissions</span>
+                      </button>
+                    )}
                   </div>
                   <div className="min-h-0 relative">
                     <div ref={rolesScrollRef} className="overflow-y-auto h-full" onScroll={(e) => {
@@ -4327,6 +4323,7 @@ function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", cus
                     layoutVersion={layoutVersion}
                     customRoles={customRoles}
                     singleRoleSelect={singleRoleSelect}
+                    onClose={() => setShowPermissions(false)}
                   />
                 </div>
               </div>

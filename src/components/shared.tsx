@@ -645,7 +645,7 @@ export function PermissionsFilterMenu({
 }
 
 // ===== Drawer Permissions Panel =====
-export function DrawerPermissionsPanel({ roleIds, className, invertColors = false, layoutVersion = "v1", customRoles = [], singleRoleSelect = false }: { roleIds: string[]; className?: string; invertColors?: boolean; layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5" | "v6"; customRoles?: Role[]; singleRoleSelect?: boolean }) {
+export function DrawerPermissionsPanel({ roleIds, className, invertColors = false, layoutVersion = "v1", customRoles = [], singleRoleSelect = false, onClose }: { roleIds: string[]; className?: string; invertColors?: boolean; layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5" | "v6"; customRoles?: Role[]; singleRoleSelect?: boolean; onClose?: () => void }) {
   const useDividerStyle = layoutVersion === "v3" || layoutVersion === "v4" || layoutVersion === "v6";
   const useNoDividerStyle = layoutVersion === "v5";
   const isCompactStyle = useDividerStyle || useNoDividerStyle;
@@ -745,6 +745,17 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
               <ControlIcon className="w-3 h-3 text-[#818DA0]" />
             </span>
           </div>
+        )}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="text-[#818DA0] hover:text-[#353A44] transition-colors"
+            aria-label="Close permissions panel"
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fillRule="evenodd" clipRule="evenodd" d="M2.46967 2.46967C2.76256 2.17678 3.23744 2.17678 3.53033 2.46967L8 6.93934L12.4697 2.46967C12.7626 2.17678 13.2374 2.17678 13.5303 2.46967C13.8232 2.76256 13.8232 3.23744 13.5303 3.53033L9.06066 8L13.5303 12.4697C13.8232 12.7626 13.8232 13.2374 13.5303 13.5303C13.2374 13.8232 12.7626 13.8232 12.4697 13.5303L8 9.06066L3.53033 13.5303C3.23744 13.8232 2.76256 13.8232 2.46967 13.5303C2.17678 13.2374 2.17678 12.7626 2.46967 12.4697L6.93934 8L2.46967 3.53033C2.17678 3.23744 2.17678 2.76256 2.46967 2.46967Z" fill="currentColor"/>
+            </svg>
+          </button>
         )}
       </div>
       {hasRoles && <p className="text-[13px] text-[#596171] leading-5 flex-shrink-0">Shows combined permissions from selected roles.</p>}
