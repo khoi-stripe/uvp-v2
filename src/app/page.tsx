@@ -3052,10 +3052,10 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
   const panelContainerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(Infinity);
   // v1-v5: panel always visible; v6: starts open, closeable via X, reopenable via inline link
-  const [showPermissionsPanel, setShowPermissionsPanel] = useState(layoutVersion === "v6");
+  const [showPermissionsPanel, setShowPermissionsPanel] = useState(false);
   // Reset panel to open when switching to v6
   useEffect(() => {
-    setShowPermissionsPanel(isV6);
+    setShowPermissionsPanel(false);
   }, [isV6]);
   const compactRoles = showPermissionsPanel && containerWidth < 900;
   const roleSelectorPopover = usePopover();
