@@ -645,8 +645,8 @@ export function PermissionsFilterMenu({
 }
 
 // ===== Drawer Permissions Panel =====
-export function DrawerPermissionsPanel({ roleIds, className, invertColors = false, layoutVersion = "v1", customRoles = [], singleRoleSelect = false }: { roleIds: string[]; className?: string; invertColors?: boolean; layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5"; customRoles?: Role[]; singleRoleSelect?: boolean }) {
-  const useDividerStyle = layoutVersion === "v3" || layoutVersion === "v4";
+export function DrawerPermissionsPanel({ roleIds, className, invertColors = false, layoutVersion = "v1", customRoles = [], singleRoleSelect = false }: { roleIds: string[]; className?: string; invertColors?: boolean; layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5" | "v6"; customRoles?: Role[]; singleRoleSelect?: boolean }) {
+  const useDividerStyle = layoutVersion === "v3" || layoutVersion === "v4" || layoutVersion === "v6";
   const useNoDividerStyle = layoutVersion === "v5";
   const isCompactStyle = useDividerStyle || useNoDividerStyle;
   const lightDividerStyle = !invertColors;

@@ -802,7 +802,7 @@ function ModalPermissionsPanel({
   pendingAccess: Record<string, string>;
   updatePendingAccess: (apiName: string, access: string) => void;
   hasResults: boolean;
-  layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5";
+  layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5" | "v6";
 }) {
   const REQUIRED_PERMISSION = "dashboard_baseline";
   const isV2 = layoutVersion === "v2";
@@ -977,7 +977,7 @@ function CustomizeRoleModal({
   mode?: "create" | "edit";
   onTestInSandbox?: (role: Role, modalState: { roleName: string; customDescription: string; permissionAccess: Record<string, string> }) => void;
   initialState?: { roleName: string; customDescription: string; permissionAccess: Record<string, string> };
-  layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5";
+  layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5" | "v6";
   mergedCanCannot?: boolean;
 }) {
   const isEditMode = mode === "edit";
@@ -1680,7 +1680,7 @@ function CreateRoleContent({
   initialGroupBy: GroupByOption;
   onTestInSandbox?: (role: Role, modalState: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null }) => void;
   initialState?: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null };
-  layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5";
+  layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5" | "v6";
   showSandbox?: boolean;
   mergedCanCannot?: boolean;
 }) {
@@ -2290,7 +2290,7 @@ function CreateRoleModal({
   initialGroupBy: GroupByOption;
   onTestInSandbox?: (role: Role, modalState: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null }) => void;
   initialState?: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null };
-  layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5";
+  layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5" | "v6";
   mergedCanCannot?: boolean;
 }) {
   const [isClosing, setIsClosing] = useState(false);
@@ -2384,7 +2384,7 @@ type ProtoControlsType = {
   reduceCounts: boolean; onReduceCountsToggle: (v: boolean) => void;
   mergedCanCannot: boolean; onMergedCanCannotToggle: (v: boolean) => void;
   wireframe: boolean; onWireframeToggle: (v: boolean) => void;
-  layoutVersion: "v1" | "v2" | "v3" | "v4" | "v5"; onLayoutVersionChange: (v: "v1" | "v2" | "v3" | "v4" | "v5") => void;
+  layoutVersion: "v1" | "v2" | "v3" | "v4" | "v5" | "v6"; onLayoutVersionChange: (v: "v1" | "v2" | "v3" | "v4" | "v5" | "v6") => void;
 };
 
 function ProtoControlsPopover({ protoControls }: { protoControls: ProtoControlsType }) {
@@ -2458,7 +2458,7 @@ function ProtoControlsPopover({ protoControls }: { protoControls: ProtoControlsT
               <div className="flex items-center justify-between gap-6 px-2 py-1.5">
                 <span className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">Layout</span>
                 <div className="flex bg-[#F5F6F8] rounded-md p-0.5 gap-0.5">
-                  {(["v1", "v2", "v3", "v4", "v5"] as const).map((v) => (
+                  {(["v1", "v2", "v3", "v4", "v5", "v6"] as const).map((v) => (
                     <button key={v} onClick={() => protoControls.onLayoutVersionChange(v)}
                       className={`px-2 py-0.5 text-[12px] font-semibold leading-4 rounded-[4px] transition-colors ${protoControls.layoutVersion === v ? "bg-white text-[#353A44] shadow-[0_1px_2px_rgba(0,0,0,0.1)]" : "text-[#596171] hover:text-[#353A44]"}`}>
                       {v}
@@ -3022,7 +3022,7 @@ function SandboxView({
 function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = "v2", customRoles, setCustomRoles, compactTabMode = false, reduceCounts = false, mergedCanCannot = false }: {
   sandboxMode: SandboxModeState;
   setSandboxMode: React.Dispatch<React.SetStateAction<SandboxModeState>>;
-  layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5";
+  layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5" | "v6";
   customRoles: Role[];
   setCustomRoles: React.Dispatch<React.SetStateAction<Role[]>>;
   compactTabMode?: boolean;
@@ -3031,14 +3031,15 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
 }) {
   const { showToast } = useToast();
   // v2 and v3 share inverted color scheme (gray bg, gray badges) in the roles view
-  const useInvertedColors = layoutVersion === "v2" || layoutVersion === "v3";
+  const useInvertedColors = layoutVersion === "v2" || layoutVersion === "v3" || layoutVersion === "v6";
   const isV2Only = layoutVersion === "v2";
   const isV3 = layoutVersion === "v3";
   const isV4 = layoutVersion === "v4";
   const isV5 = layoutVersion === "v5";
-  const useCompactLayout = isV3 || isV4 || isV5;
-  const useDividerStyle = isV3 || isV4;
-  // v2 has no dividers, so light vs dark only matters for v3/v4/v5 — use light for all
+  const isV6 = layoutVersion === "v6";
+  const useCompactLayout = isV3 || isV4 || isV5 || isV6;
+  const useDividerStyle = isV3 || isV4 || isV6;
+  // v2 has no dividers, so light vs dark only matters for v3/v4/v5/v6 — use light for all
   const useLightDividers = !isV2Only;
   const [selectedRole, setSelectedRole] = useState<Role>(allRoles[0]);
   // Only one category can be expanded at a time (accordion behavior)
@@ -3055,6 +3056,8 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
   const [containerWidth, setContainerWidth] = useState(Infinity);
   const [showPermissionsPanel, setShowPermissionsPanel] = useState(false);
   const useTabLayout = compactTabMode;
+  // v6: panel is toggleable via inline "View permissions" link + X close button (no eye-toggle in header)
+  const useTogglePanel = useTabLayout || isV6;
   const compactRoles = showPermissionsPanel && containerWidth < 900;
   const roleSelectorPopover = usePopover();
   useEffect(() => {
@@ -3354,10 +3357,10 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                   </span>
                 )}
                 <div className="flex-1" />
-                {useTabLayout && (
+                {useTabLayout && !isV6 && (
                   <button
                     onClick={() => setShowPermissionsPanel(v => !v)}
-                    className="flex items-center gap-1.5 text-[13px] text-[#635BFF] hover:text-[#533AFD] transition-colors p-1 -m-1 rounded-md hover:bg-[#EBEEF1]"
+                    className="flex items-center gap-1.5 text-[13px] text-[#635BFF] hover:text-[#533AFD] transition-colors p-1 -m-1 rounded-md"
                   >
                     {showPermissionsPanel ? (
                       <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -3401,7 +3404,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
               {/* Note */}
               <p className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px]">
                 Capabilities listed are highlights.{' '}
-                {useTabLayout ? (
+                {useTogglePanel ? (
                   <button
                     onClick={() => setShowPermissionsPanel(true)}
                     disabled={showPermissionsPanel}
@@ -3497,7 +3500,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
           {/* Permissions Panel */}
           {/* Baseline alignment: pt-6 (24px) for the 16px title; in v1 container's p-2 (8px) + p-4 (16px) = 24px */}
           <div
-            className={`flex flex-col overflow-hidden transition-[flex,opacity] duration-500 ${(!useTabLayout || showPermissionsPanel) ? 'flex-1 min-w-0 opacity-100' : 'flex-[0] w-0 opacity-0 pointer-events-none'}`}
+            className={`flex flex-col overflow-hidden transition-[flex,opacity] duration-500 ${(!useTogglePanel || showPermissionsPanel) ? 'flex-1 min-w-0 opacity-100' : 'flex-[0] w-0 opacity-0 pointer-events-none'}`}
             style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.2, 0.64, 1)' }}
           >
           <main className={`flex-1 min-w-0 min-h-0 flex flex-col gap-4 rounded-lg overflow-hidden ${useInvertedColors ? 'bg-[#F5F6F8] pt-6 px-4 pb-4' : 'p-4 bg-white'}`}>
@@ -3514,19 +3517,32 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                     : rolePermissions.length)}
               </span>
               <div className="flex-1" />
-              <PermissionsFilterMenu
-                showAll={showAll}
-                onShowAllChange={setShowAll}
-                isGrouped={isGrouped}
-                onGroupedChange={(v) => {
-                  setIsGrouped(v);
-                  if (v && groupBy === "alphabetical") {
-                    setGroupBy("productCategory");
-                  }
-                }}
-                groupBy={groupBy}
-                onGroupByChange={setGroupBy}
-              />
+              <div className="flex items-center gap-2">
+                <PermissionsFilterMenu
+                  showAll={showAll}
+                  onShowAllChange={setShowAll}
+                  isGrouped={isGrouped}
+                  onGroupedChange={(v) => {
+                    setIsGrouped(v);
+                    if (v && groupBy === "alphabetical") {
+                      setGroupBy("productCategory");
+                    }
+                  }}
+                  groupBy={groupBy}
+                  onGroupByChange={setGroupBy}
+                />
+                {isV6 && (
+                  <button
+                    onClick={() => setShowPermissionsPanel(false)}
+                    className="text-[#818DA0] hover:text-[#353A44] transition-colors"
+                    aria-label="Close permissions panel"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path fillRule="evenodd" clipRule="evenodd" d="M2.46967 2.46967C2.76256 2.17678 3.23744 2.17678 3.53033 2.46967L8 6.93934L12.4697 2.46967C12.7626 2.17678 13.2374 2.17678 13.5303 2.46967C13.8232 2.76256 13.8232 3.23744 13.5303 3.53033L9.06066 8L13.5303 12.4697C13.8232 12.7626 13.8232 13.2374 13.5303 13.5303C13.2374 13.8232 12.7626 13.8232 12.4697 13.5303L8 9.06066L3.53033 13.5303C3.23744 13.8232 2.76256 13.8232 2.46967 13.5303C2.17678 13.2374 2.17678 12.7626 2.46967 12.4697L6.93934 8L2.46967 3.53033C2.17678 3.23744 2.17678 2.76256 2.46967 2.46967Z" fill="currentColor"/>
+                    </svg>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Controls */}
@@ -3779,7 +3795,7 @@ const MOCK_ACCOUNTS = [
 const ACCOUNT_GROUPS = ["All", ...Array.from(new Set(MOCK_ACCOUNTS.map(a => a.group)))];
 const ALL_ACCOUNT_IDS = new Set(MOCK_ACCOUNTS.map(a => a.id));
 
-function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", customRoles = [], singleRoleSelect = false, setCustomRoles, mergedCanCannot = false, onTestInSandbox, initialCreatingRole = false, initialRoleState }: { isOpen: boolean; onClose: () => void; onComplete?: () => void; layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5"; customRoles?: Role[]; singleRoleSelect?: boolean; setCustomRoles?: React.Dispatch<React.SetStateAction<Role[]>>; mergedCanCannot?: boolean; onTestInSandbox?: (previewRole: Role, modalState: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null }) => void; initialCreatingRole?: boolean; initialRoleState?: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null } }) {
+function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", customRoles = [], singleRoleSelect = false, setCustomRoles, mergedCanCannot = false, onTestInSandbox, initialCreatingRole = false, initialRoleState }: { isOpen: boolean; onClose: () => void; onComplete?: () => void; layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5" | "v6"; customRoles?: Role[]; singleRoleSelect?: boolean; setCustomRoles?: React.Dispatch<React.SetStateAction<Role[]>>; mergedCanCannot?: boolean; onTestInSandbox?: (previewRole: Role, modalState: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null }) => void; initialCreatingRole?: boolean; initialRoleState?: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null } }) {
   const [step, setStep] = useState(1);
   const [emails, setEmails] = useState<string[]>([]);
   const [currentInput, setCurrentInput] = useState("");
@@ -4272,7 +4288,7 @@ function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", cus
                     <span className="flex-1 text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Roles</span>
                     <button
                       onClick={() => setShowPermissions(v => !v)}
-                      className="flex items-center gap-1.5 text-[13px] text-[#635BFF] hover:text-[#533AFD] transition-colors p-1 -m-1 rounded-md hover:bg-[#EBEEF1]"
+                      className="flex items-center gap-1.5 text-[13px] text-[#635BFF] p-1 -m-1 rounded-md"
                     >
                       {showPermissions ? (
                         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -4583,8 +4599,8 @@ function TeamAndSecurityPageInner() {
   //       Lowercase = default-OFF toggled ON: f = 14px font on, w = wireframe on
   const initFromUrl = useCallback(() => {
     const lParam = searchParams.get("l");
-    const validLayouts = ["v1", "v2", "v3", "v4", "v5"] as const;
-    const layout = validLayouts.includes(lParam as any) ? (lParam as "v1"|"v2"|"v3"|"v4"|"v5") : "v3";
+    const validLayouts = ["v1", "v2", "v3", "v4", "v5", "v6"] as const;
+    const layout = validLayouts.includes(lParam as any) ? (lParam as "v1"|"v2"|"v3"|"v4"|"v5"|"v6") : "v3";
     const flags = searchParams.get("p") || "";
     return {
       layout,
@@ -4603,7 +4619,7 @@ function TeamAndSecurityPageInner() {
   const [activeTab, setActiveTabState] = useState<"team" | "roles">(tabParam === "team" ? "team" : "roles");
   const [teamSecurityEnabled, setTeamSecurityEnabled] = useState(init.addMember);
   const [use14px, setUse14px] = useState(init.font14);
-  const [layoutVersion, setLayoutVersion] = useState<"v1" | "v2" | "v3" | "v4" | "v5">(init.layout);
+  const [layoutVersion, setLayoutVersion] = useState<"v1" | "v2" | "v3" | "v4" | "v5" | "v6">(init.layout);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Custom roles state with localStorage persistence (lifted to page level for sharing with AddMemberModal)
