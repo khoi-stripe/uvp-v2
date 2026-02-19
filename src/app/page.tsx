@@ -564,7 +564,7 @@ function AIAssistantDrawer({
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
-                src="/waves.svg"
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/waves.svg`}
                 alt="" 
                 className="w-full h-full"
               />
