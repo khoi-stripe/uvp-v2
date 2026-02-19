@@ -3346,7 +3346,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                 {useTabLayout && (
                   <button
                     onClick={() => setShowPermissionsPanel(v => !v)}
-                    className="flex items-center gap-1.5 text-[13px] text-[#635BFF] hover:text-[#533AFD] transition-colors"
+                    className="flex items-center gap-1.5 text-[13px] text-[#635BFF] hover:text-[#533AFD] transition-colors p-1 -m-1 rounded-md hover:bg-[#EBEEF1]"
                   >
                     {showPermissionsPanel ? (
                       <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -4255,7 +4255,7 @@ function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", cus
                     <span className="flex-1 text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Roles</span>
                     <button
                       onClick={() => setShowPermissions(v => !v)}
-                      className="flex items-center gap-1.5 text-[13px] text-[#635BFF] hover:text-[#533AFD] transition-colors"
+                      className="flex items-center gap-1.5 text-[13px] text-[#635BFF] hover:text-[#533AFD] transition-colors p-1 -m-1 rounded-md hover:bg-[#EBEEF1]"
                     >
                       {showPermissions ? (
                         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
