@@ -4558,8 +4558,8 @@ function TeamAndSecurityPageInner() {
   //   t = tab (team|roles, default roles)
   //   l = layout version (v1-v5, default v3)
   //   p = proto flags string, each char = a non-default flag:
-  //       Uppercase = default-ON toggled OFF: A = addMember off, S = singleRole off, R = reduceCounts off, C = compactTabMode off
-  //       Lowercase = default-OFF toggled ON: f = 14px font on, w = wireframe on, m = mergedCanCannot on
+  //       Uppercase = default-ON toggled OFF: A = addMember off, S = singleRole off, R = reduceCounts off, C = compactTabMode off, M = mergedCanCannot off
+  //       Lowercase = default-OFF toggled ON: f = 14px font on, w = wireframe on
   const initFromUrl = useCallback(() => {
     const lParam = searchParams.get("l");
     const validLayouts = ["v1", "v2", "v3", "v4", "v5"] as const;
@@ -4572,7 +4572,7 @@ function TeamAndSecurityPageInner() {
       singleRole: !flags.includes("S"),
       compactTab: !flags.includes("C"),
       reduceCounts: !flags.includes("R"),
-      mergedCanCannot: flags.includes("m"),
+      mergedCanCannot: !flags.includes("M"),
       wireframe: flags.includes("w"),
     };
   }, [searchParams]);
@@ -4628,7 +4628,7 @@ function TeamAndSecurityPageInner() {
     if (!singleRoleSelect) flags += "S";
     if (!compactTabMode) flags += "C";
     if (!reduceCounts) flags += "R";
-    if (mergedCanCannot) flags += "m";
+    if (!mergedCanCannot) flags += "M";
     if (wireframe) flags += "w";
     if (flags) params.set("p", flags);
     const qs = params.toString();
