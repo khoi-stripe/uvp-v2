@@ -987,9 +987,7 @@ function CustomizeRoleModal({
   const allPermissions = getAllPermissions(); // ~50 consolidated permissions
   
   const [roleName, setRoleName] = useState(isEditMode ? baseRole.name : `${baseRole.name} (copy)`);
-  const [isEditingName, setIsEditingName] = useState(false);
   const [customDescription, setCustomDescription] = useState("");
-  const [isEditingDescription, setIsEditingDescription] = useState(false);
   // Maps permission API name to access level ("read", "write", "read, write")
   const [permissionAccess, setPermissionAccess] = useState<Record<string, string>>({});
   // Tracks pending access selections for available permissions (before adding)
@@ -1039,9 +1037,7 @@ function CustomizeRoleModal({
       // If we have initialState (returning from sandbox), use it
       if (initialState) {
         setRoleName(initialState.roleName);
-        setIsEditingName(false);
         setCustomDescription(initialState.customDescription);
-        setIsEditingDescription(!!initialState.customDescription);
         setPermissionAccess(initialState.permissionAccess);
         initialAccessRef.current = { ...initialState.permissionAccess };
         setPendingAccess({});
@@ -1079,9 +1075,7 @@ function CustomizeRoleModal({
       }
       
       setRoleName(isEditMode ? baseRole.name : `${baseRole.name} (copy)`);
-      setIsEditingName(false);
       setCustomDescription(baseRole.customDescription || "");
-      setIsEditingDescription(!!baseRole.customDescription);
       setPermissionAccess(accessMap);
       initialAccessRef.current = { ...accessMap };
       setPendingAccess({});
@@ -1337,9 +1331,7 @@ function CustomizeRoleModal({
     setPermissionAccess(accessMap);
     setPendingAccess({});
     setRoleName(isEditMode ? baseRole.name : `${baseRole.name} (copy)`);
-    setIsEditingName(false);
     setCustomDescription(baseRole.customDescription || "");
-    setIsEditingDescription(!!baseRole.customDescription);
   };
 
   const handleSave = () => {
@@ -1436,73 +1428,40 @@ function CustomizeRoleModal({
               {/* Role info column */}
               {(!(isAssistantOpen && modalNarrow) || modalTab === "role") && (
               <div className={`flex-1 flex flex-col gap-4 ${isV2 ? 'pt-5 pl-6 pr-2' : 'px-4 py-4'} overflow-y-auto min-w-0`}>
-                {/* Role name header */}
+                {/* Role name */}
                 <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2">
-                    {isEditingName ? (
-                      <input
-                        type="text"
-                        value={roleName}
-                        onChange={(e) => setRoleName(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            setIsEditingName(false);
-                          }
-                        }}
-                        autoFocus
-                        className="flex-1 text-[20px] font-bold text-[#353A44] leading-7 tracking-[0.3px] bg-white border border-[#D8DEE4] rounded-[6px] px-2 py-1 outline-none font-display min-w-0 input-focus-ring"
-                        style={{ fontFeatureSettings: "'lnum', 'pnum'" }}
-                      />
-                    ) : (
-                      <h3 className="flex-1 text-[20px] font-bold text-[#353A44] leading-7 tracking-[0.3px] font-display min-w-0" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
-                        {roleName}
-                      </h3>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => setIsEditingName(!isEditingName)}
-                    className="self-start text-[12px] text-[#635BFF] hover:text-[#5851DB] transition-colors"
-                  >
-                    {isEditingName ? "Done" : "Edit name"}
-                  </button>
+                  <label className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
+                    Role name
+                  </label>
+                  <input
+                    type="text"
+                    value={roleName}
+                    onChange={(e) => setRoleName(e.target.value)}
+                    className="w-full px-2 py-1.5 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white outline-none placeholder:text-[#818DA0] input-focus-ring"
+                  />
                 </div>
 
-                {/* Description - display or edit mode */}
-                {isEditingDescription ? (
-                  <div className="flex flex-col gap-1">
-                    <textarea
-                      value={customDescription}
-                      onChange={(e) => setCustomDescription(e.target.value)}
-                      rows={4}
-                      autoFocus
-                      className="text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] bg-white border border-[#D8DEE4] rounded-[6px] px-2 py-1 outline-none resize-y input-focus-ring"
-                    />
+                {/* Description */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px]">
+                    Description
+                  </label>
+                  <textarea
+                    value={customDescription}
+                    onChange={(e) => setCustomDescription(e.target.value)}
+                    rows={4}
+                    placeholder={previewDetails.description}
+                    className="w-full px-2 py-1.5 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white outline-none resize-none placeholder:text-[#818DA0] input-focus-ring"
+                  />
+                  {customDescription && (
                     <button
-                      onClick={() => {
-                        setCustomDescription("");
-                        setIsEditingDescription(false);
-                      }}
+                      onClick={() => setCustomDescription("")}
                       className="self-start text-[12px] text-[#635BFF] hover:text-[#5851DB] transition-colors"
                     >
                       Use auto-generated
                     </button>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-1">
-                    <p className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px]">
-                      {previewDetails.description}
-                    </p>
-                    <button
-                      onClick={() => {
-                        setCustomDescription(previewDetails.description);
-                        setIsEditingDescription(true);
-                      }}
-                      className="self-start text-[12px] text-[#635BFF] hover:text-[#5851DB] transition-colors"
-                    >
-                      Edit description
-                    </button>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {/* Combined Can / Cannot container */}
                 <div className={`${isV2 ? 'bg-[#F5F6F8] rounded-lg p-4' : ''} flex flex-col gap-4`}>
