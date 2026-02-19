@@ -3054,18 +3054,15 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
   // Responsive: collapse roles sidebar into selector when container is narrow AND permissions are shown
   const panelContainerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(Infinity);
-  // v1-v4: panel always visible, no toggle
-  // v5: panel toggleable via eye button (respects compactTabMode)
-  // v6: panel starts open, closeable via X button, reopenable via inline link
-  const [showPermissionsPanel, setShowPermissionsPanel] = useState(layoutVersion === "v5" ? false : true);
+  // v6: panel starts open (visible by default), can be closed via X, reopened via inline link
+  const [showPermissionsPanel, setShowPermissionsPanel] = useState(layoutVersion === "v6");
   const useTabLayout = compactTabMode;
-  const panelAlwaysVisible = !isV5 && !isV6; // v1-v4: never toggle
-  const useEyeToggle = isV5 && useTabLayout;  // eye button only for v5 w/ compactTabMode
-  const useInlineLink = isV5 ? useTabLayout : isV6; // "View permissions" as button in v5 (compact) and v6
-  // Reset panel state when switching layout versions
+  // v6: "View permissions" link is always a button (to reopen); eye-toggle only for compactTabMode layouts
+  const useTogglePanel = useTabLayout || isV6;
+  // When switching to/from v6, reset panel state
   useEffect(() => {
-    setShowPermissionsPanel(!isV5);
-  }, [isV5, isV6]);
+    setShowPermissionsPanel(isV6);
+  }, [isV6]);
   const compactRoles = showPermissionsPanel && containerWidth < 900;
   const roleSelectorPopover = usePopover();
   useEffect(() => {
@@ -3365,7 +3362,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                   </span>
                 )}
                 <div className="flex-1" />
-                {useEyeToggle && (
+                {useTabLayout && !isV6 && (
                   <button
                     onClick={() => setShowPermissionsPanel(v => !v)}
                     className="flex items-center gap-1.5 text-[13px] text-[#635BFF] hover:text-[#533AFD] transition-colors p-1 -m-1 rounded-md"
@@ -3407,12 +3404,12 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
 
             {/* Can, Cannot - combined container */}
             <div className={`${isV2Only ? 'bg-[#F5F6F8] rounded-lg p-4' : ''} flex flex-col gap-4`}>
-              {!isV2Only && <div className={`h-px ${isV3 || isV6 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'}`} />}
+              {!isV2Only && <div className={`h-px ${isV3 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'}`} />}
 
               {/* Note */}
               <p className="text-[13px] text-[#596171] leading-[19px] tracking-[-0.15px]">
                 Capabilities listed are highlights.{' '}
-                {useInlineLink ? (
+                {useTogglePanel ? (
                   <button
                     onClick={() => setShowPermissionsPanel(true)}
                     disabled={showPermissionsPanel}
@@ -3490,7 +3487,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                 </>
               )}
 
-              {!isV2Only && <div className={`h-px ${isV3 || isV6 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'}`} />}
+              {!isV2Only && <div className={`h-px ${isV3 ? 'bg-[#EBEEF1]' : 'bg-[#D8DEE4]'}`} />}
 
             </div>
 
@@ -3508,7 +3505,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
           {/* Permissions Panel */}
           {/* Baseline alignment: pt-6 (24px) for the 16px title; in v1 container's p-2 (8px) + p-4 (16px) = 24px */}
           <div
-            className={`flex flex-col overflow-hidden transition-[flex,opacity] duration-500 ${(panelAlwaysVisible || showPermissionsPanel) ? 'flex-1 min-w-0 opacity-100' : 'flex-[0] w-0 opacity-0 pointer-events-none'}`}
+            className={`flex flex-col overflow-hidden transition-[flex,opacity] duration-500 ${(isV6 ? showPermissionsPanel : (!useTabLayout || showPermissionsPanel)) ? 'flex-1 min-w-0 opacity-100' : 'flex-[0] w-0 opacity-0 pointer-events-none'}`}
             style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.2, 0.64, 1)' }}
           >
           <main className={`flex-1 min-w-0 min-h-0 flex flex-col gap-4 rounded-lg overflow-hidden ${useInvertedColors ? 'bg-[#F5F6F8] pt-6 px-4 pb-4' : 'p-4 bg-white'}`}>
@@ -4729,7 +4726,10 @@ function TeamAndSecurityPageInner() {
     reduceCounts, onReduceCountsToggle: setReduceCounts,
     mergedCanCannot, onMergedCanCannotToggle: setMergedCanCannot,
     wireframe, onWireframeToggle: setWireframe,
-    layoutVersion, onLayoutVersionChange: setLayoutVersion,
+    layoutVersion, onLayoutVersionChange: (v: "v1" | "v2" | "v3" | "v4" | "v5" | "v6") => {
+      setLayoutVersion(v);
+      if (v === "v6") setCompactTabMode(true);
+    },
   };
 
   return (
