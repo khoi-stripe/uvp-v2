@@ -414,7 +414,7 @@ export function PermissionCard({
       return (
         <div
           onClick={() => !checkboxDisabled && onToggle()}
-          className={`relative flex items-start gap-2 ${compactPadding} transition-all duration-150 before:absolute before:inset-0 before:rounded-[8px] before:bg-transparent before:transition-colors before:duration-200 ${checkboxDisabled ? 'cursor-default' : `${dividerHover} cursor-pointer`} ${isExiting ? 'animate-scale-out' : ''}`}
+          className={`relative flex items-start gap-2 ${compactPadding} rounded-[8px] overflow-hidden transition-all duration-150 before:absolute before:inset-0 before:rounded-[8px] before:bg-transparent before:transition-colors before:duration-200 ${checkboxDisabled ? 'cursor-default' : `${dividerHover} cursor-pointer`} ${isExiting ? 'animate-scale-out' : ''}`}
         >
           <div className="relative z-10 flex items-start gap-2 w-full">{cardContent}</div>
         </div>
@@ -423,7 +423,7 @@ export function PermissionCard({
     return (
       <div
         onClick={() => !checkboxDisabled && onToggle()}
-        className={`relative flex items-start gap-4 p-4 ${cardBg} transition-all duration-150 before:absolute before:inset-0 before:rounded-[8px] before:transition-colors ${checkboxDisabled ? 'cursor-default' : `${cardHover} cursor-pointer`} ${isExiting ? 'animate-scale-out' : ''}`}
+        className={`relative flex items-start gap-4 p-4 ${cardBg} rounded-[8px] overflow-hidden transition-all duration-150 before:absolute before:inset-0 before:rounded-[8px] before:transition-colors ${checkboxDisabled ? 'cursor-default' : `${cardHover} cursor-pointer`} ${isExiting ? 'animate-scale-out' : ''}`}
       >
         <div className="relative z-10 flex items-start gap-4 w-full">{cardContent}</div>
       </div>

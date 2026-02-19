@@ -810,8 +810,9 @@ function ModalPermissionsPanel({
   const isV3 = layoutVersion === "v3";
   const isV4 = layoutVersion === "v4";
   const isV5 = layoutVersion === "v5";
+  const isV6 = layoutVersion === "v6";
   const useCompactLayout = isV3 || isV4 || isV5;
-  const useDividerStyle = isV3 || isV4;
+  const useDividerStyle = isV3 || isV4 || isV6;
   const useLightDividers = !isV2;
 
   return (
@@ -874,7 +875,7 @@ function ModalPermissionsPanel({
             {selectedCount} of {totalCount} selected
           </span>
         </div>
-        <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${useCompactLayout ? "gap-0" : isGrouped ? "gap-1" : "gap-2"}`}>
+        <div className={`flex-1 min-h-0 overflow-y-auto flex flex-col ${useCompactLayout || isV6 ? "gap-0" : isGrouped ? "gap-1" : "gap-2"}`}>
           {isGrouped ? (
             /* Grouped view: CustomizeGroupCard for each group */
             sortedGroupEntries.map(([group, perms], idx) => (
