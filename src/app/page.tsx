@@ -4580,7 +4580,7 @@ function TeamAndSecurityPageInner() {
   const initFromUrl = useCallback(() => {
     const lParam = searchParams.get("l");
     const validLayouts = ["v1", "v2", "v3", "v4", "v5", "v6"] as const;
-    const layout = validLayouts.includes(lParam as any) ? (lParam as "v1"|"v2"|"v3"|"v4"|"v5"|"v6") : "v3";
+    const layout = validLayouts.includes(lParam as any) ? (lParam as "v1"|"v2"|"v3"|"v4"|"v5"|"v6") : "v6";
     const flags = searchParams.get("p") || "";
     return {
       layout,
