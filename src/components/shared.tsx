@@ -652,7 +652,7 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
   const lightDividerStyle = !invertColors;
   const [groupBy, setGroupBy] = useState<GroupByOption>("productCategory");
   const [isGrouped, setIsGrouped] = useState(true);
-  const [showAll, setShowAll] = useState(false);
+  const [showAll, setShowAll] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
   const rolePermissions = useMemo(() => {
