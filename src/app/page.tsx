@@ -2085,7 +2085,7 @@ function CreateRoleContent({
                   value={customDescription}
                   onChange={(e) => setCustomDescription(e.target.value)}
                   rows={4}
-                  className="w-full px-2 py-1.5 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white outline-none resize-y placeholder:text-[#818DA0] input-focus-ring"
+                  className="w-full px-2 py-1.5 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md bg-white outline-none resize-none placeholder:text-[#818DA0] input-focus-ring"
                 />
               </div>
               </div>{/* end fields group */}
