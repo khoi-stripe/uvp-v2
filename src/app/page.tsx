@@ -3172,7 +3172,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
 
         {/* Compact role selector (shown when sidebar is collapsed) */}
         {compactRoles && (
-          <div className="flex items-end gap-3 flex-shrink-0">
+          <div className="flex items-center gap-3 flex-shrink-0">
             <div className="relative flex items-center gap-3">
               <label className="text-[14px] font-semibold text-[#596171] leading-5 tracking-[-0.15px]">Roles</label>
               <button
@@ -3220,12 +3220,11 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                 </>
               )}
             </div>
-            <div className="flex-1" />
             <button
               onClick={() => { setModalMode("create"); setIsCreateModalOpen(true); }}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold text-[#353A44] leading-5 tracking-[-0.15px] rounded-[6px] bg-white border border-[#D8DEE4] hover:bg-[#F5F6F8] transition-colors shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)] flex-shrink-0"
+              className="flex items-center gap-1 text-[13px] font-semibold text-[#635BFF] hover:text-[#533AFD] leading-5 tracking-[-0.15px] transition-colors flex-shrink-0"
             >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0"><path d="M6 1V11M1 6H11" stroke="#353A44" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0"><path d="M6 1V11M1 6H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
               Create or customize role
             </button>
           </div>
