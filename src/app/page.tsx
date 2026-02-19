@@ -3038,7 +3038,8 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
   const isV5 = layoutVersion === "v5";
   const useCompactLayout = isV3 || isV4 || isV5;
   const useDividerStyle = isV3 || isV4;
-  const useLightDividers = !useInvertedColors;
+  // v2 has no dividers, so light vs dark only matters for v3/v4/v5 — use light for all
+  const useLightDividers = !isV2Only;
   const [selectedRole, setSelectedRole] = useState<Role>(allRoles[0]);
   // Only one category can be expanded at a time (accordion behavior)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(roleCategories[0]?.name || null);
