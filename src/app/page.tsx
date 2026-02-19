@@ -353,7 +353,7 @@ type SandboxModeState = {
   active: boolean;
   role: Role | null;
   unsavedRole?: Role | null;
-  sourceModal?: "customize" | "create" | "menu";
+  sourceModal?: "customize" | "create" | "menu" | "addMember";
   modalState?: {
     roleName: string;
     customDescription: string;
@@ -1977,7 +1977,7 @@ function CreateRoleContent({
         {/* Title with Reset button */}
         <div className="flex items-center gap-4">
           <h2 className="text-[24px] font-bold text-[#21252C] leading-8 tracking-[0.3px] font-display" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>
-            Create role
+            Create or customize role
           </h2>
         </div>
 
@@ -2222,7 +2222,7 @@ function CreateRoleContent({
 
       {/* Footer */}
       <div className="flex items-center gap-2 px-8 py-6">
-        {showSandbox && onTestInSandbox && (
+        {(onTestInSandbox || !showSandbox) && (
           <button
             onClick={() => {
               const previewRole: Role = {
@@ -2233,7 +2233,7 @@ function CreateRoleContent({
                 permissionAccess: { ...permissionAccess },
                 customDescription: customDescription || undefined,
               };
-              onTestInSandbox(previewRole, {
+              onTestInSandbox?.(previewRole, {
                 roleName,
                 customDescription,
                 permissionAccess: { ...permissionAccess },
@@ -2246,21 +2246,22 @@ function CreateRoleContent({
             Test in sandbox
           </button>
         )}
-        {!showSandbox && (
+        <div className="flex-1" />
+        {!showSandbox ? (
           <button
             onClick={onCancel}
-            className="px-4 py-1.5 text-[13px] font-semibold text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
+            className="px-3 py-1.5 text-[13px] font-medium text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
           >
             Back
           </button>
+        ) : (
+          <button
+            onClick={handleReset}
+            className="px-3 py-1.5 text-[13px] font-medium text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
+          >
+            Revert changes
+          </button>
         )}
-        <div className="flex-1" />
-        <button
-          onClick={handleReset}
-          className="px-3 py-1.5 text-[13px] font-medium text-[#353A44] leading-[19px] tracking-[-0.15px] border border-[#D8DEE4] rounded-md hover:bg-[#F5F6F8] transition-colors bg-white shadow-[0px_1px_1px_0px_rgba(33,37,44,0.16)]"
-        >
-          Revert changes
-        </button>
         <button
           onClick={handleSave}
           className="px-4 py-1.5 bg-[#675DFF] text-white text-[13px] font-semibold leading-[19px] tracking-[-0.15px] rounded-md hover:bg-[#5851DB] transition-colors shadow-[0px_1px_1px_0px_rgba(47,14,99,0.32)]"
@@ -3777,7 +3778,7 @@ const MOCK_ACCOUNTS = [
 const ACCOUNT_GROUPS = ["All", ...Array.from(new Set(MOCK_ACCOUNTS.map(a => a.group)))];
 const ALL_ACCOUNT_IDS = new Set(MOCK_ACCOUNTS.map(a => a.id));
 
-function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", customRoles = [], singleRoleSelect = false, setCustomRoles, mergedCanCannot = false }: { isOpen: boolean; onClose: () => void; onComplete?: () => void; layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5"; customRoles?: Role[]; singleRoleSelect?: boolean; setCustomRoles?: React.Dispatch<React.SetStateAction<Role[]>>; mergedCanCannot?: boolean }) {
+function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", customRoles = [], singleRoleSelect = false, setCustomRoles, mergedCanCannot = false, onTestInSandbox, initialCreatingRole = false, initialRoleState }: { isOpen: boolean; onClose: () => void; onComplete?: () => void; layoutVersion?: "v1" | "v2" | "v3" | "v4" | "v5"; customRoles?: Role[]; singleRoleSelect?: boolean; setCustomRoles?: React.Dispatch<React.SetStateAction<Role[]>>; mergedCanCannot?: boolean; onTestInSandbox?: (previewRole: Role, modalState: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null }) => void; initialCreatingRole?: boolean; initialRoleState?: { roleName: string; customDescription: string; permissionAccess: Record<string, string>; selectedBaseRole?: Role | null } }) {
   const [step, setStep] = useState(1);
   const [emails, setEmails] = useState<string[]>([]);
   const [currentInput, setCurrentInput] = useState("");
@@ -3806,12 +3807,18 @@ function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", cus
 
   useEffect(() => {
     if (isOpen) {
-      setStep(1); setEmails([]); setCurrentInput(""); setSelectedAccount("all");
-      setSelectedAccounts(new Set(ALL_ACCOUNT_IDS)); setShowAccountPicker(false); setAccountGroupFilter("All"); setAccountSearch("");
-      setSelectedRoles(new Set()); setExpandedCategories(new Set()); setShowPermissions(false); setIsClosing(false); setCreatingRole(false);
-      setEmailVisibleCount(0); setPermClosingPhase(null); setRolesMaxWidth(null);
-      // Focus the email input after the modal animation settles
-      requestAnimationFrame(() => { inputRef.current?.focus(); });
+      if (initialCreatingRole) {
+        // Returning from sandbox — jump straight to the create role screen at step 3
+        setStep(3); setCreatingRole(true); setIsClosing(false);
+        setEmailVisibleCount(0); setPermClosingPhase(null); setRolesMaxWidth(null);
+      } else {
+        setStep(1); setEmails([]); setCurrentInput(""); setSelectedAccount("all");
+        setSelectedAccounts(new Set(ALL_ACCOUNT_IDS)); setShowAccountPicker(false); setAccountGroupFilter("All"); setAccountSearch("");
+        setSelectedRoles(new Set()); setExpandedCategories(new Set()); setShowPermissions(false); setIsClosing(false); setCreatingRole(false);
+        setEmailVisibleCount(0); setPermClosingPhase(null); setRolesMaxWidth(null);
+        // Focus the email input after the modal animation settles
+        requestAnimationFrame(() => { inputRef.current?.focus(); });
+      }
     }
   }, [isOpen]);
 
@@ -4349,7 +4356,7 @@ function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", cus
                           className="w-full flex items-center gap-2 px-2 py-3 text-left hover:bg-[#F5F6F8] transition-colors"
                         >
                           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0"><path d="M6 1V11M1 6H11" stroke="#635BFF" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                          <span className="text-[14px] font-semibold text-[#635BFF] leading-5 tracking-[-0.15px]">Create custom role</span>
+                          <span className="text-[14px] font-semibold text-[#635BFF] leading-5 tracking-[-0.15px]">Create or customize role</span>
                         </button>
                       )}
                     </div>
@@ -4422,8 +4429,12 @@ function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", cus
                 initialGroupBy="productCategory"
                 layoutVersion={layoutVersion}
                 showSandbox={false}
-                initialState={baseInitialState}
+                initialState={initialRoleState || baseInitialState}
                 mergedCanCannot={mergedCanCannot}
+                onTestInSandbox={onTestInSandbox ? (previewRole, modalState) => {
+                  onClose();
+                  onTestInSandbox(previewRole, modalState);
+                } : undefined}
               />
             );
           })()}
@@ -4654,6 +4665,17 @@ function TeamAndSecurityPageInner() {
     modalState: undefined
   });
 
+  // Track whether add member modal should return to create role screen after sandbox
+  const [addMemberReturnToCreate, setAddMemberReturnToCreate] = useState(false);
+
+  // Reopen add member modal after returning from sandbox
+  useEffect(() => {
+    if (!sandboxMode.active && sandboxMode.sourceModal === "addMember") {
+      setAddMemberReturnToCreate(true);
+      setIsModalOpen(true);
+    }
+  }, [sandboxMode.active, sandboxMode.sourceModal]);
+
   // Sandbox full-screen takeover
   if (sandboxMode.active && sandboxMode.role) {
     return (
@@ -4731,7 +4753,32 @@ function TeamAndSecurityPageInner() {
         </div>
       </div>
 
-      <AddMemberModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onComplete={() => showToast("Invitations sent successfully")} layoutVersion={layoutVersion} customRoles={customRoles} singleRoleSelect={singleRoleSelect} setCustomRoles={setCustomRoles} mergedCanCannot={mergedCanCannot} />
+      <AddMemberModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setAddMemberReturnToCreate(false);
+          setSandboxMode(prev => ({ ...prev, sourceModal: undefined, modalState: undefined }));
+        }}
+        onComplete={() => showToast("Invitations sent successfully")}
+        layoutVersion={layoutVersion}
+        customRoles={customRoles}
+        singleRoleSelect={singleRoleSelect}
+        setCustomRoles={setCustomRoles}
+        mergedCanCannot={mergedCanCannot}
+        initialCreatingRole={addMemberReturnToCreate}
+        initialRoleState={addMemberReturnToCreate ? sandboxMode.modalState : undefined}
+        onTestInSandbox={(previewRole, modalState) => {
+          setIsModalOpen(false);
+          setSandboxMode({
+            active: true,
+            role: previewRole,
+            unsavedRole: previewRole,
+            sourceModal: "addMember",
+            modalState,
+          });
+        }}
+      />
     </div>
   );
 }
