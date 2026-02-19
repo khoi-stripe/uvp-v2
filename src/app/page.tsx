@@ -831,7 +831,7 @@ function ModalPermissionsPanel({
           }`}
         >
           <SparkleIcon />
-          <span>Assistant</span>
+          <span className="font-normal">Assistant</span>
         </button>
         <div className="ml-auto">
           <PermissionsFilterMenu
