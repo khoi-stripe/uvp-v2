@@ -4304,17 +4304,17 @@ function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", cus
                                   {cat.roles.map((role, roleIdx) => {
                                     const isSelected = selectedRoles.has(role.id);
                                     return (
-                                      <div key={role.id} data-role-id={role.id} onClick={() => toggleRole(role.id)} className={`relative flex items-start gap-2 py-3 pl-6 pr-2 cursor-pointer ${roleIdx > 0 ? 'border-t border-[#EBEEF1]' : ''} before:absolute before:inset-0 before:transition-colors hover:before:bg-[#F5F6F8]`}>
+                                      <div key={role.id} data-role-id={role.id} onClick={() => toggleRole(role.id)} className={`relative flex items-center gap-3 py-3 pl-4 pr-2 cursor-pointer ${roleIdx > 0 ? 'border-t border-[#EBEEF1]' : ''} before:absolute before:inset-0 before:transition-colors hover:before:bg-[#F5F6F8]`}>
                                         {singleRoleSelect ? (
                                           /* Radio button for single-select */
                                           <div
-                                            className={`relative z-10 mt-[3px] w-[14px] h-[14px] rounded-full border flex-shrink-0 flex items-center justify-center transition-colors ${isSelected ? 'border-[#675DFF] bg-white shadow-[0_1px_1px_rgba(10,33,86,0.16)]' : 'border-[#D8DEE4] bg-white shadow-[0_1px_1px_rgba(33,37,44,0.16)]'}`}>
+                                            className={`relative z-10 w-[14px] h-[14px] rounded-full border flex-shrink-0 flex items-center justify-center transition-colors ${isSelected ? 'border-[#675DFF] bg-white shadow-[0_1px_1px_rgba(10,33,86,0.16)]' : 'border-[#D8DEE4] bg-white shadow-[0_1px_1px_rgba(33,37,44,0.16)]'}`}>
                                             {isSelected && <div className="w-[8px] h-[8px] rounded-full bg-[#675DFF]" />}
                                           </div>
                                         ) : (
                                           /* Checkbox for multi-select */
                                           <div
-                                            className={`relative z-10 mt-[3px] w-[14px] h-[14px] rounded-[4px] border flex-shrink-0 flex items-center justify-center transition-colors ${isSelected ? 'bg-[#675DFF] border-[#675DFF] shadow-[0_1px_1px_rgba(10,33,86,0.16)]' : 'border-[#D8DEE4] bg-white shadow-[0_1px_1px_rgba(33,37,44,0.16)]'}`}>
+                                            className={`relative z-10 w-[14px] h-[14px] rounded-[4px] border flex-shrink-0 flex items-center justify-center transition-colors ${isSelected ? 'bg-[#675DFF] border-[#675DFF] shadow-[0_1px_1px_rgba(10,33,86,0.16)]' : 'border-[#D8DEE4] bg-white shadow-[0_1px_1px_rgba(33,37,44,0.16)]'}`}>
                                             {isSelected && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M8.5 2.5L3.75 7.5L1.5 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                                           </div>
                                         )}
