@@ -846,7 +846,7 @@ function ModalPermissionsPanel({
       {/* Controls row - full width */}
       <div className="flex items-center gap-2">
         {/* Search field - spans full width */}
-        <div className="search-field flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-transparent form-focus-ring">
+        <div className="search-field flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white form-focus-ring">
           <SearchIcon className="text-[#474E5A]" />
           <input
             type="text"
@@ -3521,7 +3521,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
             {/* Controls */}
             <div className="flex items-center gap-2">
               {/* Search field */}
-              <div className="search-field flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-transparent form-focus-ring">
+              <div className="search-field flex-1 flex items-center gap-2 border border-[#D8DEE4] rounded-md px-2 py-1 min-h-[28px] bg-white form-focus-ring">
                 <SearchIcon className="text-[#474E5A]" />
                 <input
                   type="text"
