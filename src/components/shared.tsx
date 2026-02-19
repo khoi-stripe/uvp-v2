@@ -606,10 +606,10 @@ export function PermissionsFilterMenu({
   return (
     <div className="relative flex items-center gap-1">
       <button onClick={() => popover.toggle()} className="flex items-center gap-1 cursor-pointer">
-        <span className="text-[13px] text-[#596171] leading-[19px]">View by: <span className="text-[#635BFF]">{currentLabel}</span></span>
         <span className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#EBEEF1] transition-colors">
           <ControlIcon className="w-3 h-3 text-[#474E5A]" />
         </span>
+        <span className="text-[13px] text-[#596171] leading-[19px]">View by: <span className="text-[#635BFF]">{currentLabel}</span></span>
       </button>
       {popover.isVisible && (
         <>
