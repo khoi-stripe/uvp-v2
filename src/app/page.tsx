@@ -1522,7 +1522,7 @@ function CustomizeRoleModal({
                     <ul className="flex flex-col gap-1.5">
                       {previewDetails.canDo.slice(0, 5).map((item, i) => (
                         <li key={`can-${i}`} className="flex items-start gap-2 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">
-                          <svg width="8" height="8" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 mt-[5px]">
+                          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 mt-[4px]">
                             <path fillRule="evenodd" clipRule="evenodd" d="M15.4695 2.23296C15.8241 2.56129 15.8454 3.1149 15.5171 3.46949L6.14206 13.5945C5.97228 13.7778 5.73221 13.8799 5.48237 13.8748C5.23253 13.8698 4.99677 13.7582 4.83452 13.5681L0.459523 8.44311C0.145767 8.07557 0.18937 7.52327 0.556912 7.20951C0.924454 6.89575 1.47676 6.93936 1.79051 7.3069L5.52658 11.6834L14.233 2.28052C14.5613 1.92593 15.1149 1.90464 15.4695 2.23296Z" fill="#2B8700"/>
                           </svg>
                           {item}
@@ -1530,7 +1530,7 @@ function CustomizeRoleModal({
                       ))}
                       {previewDetails.cannotDo.slice(0, 5).map((item, i) => (
                         <li key={`cannot-${i}`} className="flex items-start gap-2 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">
-                          <svg width="8" height="8" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 mt-[5px]">
+                          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 mt-[4px]">
                             <path fillRule="evenodd" clipRule="evenodd" d="M1.25628 1.25628C1.59799 0.914573 2.15201 0.914573 2.49372 1.25628L8 6.76256L13.5063 1.25628C13.848 0.914573 14.402 0.914573 14.7437 1.25628C15.0854 1.59799 15.0854 2.15201 14.7437 2.49372L9.23744 8L14.7437 13.5063C15.0854 13.848 15.0854 14.402 14.7437 14.7437C14.402 15.0854 13.848 15.0854 13.5063 14.7437L8 9.23744L2.49372 14.7437C2.15201 15.0854 1.59799 15.0854 1.25628 14.7437C0.914573 14.402 0.914573 13.848 1.25628 13.5063L6.76256 8L1.25628 2.49372C0.914573 2.15201 0.914573 1.59799 1.25628 1.25628Z" fill="#C0123C"/>
                           </svg>
                           {item}
@@ -2101,7 +2101,7 @@ function CreateRoleContent({
                   <ul className="flex flex-col gap-1.5">
                     {previewDetails.canDo.slice(0, 5).map((item, i) => (
                       <li key={`can-${i}`} className="flex items-start gap-2 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">
-                        <svg width="8" height="8" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 mt-[5px]">
+                        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 mt-[4px]">
                           <path fillRule="evenodd" clipRule="evenodd" d="M15.4695 2.23296C15.8241 2.56129 15.8454 3.1149 15.5171 3.46949L6.14206 13.5945C5.97228 13.7778 5.73221 13.8799 5.48237 13.8748C5.23253 13.8698 4.99677 13.7582 4.83452 13.5681L0.459523 8.44311C0.145767 8.07557 0.18937 7.52327 0.556912 7.20951C0.924454 6.89575 1.47676 6.93936 1.79051 7.3069L5.52658 11.6834L14.233 2.28052C14.5613 1.92593 15.1149 1.90464 15.4695 2.23296Z" fill="#2B8700"/>
                         </svg>
                         {item}
@@ -2109,7 +2109,7 @@ function CreateRoleContent({
                     ))}
                     {previewDetails.cannotDo.slice(0, 5).map((item, i) => (
                       <li key={`cannot-${i}`} className="flex items-start gap-2 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">
-                        <svg width="8" height="8" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 mt-[5px]">
+                        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 mt-[4px]">
                           <path fillRule="evenodd" clipRule="evenodd" d="M1.25628 1.25628C1.59799 0.914573 2.15201 0.914573 2.49372 1.25628L8 6.76256L13.5063 1.25628C13.848 0.914573 14.402 0.914573 14.7437 1.25628C15.0854 1.59799 15.0854 2.15201 14.7437 2.49372L9.23744 8L14.7437 13.5063C15.0854 13.848 15.0854 14.402 14.7437 14.7437C14.402 15.0854 13.848 15.0854 13.5063 14.7437L8 9.23744L2.49372 14.7437C2.15201 15.0854 1.59799 15.0854 1.25628 14.7437C0.914573 14.402 0.914573 13.848 1.25628 13.5063L6.76256 8L1.25628 2.49372C0.914573 2.15201 0.914573 1.59799 1.25628 1.25628Z" fill="#C0123C"/>
                         </svg>
                         {item}
@@ -3409,7 +3409,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                 <ul className="flex flex-col gap-1.5">
                   {(selectedRole.details?.canDo ?? []).map((item, i) => (
                     <li key={`can-${i}`} className="flex items-start gap-2 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">
-                      <svg width="8" height="8" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 mt-[5px]">
+                      <svg width="10" height="10" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 mt-[4px]">
                         <path fillRule="evenodd" clipRule="evenodd" d="M15.4695 2.23296C15.8241 2.56129 15.8454 3.1149 15.5171 3.46949L6.14206 13.5945C5.97228 13.7778 5.73221 13.8799 5.48237 13.8748C5.23253 13.8698 4.99677 13.7582 4.83452 13.5681L0.459523 8.44311C0.145767 8.07557 0.18937 7.52327 0.556912 7.20951C0.924454 6.89575 1.47676 6.93936 1.79051 7.3069L5.52658 11.6834L14.233 2.28052C14.5613 1.92593 15.1149 1.90464 15.4695 2.23296Z" fill="#2B8700"/>
                       </svg>
                       {item}
@@ -3417,7 +3417,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                   ))}
                   {(selectedRole.details?.cannotDo ?? []).map((item, i) => (
                     <li key={`cannot-${i}`} className="flex items-start gap-2 text-[13px] text-[#353A44] leading-[19px] tracking-[-0.15px]">
-                      <svg width="8" height="8" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 mt-[5px]">
+                      <svg width="10" height="10" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 mt-[4px]">
                         <path fillRule="evenodd" clipRule="evenodd" d="M1.25628 1.25628C1.59799 0.914573 2.15201 0.914573 2.49372 1.25628L8 6.76256L13.5063 1.25628C13.848 0.914573 14.402 0.914573 14.7437 1.25628C15.0854 1.59799 15.0854 2.15201 14.7437 2.49372L9.23744 8L14.7437 13.5063C15.0854 13.848 15.0854 14.402 14.7437 14.7437C14.402 15.0854 13.848 15.0854 13.5063 14.7437L8 9.23744L2.49372 14.7437C2.15201 15.0854 1.59799 15.0854 1.25628 14.7437C0.914573 14.402 0.914573 13.848 1.25628 13.5063L6.76256 8L1.25628 2.49372C0.914573 2.15201 0.914573 1.59799 1.25628 1.25628Z" fill="#C0123C"/>
                       </svg>
                       {item}
