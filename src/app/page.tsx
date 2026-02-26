@@ -3004,7 +3004,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
   const [expandedCategory, setExpandedCategory] = useState<string | null>(roleCategories[0]?.name || null);
   const [groupBy, setGroupBy] = useState<GroupByOption>("productCategory");
   const [isGrouped, setIsGrouped] = useState(true);
-  const [showAll, setShowAll] = useState(true);
+  const [showAll, setShowAll] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const roleDetailsRef = useRef<HTMLElement>(null);
   const [isRiskExpanded, setIsRiskExpanded] = useState(false);
@@ -3030,6 +3030,18 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
     return () => ro.disconnect();
   }, []);
   
+  const permHeaderRef = useRef<HTMLDivElement>(null);
+  const [compactPermHeader, setCompactPermHeader] = useState(false);
+  useEffect(() => {
+    const el = permHeaderRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setCompactPermHeader(entry.contentRect.width < 290);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
@@ -3445,9 +3457,9 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
           >
           <main className={`flex-1 min-w-0 min-h-0 flex flex-col gap-4 rounded-lg overflow-hidden ${useInvertedColors ? 'bg-[#F5F6F8] pt-6 px-4 pb-4' : 'p-4 bg-white'}`}>
             {/* Header */}
-            <div className="flex items-baseline gap-2">
+            <div ref={permHeaderRef} className="flex items-baseline gap-2">
               <h2 className="text-[16px] font-bold text-[#353A44] leading-6 tracking-[-0.31px]" style={{ fontFeatureSettings: "'lnum', 'pnum'" }}>Permissions</h2>
-              <span className={`${useInvertedColors ? 'bg-[#F5F6F8]' : 'bg-white'} text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center`}>
+              <span className={`${useInvertedColors ? 'bg-[#F5F6F8]' : 'bg-white'} text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center whitespace-nowrap shrink-0`}>
                 {showAll
                   ? (searchQuery
                     ? `${filteredPermissions.filter(p => activeApiNames.has(p.apiName)).length} of ${filteredPermissions.length}`
@@ -3470,6 +3482,7 @@ function RolesPermissionsContent({ sandboxMode, setSandboxMode, layoutVersion = 
                   }}
                   groupBy={groupBy}
                   onGroupByChange={setGroupBy}
+                  compact={compactPermHeader}
                 />
                 {isV6 && (
                   <button

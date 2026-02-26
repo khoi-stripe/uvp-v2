@@ -595,9 +595,9 @@ export function GroupCard({
 
 // ===== Permissions Filter Menu =====
 export function PermissionsFilterMenu({
-  showAll, onShowAllChange, isGrouped, onGroupedChange, groupBy, onGroupByChange,
+  showAll, onShowAllChange, isGrouped, onGroupedChange, groupBy, onGroupByChange, compact = false,
 }: {
-  showAll?: boolean; onShowAllChange?: (v: boolean) => void; isGrouped: boolean; onGroupedChange: (v: boolean) => void; groupBy: GroupByOption; onGroupByChange: (v: GroupByOption) => void;
+  showAll?: boolean; onShowAllChange?: (v: boolean) => void; isGrouped: boolean; onGroupedChange: (v: boolean) => void; groupBy: GroupByOption; onGroupByChange: (v: GroupByOption) => void; compact?: boolean;
 }) {
   const popover = usePopover();
   const options = isGrouped ? groupedGroupByOptions : ungroupedGroupByOptions;
@@ -605,9 +605,9 @@ export function PermissionsFilterMenu({
 
   return (
     <div className="relative flex items-center gap-1">
-      <button onClick={() => popover.toggle()} className="flex items-center gap-1.5 text-[13px] text-[#635BFF] hover:text-[#533AFD] transition-colors">
-        <ControlIcon className="w-3 h-3" />
-        <span>View by: {currentLabel}</span>
+      <button onClick={() => popover.toggle()} className="flex items-center gap-1.5 text-[13px] text-[#635BFF] hover:text-[#533AFD] transition-colors shrink-0">
+        <ControlIcon className="w-3 h-3 flex-shrink-0" />
+        {!compact && <span className="whitespace-nowrap">View by: {currentLabel}</span>}
       </button>
       {popover.isVisible && (
         <>
@@ -652,8 +652,20 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
   const lightDividerStyle = !invertColors;
   const [groupBy, setGroupBy] = useState<GroupByOption>("productCategory");
   const [isGrouped, setIsGrouped] = useState(true);
-  const [showAll, setShowAll] = useState(true);
+  const [showAll, setShowAll] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [compactHeader, setCompactHeader] = useState(false);
+  const headerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => {
+      setCompactHeader(entry.contentRect.width < 290);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const rolePermissions = useMemo(() => {
     if (roleIds.length === 0) return [];
@@ -722,10 +734,10 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
 
   return (
     <main className={className || "w-[300px] flex-shrink-0 min-h-0 flex flex-col gap-3 p-3 bg-white rounded-lg shadow-[0_2px_5px_0_rgba(48,49,61,0.08),0_1px_1px_0_rgba(0,0,0,0.12)] overflow-hidden"}>
-      <div className="flex items-center gap-2 flex-shrink-0 min-h-[28px]">
+      <div ref={headerRef} className="flex items-center gap-2 flex-shrink-0 min-h-[28px]">
         <h2 className="text-[14px] font-bold text-[#353A44] leading-5">Permissions</h2>
         {hasRoles && (
-          <span className={`${invertColors ? 'bg-[#F5F6F8]' : 'bg-white'} text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center`}>
+          <span className={`${invertColors ? 'bg-[#F5F6F8]' : 'bg-white'} text-[10px] font-semibold text-[#596171] leading-4 min-w-[16px] px-1 rounded-full text-center whitespace-nowrap shrink-0`}>
             {showAll
               ? (searchQuery ? `${filteredPermissions.filter(p => activeApiNames.has(p.apiName)).length} of ${filteredPermissions.length}` : `${rolePermissions.length} of ${getAllPermissions().length}`)
               : (searchQuery ? `${filteredPermissions.length}/${rolePermissions.length}` : rolePermissions.length)}
@@ -736,7 +748,7 @@ export function DrawerPermissionsPanel({ roleIds, className, invertColors = fals
           <PermissionsFilterMenu
             showAll={showAll} onShowAllChange={setShowAll} isGrouped={isGrouped}
             onGroupedChange={(v) => { setIsGrouped(v); if (v && groupBy === "alphabetical") setGroupBy("productCategory"); }}
-            groupBy={groupBy} onGroupByChange={setGroupBy}
+            groupBy={groupBy} onGroupByChange={setGroupBy} compact={compactHeader}
           />
         ) : (
           <div className="flex items-center gap-2 pointer-events-none">
