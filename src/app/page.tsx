@@ -4601,7 +4601,7 @@ function TeamAndSecurityPageInner() {
   useEffect(() => {
     const params = new URLSearchParams();
     if (activeTab === "team") params.set("t", "team");
-    if (layoutVersion !== "v4") params.set("l", layoutVersion);
+    if (layoutVersion !== "v6") params.set("l", layoutVersion);
     // Build flags string from non-default booleans
     // Defaults: addMember=on, singleRole=on, 14px=off
     let flags = "";
