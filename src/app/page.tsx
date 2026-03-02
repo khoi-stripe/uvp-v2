@@ -4540,14 +4540,14 @@ function TeamAndSecurityPageInner() {
   // --- URL-driven prototype config ---
   // Compact encoding: ?t=team&l=v4&p=abcd
   //   t = tab (team|roles, default roles)
-  //   l = layout version (v1-v5, default v3)
+  //   l = layout version (v1-v6, default v4)
   //   p = proto flags string, each char = a non-default flag:
   //       Uppercase = default-ON toggled OFF: A = addMember off, S = singleRole off, R = reduceCounts off, M = mergedCanCannot off
   //       Lowercase = default-OFF toggled ON: f = 14px font on, w = wireframe on
   const initFromUrl = useCallback(() => {
     const lParam = searchParams.get("l");
     const validLayouts = ["v1", "v2", "v3", "v4", "v5", "v6"] as const;
-    const layout = validLayouts.includes(lParam as any) ? (lParam as "v1"|"v2"|"v3"|"v4"|"v5"|"v6") : "v6";
+    const layout = validLayouts.includes(lParam as any) ? (lParam as "v1"|"v2"|"v3"|"v4"|"v5"|"v6") : "v4";
     const flags = searchParams.get("p") || "";
     return {
       layout,
@@ -4601,7 +4601,7 @@ function TeamAndSecurityPageInner() {
   useEffect(() => {
     const params = new URLSearchParams();
     if (activeTab === "team") params.set("t", "team");
-    if (layoutVersion !== "v6") params.set("l", layoutVersion);
+    if (layoutVersion !== "v4") params.set("l", layoutVersion);
     // Build flags string from non-default booleans
     // Defaults: addMember=on, singleRole=on, 14px=off
     let flags = "";
