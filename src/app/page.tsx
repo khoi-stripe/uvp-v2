@@ -3897,7 +3897,10 @@ function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", cus
       modalEl.style.height = prevModalHeight;
 
       const measure = () => {
-        setStep3ContentHeight(chromeHeight + roleListEl.scrollHeight + 8);
+        // Use the actual scrollable content height (info callout + role list)
+        // so the modal hugs content without extra bottom space.
+        const fullScrollContentHeight = rolesScrollRef.current?.scrollHeight ?? roleListEl.scrollHeight;
+        setStep3ContentHeight(chromeHeight + fullScrollContentHeight);
       };
       const ro = new ResizeObserver(measure);
       ro.observe(roleListEl);
@@ -4040,12 +4043,10 @@ function AddMemberModal({ isOpen, onClose, onComplete, layoutVersion = "v1", cus
               : {
                   width: showPermissions ? '100%' : 640,
                   maxWidth: showPermissions ? 1280 : 640,
-                  maxHeight: showPermissions ? '100%' : 661,
+                  maxHeight: '100%',
                   ...(showPermissions
                     ? { height: '100%' }
-                    : step3ContentHeight != null
-                      ? { height: step3ContentHeight }
-                      : {}),
+                    : { height: 'auto' }),
                 }
             : { width: 640, ...(step === 4 ? { maxHeight: '100%' } : { height: 480 }) }),
         }}
